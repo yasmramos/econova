@@ -2,7 +2,9 @@ package com.univsoftdev.econova;
 
 import com.univsoftdev.econova.cache.CacheManager;
 import com.univsoftdev.econova.core.Version;
-import com.univsoftdev.econova.core.Module;
+import com.univsoftdev.econova.core.module.Module;
+import com.univsoftdev.econova.core.module.ModuleDependencyManager;
+import com.univsoftdev.econova.core.module.ModuleInitializationException;
 import com.univsoftdev.econova.core.utils.EncryptionUtil;
 import io.avaje.inject.BeanScope;
 import io.avaje.config.Config;
@@ -45,6 +47,7 @@ public class AppContext implements Serializable {
     private final List<String> eventLog;
     private final List<Module> modules;
     private final Map<String, Object> resources;
+    private ModuleDependencyManager moduleDependencyManager;
 
     /**
      * Constructor privado mejorado. Inicializa todas las dependencias y
@@ -65,7 +68,7 @@ public class AppContext implements Serializable {
         this.theme = Config.get("app.theme", "light");
         this.running = false;
         this.resources = new HashMap<>();
-
+        this.moduleDependencyManager = new ModuleDependencyManager(this);
         logger.info("AppContext inicializado con configuración unificada");
     }
 
@@ -102,15 +105,23 @@ public class AppContext implements Serializable {
 
         try {
             modules.add(module);
-            module.initialize(); // Corregido el error tipográfico  
+            module.initialize(this); // Corregido el error tipográfico  
             logEvent("Módulo añadido: " + module.getClass().getSimpleName());
             logger.info("Módulo {} inicializado correctamente", module.getClass().getSimpleName());
-        } catch (Exception e) {
+        } catch (ModuleInitializationException e) {
             modules.remove(module); // Rollback en caso de error  
             logger.error("Error al inicializar módulo {}: {}",
                     module.getClass().getSimpleName(), e.getMessage(), e);
             throw new RuntimeException("Fallo al inicializar módulo", e);
         }
+    }
+
+    public void registerModule(Module module) {
+        moduleDependencyManager.registerModule(module);
+    }
+
+    public void initializeAllModules() throws ModuleInitializationException {
+        moduleDependencyManager.initializeAllModules();
     }
 
     /**
