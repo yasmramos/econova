@@ -6,11 +6,9 @@ import com.univsoftdev.econova.config.model.Periodo;
 import com.univsoftdev.econova.config.model.Unidad;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.config.AppConfig;
-import io.avaje.config.Config;
 import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
