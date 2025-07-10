@@ -1,0 +1,112 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel1"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Usuarios"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "West"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				"componentPopupMenu": new FormReference( "popupMenu1" )
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "tableUsuarios"
+					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+						add( "Nombre" )
+						add( "Identificador" )
+						add( "Tipo" )
+						add( "Admin. Sistema" )
+						add( "Admin. Económico" )
+						add( "Activo" )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					}, new java.util.Vector {
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					} )
+					"componentPopupMenu": new FormReference( "popupMenu1" )
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
+			name: "popupMenu1"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemAdicionar"
+				"text": "Adicionar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "adicionarActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemEliminar"
+				"text": "Eliminar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "eliminar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemModificar"
+				"text": "Modificar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "modificar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemActivar"
+				"text": "Activar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "activar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator1"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemVerTodos"
+				"text": "Ver todos"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "verTodos", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemPermisosConfiguracion"
+				"text": "Permisos de Configuración"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "permisosConfiguracion", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemPermisosSimplificados"
+				"text": "Permisos Simplificados"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "permisosSimplificados", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemCrearUsuarioAdministrador"
+				"text": "Crear Usuario Administrador "
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "crearUsuarioAdministrador", true ) )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 555, 20 )
+		} )
+	}
+}

@@ -1,0 +1,60 @@
+JFDML JFormDesigner: "9.0.0.0.352" Java: "21.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq {par l {seq l {space :p:23:p, par l {comp label3:::p::p, comp label2:::p::p, comp label1:::p::p}}, seq l {space :p:61:p, par t {seq {comp buttonAceptar:::p::p, space :::p, comp buttonCancelar:::p::p}, par l:::p {seq l {comp label5:::p::p, space :::p, comp passwordFieldConfirmarContrasenna:::::x}, seq l {comp label4:::p::p, par l {seq l {space :p:63:p, comp passwordFieldContrasenna:::p:186:p}, seq l {space :::p, par t:::p {comp textFieldNombre::::233:x, comp textFieldIdentificador::::233:x}}}}}}}}, space ::25:x}}"
+			"$verticalGroup": "par l {seq l {space :p:20:p, par b {comp label1::b:p::p, comp textFieldNombre::b:p::p}, space u:::p, par b {comp label2::b:p::p, comp textFieldIdentificador::b:p::p}, space :p:47:p, comp label3:::p::p, space s:::p, par b {comp label4::b:p::p, comp passwordFieldContrasenna::b:p::p}, space s:::p, par l {comp label5:::p::p, comp passwordFieldConfirmarContrasenna:::p::p}, space ::27:x, par b {comp buttonCancelar::b:p::p, comp buttonAceptar::b:p::p}, space :::p}}"
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Nombre"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Identificador"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "Seguridad"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "Contraseña"
+			} )
+			add( new FormComponent( "javax.swing.JPasswordField" ) {
+				name: "passwordFieldContrasenna"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": "Confirmar Contraseña"
+			} )
+			add( new FormComponent( "javax.swing.JPasswordField" ) {
+				name: "passwordFieldConfirmarContrasenna"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "textFieldNombre"
+				addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "textFieldNombreFocusLost", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "textFieldIdentificador"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "buttonCancelar"
+				"text": "Cancelar"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "buttonAceptar"
+				"text": "Aceptar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "aceptarActionPerformed", true ) )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 405, 285 )
+		} )
+	}
+}

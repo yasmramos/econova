@@ -1,0 +1,40 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :p:33:p, par l {seq t {space :0:0:x, comp eButton2:::p::p, space :::p, comp eButton1:::p::p}, comp formattedTextFieldSigla::l:::x, seq {par l {comp label1::l:p::p, comp label2::l:p::p, comp comboBoxNombre::l:p:374:p}, space :0:0:x}}, space ::33:x}}"
+			"$verticalGroup": "par l {seq l {space :p:39:p, comp label1:::p::p, space :p:13:p, comp comboBoxNombre:::p::p, space u:::p, comp label2:::p::p, space u:::p, comp formattedTextFieldSigla:::p::p, space ::29:x, par b {comp eButton1::b:p::p, comp eButton2::b:p::p}, space :::p}}"
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Nombre"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Sigla"
+			} )
+			add( new FormComponent( "javax.swing.JFormattedTextField" ) {
+				name: "formattedTextFieldSigla"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "comboBoxNombre"
+				addEvent( new FormEvent( "java.awt.event.ItemListener", "itemStateChanged", "comboBoxNombreItemStateChanged", true ) )
+			} )
+			add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+				name: "eButton1"
+				"text": "Cancelar"
+			} )
+			add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+				name: "eButton2"
+				"text": "Aceptar"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 450, 220 )
+		} )
+	}
+}

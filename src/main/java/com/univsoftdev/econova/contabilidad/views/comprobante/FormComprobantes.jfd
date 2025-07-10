@@ -1,0 +1,227 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "com.univsoftdev.econova.core.system.Form", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "fill,insets 0,hidemode 3,gap 5 5"
+			"$columnConstraints": "[fill]"
+			"$rowConstraints": "[fill][]"
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "jScrollPane1"
+				"componentPopupMenu": new FormReference( "popupMenu1" )
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "tableComprobantes"
+					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+						add( "Nro." )
+						add( "Descripción" )
+						add( "Estado" )
+						add( "Fecha" )
+						add( "Subsistema" )
+						add( "Usuario" )
+						add( "Unidad" )
+					}, new java.util.Vector {
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+						add( class java.lang.Object )
+					}, new java.util.Vector {
+						add( false )
+						add( false )
+						add( false )
+						add( false )
+						add( false )
+						add( false )
+						add( false )
+					}, new java.util.Vector {
+						add( null )
+						add( new com.jformdesigner.model.SwingTableColumn( null, 500, 0, 0, true ) )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+						add( null )
+					} )
+					"fillsViewportHeight": true
+					"autoResizeMode": 0
+					"selectionMode": 1
+					"componentPopupMenu": new FormReference( "popupMenu1" )
+					"autoCreateRowSorter": true
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0 1 2"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel2"
+				"preferredSize": new java.awt.Dimension( 955, 25 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "text"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "south"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {seq l {space :::p, comp label1:::p::p, space ::629:x}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp label1:::p::p, space :::x}}"
+			} ) {
+				name: "panel1"
+				"preferredSize": new java.awt.Dimension( 452, 30 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "COMPROBANTEDS DE OPERACIONES"
+					"font": new java.awt.Font( "Segoe UI", 1, 18 )
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "north,wmin pref,hmin pref"
+			} )
+			add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
+				name: "toolBar1"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnMostrarComprobantesPeriodo"
+					"text": "Mostrar Los del Período Actual"
+					"cursor": new java.awt.Cursor( 12 )
+					"selected": true
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnMostrarComprobantesPeriodo", true ) )
+				} )
+				add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+					name: "eButton1"
+					"text": "[...]"
+				} )
+				add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+					name: "btnMostrarTodos"
+					"text": "Mostrar Todos"
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnMostrarTodos", true ) )
+				} )
+				add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+					name: "eButton3"
+					"text": "Imprimir"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "north"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 965, 615 )
+		} )
+		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
+			name: "popupMenu1"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemNuevoComprobante"
+				"text": "Nuevo"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "nuevoComprobante", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemNuevoAPartirDe"
+				"text": "Nuevo a partir de ..."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "nuevoAPartirDe", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemBuscar"
+				"text": "Buscar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "buscar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator1"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemDuplicar"
+				"text": "Duplicar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "duplicar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemInvertir"
+				"text": "Invertir"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "invertir", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemExportar"
+				"text": "Exportar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "exportar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemImportar"
+				"text": "Importar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "importar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator2"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemInvTodosLosComp"
+				"text": "Invertir Todos Los Comprobantes Asentados"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "invTodosLosComp", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemInvSaldosUnidad"
+				"text": "Invertir Saldos de la Unidad"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "invSaldosUnidad", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator3"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemValidar"
+				"text": "Validar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "validar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemTerminar"
+				"text": "Terminar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "terminar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemAsentar"
+				"text": "Asentar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "asentar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemImprimir"
+				"text": "Imprimir"
+				"enabled": false
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator4"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemAsentarCompPeriodo"
+				"text": "Asentar Comprobantes del Período"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "asentarCompPeriodo", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemTermCompPeriodo"
+				"text": "Terminar Comprobantes del Período"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "termCompPeriodo", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+				name: "separator5"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemEliminar"
+				"text": "Eliminar"
+				"enabled": false
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "eliminar", true ) )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 975, 70 )
+		} )
+	}
+}

@@ -1,0 +1,45 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq {par l {seq l {space :p:92:p, par t:::p {seq t {comp buttonAceptar:::p::p, space :::p, comp buttonCancelar:::p::p}, seq l {par l {comp label2::l:p::p, comp label3::l:p::p}, space :p:15:p, par l {comp comboBoxAnalisis::::225:x, comp comboBoxNivel:::::x}}}}, seq l {space :p:22:p, comp label1:::p::p}}, space ::18:x}}"
+			"$verticalGroup": "par l {seq l {space :p:17:p, comp label1:::p::p, space s:::p, par l {comp label2:::p::p, comp comboBoxNivel:::p::p}, space u:::p, par b {comp label3::b:p::p, comp comboBoxAnalisis::b:p::p}, space ::25:x, par b {comp buttonCancelar::b:p::p, comp buttonAceptar::b:p::p}}}"
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Apertura por"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Nivel"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "Análisis"
+			} )
+			add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+				name: "buttonCancelar"
+				"text": "Cancelar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "buttonCancelarActionPerformed", true ) )
+			} )
+			add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+				name: "buttonAceptar"
+				"text": "Aceptar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "buttonAceptarActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "comboBoxNivel"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "comboBoxAnalisis"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 165 )
+		} )
+	}
+}

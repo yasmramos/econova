@@ -1,0 +1,175 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"$locationPolicy": 1
+			"title": "Comprobante"
+			"modal": true
+			addEvent( new FormEvent( "java.awt.event.WindowListener", "windowClosing", "thisWindowClosing", true ) )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {seq t {space :p:18:p, par t {seq {comp btnCancelar:::p::p, space :::x, comp btnAceptar:::p::p, space :::p, comp btnGuardarNuevo:::p::p}, comp scrollPane1::t:::x, seq t {comp label1:::p::p, space :::x, comp label2:::p::p, space :::p, comp datePickerSwing1:::p::p}, comp panel1::t:::x, seq t {space :0:0:x, comp toolBar1:::p:357:p}}, space :p:18:p}}"
+				"$verticalGroup": "par l {seq l {space :::p, par t {par b {comp label1::b:p:36:p, comp label2::b:p::p}, comp datePickerSwing1:::p::p}, space u:::p, comp scrollPane1:::p:54:p, space :::p, comp toolBar1:::p::p, space u:::p, comp panel1:::p:247:p, space s:::p, par b {comp btnGuardarNuevo::b:p::p, comp btnAceptar::b:p::p, comp btnCancelar::b:p::p}, space ::15:x}}"
+			} ) {
+				name: "this2"
+				"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Descripción"
+				} )
+				add( new FormComponent( "com.univsoftdev.econova.core.component.DatePickerSwing" ) {
+					name: "datePickerSwing1"
+				} )
+				add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
+					name: "toolBar1"
+					"preferredSize": new java.awt.Dimension( 44, 25 )
+					"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnNuevo"
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/com/univsoftdev/core/icons/plus.png" )
+						"preferredSize": new java.awt.Dimension( 20, 25 )
+						"cursor": &Cursor0 new java.awt.Cursor( 12 )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnNuevoActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "btnEliminar"
+						"icon": new com.jformdesigner.model.SwingIcon( 0, "/com/univsoftdev/core/icons/minus.png" )
+						"preferredSize": new java.awt.Dimension( 20, 25 )
+						"cursor": #Cursor0
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnEliminarActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonValidar"
+						"text": "Válidar"
+						"cursor": &Cursor1 new java.awt.Cursor( 12 )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "validarActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonVerRegAnexoAlPase"
+						"text": "Ver Registro Anexo al Pase"
+						"cursor": #Cursor1
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "verRegAnexoAlPaseActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonGuardar"
+						"text": "Guardar"
+						"cursor": #Cursor1
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "guardarActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonImprimir"
+						"text": "Imprimir"
+						"cursor": #Cursor1
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "imprimirActionPerformed", true ) )
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTextArea" ) {
+						name: "txtDescripcion"
+					} )
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "fill,insets 0,hidemode 3"
+					"$columnConstraints": "[fill]"
+					"$rowConstraints": "[fill]"
+				} ) {
+					name: "panel1"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {seq l {space :::p, comp labelValidacion::::440:x, space :p:33:p, comp textFieldTotalDebito:::p:87:p, space :::p, comp textFieldTotalCredito:::p:84:p, space :::p}}"
+						"$verticalGroup": "par l {par b {comp labelValidacion::b:p::p, comp textFieldTotalCredito::b:p::p, comp textFieldTotalDebito::b:p::p}}"
+					} ) {
+						name: "panel2"
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldTotalCredito"
+							"minimumSize": new java.awt.Dimension( 84, 22 )
+							"background": new java.awt.Color( 242, 242, 242, 255 )
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldTotalDebito"
+							"minimumSize": new java.awt.Dimension( 84, 22 )
+							"background": new java.awt.Color( 242, 242, 242, 255 )
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "labelValidacion"
+							"text": "      "
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "tabla"
+						add( new FormComponent( "javax.swing.JTable" ) {
+							name: "table1"
+							"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+								add( "CTA" )
+								add( "SBCTA" )
+								add( "SCTRO" )
+								add( "ANAL" )
+								add( "EPIG" )
+								add( "Débito" )
+								add( "Crédito" )
+							}, new java.util.Vector {
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+							}, new java.util.Vector {
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+							}, new java.util.Vector {
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+								add( null )
+							} )
+							"showHorizontalLines": true
+							"showVerticalLines": true
+							"selectionMode": 1
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "north"
+					} )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnGuardarNuevo"
+					"text": "Guardar & Nuevo"
+					"cursor": &Cursor2 new java.awt.Cursor( 12 )
+					addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnGuardarNuevo", true ) )
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnAceptar"
+					"text": "Guardar & Cerrar"
+					"cursor": #Cursor2
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnCancelar"
+					"text": "Cancelar"
+					"cursor": #Cursor2
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "Fecha"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 710, 495 )
+		} )
+	}
+}

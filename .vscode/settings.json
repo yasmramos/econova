@@ -1,0 +1,43 @@
+{
+    "code-runner.enableAppInsights": false,
+    "database-client.telemetry.usesOnlineServices": false,
+    "editor.fontFamily": "monospace",
+    "editor.fontSize": 13,
+    "files.autoSave": "afterDelay",
+    "gitlens.telemetry.enabled": false,
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full"
+        }
+    ],
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.jdt.ls.java.home": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full",
+    "jdk.advanced.disable.nbjavac": false,
+    "maven.terminal.customEnv": [
+        {
+            "environmentVariable": "JAVA_HOME",
+            "value": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full"
+        }
+    ],
+    "netbeans.jdkhome": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full",
+    "netbeans.project.jdkhome": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full",
+    "terminal.integrated.env.windows": {
+        "JAVA_HOME": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full",
+        "PATH": "c:\\Program Files\\BellSoft\\LibericaJDK-21-Full\\bin;${env:PATH}"
+    },
+    "code-runner.cwd": "src",
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "econova",
+            "database": "econova",
+            "username": "postgres"
+        }
+    ]
+}

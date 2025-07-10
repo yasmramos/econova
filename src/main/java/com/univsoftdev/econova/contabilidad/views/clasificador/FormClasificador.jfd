@@ -1,0 +1,339 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.5" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "fill,hidemode 3"
+			"$columnConstraints": "[fill]"
+			"$rowConstraints": "[]"
+		} ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {seq {space :::p, comp label1:::p::p, space ::576:x}, seq l {comp toolBar1::::819:x, space :::p}}"
+				"$verticalGroup": "par l {seq {comp label1:::p::p, space :::p, comp toolBar1:::p:25:p, space :::x}}"
+			} ) {
+				name: "panel1"
+				"preferredSize": new java.awt.Dimension( 61, 25 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "CLASIFICADOR DE CUENTAS"
+					"font": new java.awt.Font( "Segoe UI", 1, 18 )
+				} )
+				add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
+					name: "toolBar1"
+					"preferredSize": new java.awt.Dimension( 104, 25 )
+					"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonImportar"
+						"text": "Importar"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "importarActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "buttonExportar"
+						"text": "Exportar"
+					} )
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "north,wmin pref,height pref"
+			} )
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "splitPane1"
+				"dividerLocation": 300
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTree" ) {
+						name: "tree1"
+						"model": new javax.swing.tree.DefaultTreeModel( new javax.swing.tree.DefaultMutableTreeNode {
+							userObject: "Cuentas"
+						} )
+						"componentPopupMenu": new FormReference( "popupMenu1" )
+						"cursor": new java.awt.Cursor( 12 )
+						addEvent( new FormEvent( "javax.swing.event.TreeSelectionListener", "valueChanged", "tree1ValueChanged", true ) )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
+				} )
+				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
+					name: "tabbedPane1"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {seq l {space :p:26:p, par l {par t:::p {seq l {comp label5:::p::p, space :::x, comp textFieldAnalisisEn:::p:255:p}, seq {comp label4:::p::p, space :p:64:p, comp textFieldLongitud:::p:255:p}, seq t {par l {seq l {comp label3:::p::p, space :::x}, seq t {comp label2:::p::p, space :p:66:p}}, par l {comp textFieldFormato:::p:254:p, comp textFieldEstructura:::::x}}}, comp panel3:::p::p}, space ::57:x}}"
+						"$verticalGroup": "par l {seq l {space :p:28:p, par b {comp label2::b:p::p, comp textFieldFormato::b:p::p}, space u:::p, par b {comp label3::b:p::p, comp textFieldEstructura::b:p::p}, space u:::p, par b {comp label4::b:p::p, comp textFieldLongitud::b:p::p}, space u:::p, par b {comp label5::b:p::p, comp textFieldAnalisisEn::b:p::p}, space :p:26:p, comp panel3:::p::p, space :::x}}"
+					} ) {
+						name: "panel2"
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label2"
+							"text": "Formato"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label3"
+							"text": "Estructura"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label4"
+							"text": "Longitud"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label5"
+							"text": "Análisis en"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldFormato"
+							"editable": false
+							"text": "CLASIFICADOR DE CUENTAS"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldEstructura"
+							"editable": false
+							"text": "CTA.SCTA.ANAL.Anal.CTRL"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldLongitud"
+							"editable": false
+							"text": "15"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "textFieldAnalisisEn"
+							"editable": false
+							"text": "CUALQUIER NIVEL"
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+							"$horizontalGroup": "par l {seq {space :::p, par l {seq {par l {comp label6::l:p::p, comp label7::l:p::p, comp label8::l:p::p}, space :p:47:p, par l:::p {comp textFieldClave::l::254:x, comp textFieldDescripcion::l::254:x, comp textFieldNaturaleza::l::254:x}}, seq l {par l {comp label9::l:p::p, comp label10::l:p::p, comp label11::l:p::p}, space :p:42:p, par l:::p {comp textFieldApertura::l::254:x, comp textFieldMoneda::l::254:x, comp textFieldTipo::::254:x}, space :::p, comp button1:::p:32:p}}, space ::15:x}}"
+							"$verticalGroup": "par l {seq l {space :p:15:p, par b {comp label6::b:p::p, comp textFieldClave::b:p::p}, space :::p, par b {comp label7::b:p::p, comp textFieldDescripcion::b:p::p}, space u:::p, par b {comp label8::b:p::p, comp textFieldNaturaleza::b:p::p}, space u:::p, par b {comp textFieldTipo::b:p::p, comp label11::b:p::p}, space ::8:x, par b {comp label9::b:p::p, comp textFieldApertura::b:p::p, comp button1::b:p::p}, space s:::p, par t {comp label10:::p::p, comp textFieldMoneda:::p::p}, space :p:19:p}}"
+						} ) {
+							name: "panel3"
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label6"
+								"text": "Clave"
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label7"
+								"text": "Descripción"
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label8"
+								"text": "Naturaleza"
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label9"
+								"text": "Apertura por"
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label10"
+								"text": "Moneda"
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldClave"
+								"editable": false
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldDescripcion"
+								"editable": false
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldNaturaleza"
+								"editable": false
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldApertura"
+								"editable": false
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldMoneda"
+								"editable": false
+							} )
+							add( new FormComponent( "javax.swing.JButton" ) {
+								name: "button1"
+								"text": "..."
+								"enabled": false
+							} )
+							add( new FormComponent( "javax.swing.JLabel" ) {
+								name: "label11"
+								"text": "Tipo"
+							} )
+							add( new FormComponent( "javax.swing.JTextField" ) {
+								name: "textFieldTipo"
+								"editable": false
+								"enabled": false
+							} )
+						} )
+					}, new FormLayoutConstraints( null ) {
+						"title": "Propiedades"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel4"
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+							name: "panel5"
+							add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
+								name: "toolBar2"
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton1"
+									"text": "Periodo Actual"
+								} )
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton2"
+									"text": "Rango"
+								} )
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton3"
+									"text": "Todo"
+								} )
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton4"
+									"text": "Abrir"
+								} )
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton5"
+									"text": "Desglose"
+								} )
+								add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+									name: "eButton7"
+									"text": "Imprimir"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label17"
+									"text": "Unidad"
+								} )
+								add( new FormComponent( "javax.swing.JComboBox" ) {
+									name: "comboBox1"
+								} )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "West"
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "North"
+						} )
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "scrollPane2"
+							add( new FormComponent( "javax.swing.JTable" ) {
+								name: "table1"
+								"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+									add( "Fecha" )
+									add( "Nro" )
+									add( "Descripción" )
+									add( "Debe" )
+									add( "Haber" )
+									add( "Saldo" )
+									add( "SubSistema" )
+									add( "Unidad" )
+								}, new java.util.Vector {
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+								}, new java.util.Vector {
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+								}, new java.util.Vector {
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+									add( null )
+								} )
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "Center"
+						} )
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+							name: "panel6"
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {seq {par l {comp label13::l:p:103:p, comp label16::l:p::p, comp label14::l:p::p}, space :::p, par l {comp labelSaldoVariacion:::p::p, comp labelCredito:::p::p, comp labelDebito:::p:60:p}, space :p::p}}"
+								"$verticalGroup": "par l {seq {space :::p, par b {comp labelDebito::b:p::p, comp label14::b:p::p}, space :::p, par l {comp labelCredito:::p::p, comp label16::l:p::p}, space :::p, par b {comp label13::b:p::p, comp labelSaldoVariacion::b:p::p}, space :::p}}"
+							} ) {
+								name: "panel7"
+								"border": new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder( "Totales" ), new javax.swing.border.EmptyBorder( 5, 5, 5, 5 ) )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "labelDebito"
+									"text": "0.00"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label13"
+									"text": "Saldo/ Variación"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label14"
+									"text": "Débito"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "labelCredito"
+									"text": "0.00"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "label16"
+									"text": "Crédito"
+								} )
+								add( new FormComponent( "javax.swing.JLabel" ) {
+									name: "labelSaldoVariacion"
+									"text": "0.00"
+								} )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "Center"
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "South"
+						} )
+					}, new FormLayoutConstraints( null ) {
+						"title": "Historia"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel8"
+					}, new FormLayoutConstraints( null ) {
+						"title": "Estado"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+						name: "panel9"
+					}, new FormLayoutConstraints( null ) {
+						"title": "Desglose Por Monedas"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "dock center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 825, 530 )
+		} )
+		add( new FormContainer( "javax.swing.JPopupMenu", new FormLayoutManager( class javax.swing.JPopupMenu ) ) {
+			name: "popupMenu1"
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemApertura"
+				"text": "Apertura"
+				"cursor": &Cursor0 new java.awt.Cursor( 12 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "aperturaActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemMostrarInactivas"
+				"text": "Mostrar Inactivas"
+				"cursor": #Cursor0
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemImprimir"
+				"text": "Imprimir"
+				"cursor": #Cursor0
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItemExportarAExcel"
+				"text": "Exportar a Excel"
+				"cursor": #Cursor0
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 840, 120 )
+		} )
+	}
+}

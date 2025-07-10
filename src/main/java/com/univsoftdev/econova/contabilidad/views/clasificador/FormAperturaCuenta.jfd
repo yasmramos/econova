@@ -1,0 +1,138 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"border": &EmptyBorder0 new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+				"$horizontalGroup": "par l {seq l {space :p:15:p, par l {comp label2::l:p::p, comp label1::l:p::p}, space :::p, par l:::p {comp textFieldCuenta::::167:x, comp textFieldAperturaPor::::167:x}, space ::315:x}}"
+				"$verticalGroup": "par l {seq l {par b {comp label1::b:p::p, comp textFieldCuenta::b:p::p}, space :::x, par b {comp label2::b:p::p, comp textFieldAperturaPor::b:p::p}, space :::p}}"
+			} ) {
+				name: "panel1"
+				"border": #EmptyBorder0
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Cuenta"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "textFieldCuenta"
+					"editable": false
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "Apertura por"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "textFieldAperturaPor"
+					"editable": false
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel2"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+					name: "panel3"
+					"border": #EmptyBorder0
+					add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
+						name: "toolBar1"
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButtonAdicionar"
+							"text": "Adicionar"
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "adicionar", true ) )
+						} )
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButtonEliminar"
+							"text": "Eliminar"
+						} )
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButtonModificar"
+							"text": "Modificar"
+						} )
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButtonactivarDesactivar"
+							"text": "Activar/Desactivar"
+						} )
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButton5"
+							"text": "text"
+						} )
+						add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+							name: "eButton4"
+							"text": "text"
+						} )
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "East"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label3"
+						"text": "Cuentas de la apertura"
+					}, new FormLayoutConstraints( class java.lang.String ) {
+						"value": "West"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "North"
+				} )
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "javax.swing.JTable" ) {
+						name: "tableCuentasApertura"
+						"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector, new java.util.Vector {
+							add( "Código" )
+							add( "Descripción" )
+							add( "Naturaleza" )
+							add( "Estado" )
+							add( "Moneda" )
+						}, new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						}, new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						}, new java.util.Vector {
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+							add( null )
+						} )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+					"$horizontalGroup": "par l {seq t {space :0:416:x, comp eButtonAceptar:::p::p, space :::p, comp eButtonCancelar:::p::p}}"
+					"$verticalGroup": "par l {seq l {par b {comp eButtonCancelar::b:p::p, comp eButtonAceptar::b:p::p}, space :0:0:x}}"
+				} ) {
+					name: "panel4"
+					"border": #EmptyBorder0
+					add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+						name: "eButtonCancelar"
+						"text": "Cancelar"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelar", true ) )
+					} )
+					add( new FormComponent( "com.univsoftdev.econova.core.component.EButton" ) {
+						name: "eButtonAceptar"
+						"text": "Aceptar"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "aceptar", true ) )
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "South"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 590, 365 )
+		} )
+	}
+}

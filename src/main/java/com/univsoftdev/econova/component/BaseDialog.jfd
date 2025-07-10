@@ -1,0 +1,42 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.5" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "raven.modal.component.Modal", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel1"
+				"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+				"background": new java.awt.Color( 0, 122, 204, 255 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Dialogo Modal"
+					"foreground": sfield java.awt.Color white
+					"font": new java.awt.Font( "Segoe UI", 1, 14 )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "West"
+				} )
+				add( new FormComponent( "com.univsoftdev.econova.core.component.LabelButton" ) {
+					name: "labelButton1"
+					"text": "X"
+					"font": new java.awt.Font( "Segoe UI", 1, 18 )
+					"foreground": sfield java.awt.Color white
+					"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "East"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "North"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "contentPanel"
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"size": new java.awt.Dimension( 785, 515 )
+			"location": new java.awt.Point( 0, 0 )
+		} )
+	}
+}

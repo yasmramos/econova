@@ -1,0 +1,25 @@
+{
+    "tasks": [
+        {
+            "args": [
+                "${file}"
+            ],
+            "command": "D:\\Program Files\\JFormDesigner\\JFormDesigner.exe",
+            "label": "Abrir en JForm Designer",
+            "problemMatcher": [],
+            "type": "process"
+        },
+        {
+            "args": [
+                "${file}"
+            ],
+            "command": "C:\\Users\\CNA\\AppData\\Local\\SceneBuilder\\SceneBuilder.exe",
+            "label": "Abrir en Scener Builder",
+            "problemMatcher": [],
+            "type": "process"
+        }
+    ],
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0"
+}

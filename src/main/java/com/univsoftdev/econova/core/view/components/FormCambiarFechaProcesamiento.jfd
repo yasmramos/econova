@@ -1,0 +1,33 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq {space :::p, par t {comp datePickerFechaProcesamiento::t::365:x, seq t {space :0:205:x, comp btnAceptar:::p::p, space u:::p, comp btnCancelar:::p::p}}, space :p:24:p}, seq l {space :p:15:p, comp label1:::p::p, space ::205:x}}"
+			"$verticalGroup": "par l {seq l {space :p:32:p, comp label1:::p::p, space :::p, comp datePickerFechaProcesamiento:::p::p, space ::18:x, par b {comp btnCancelar::b:p::p, comp btnAceptar::b:p::p}, space :p:14:p}}"
+		} ) {
+			name: "this"
+			add( new FormComponent( "com.univsoftdev.econova.core.component.DatePickerSwing" ) {
+				name: "datePickerFechaProcesamiento"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnCancelar"
+				"text": "Cancelar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnCancelar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnAceptar"
+				"text": "Aceptar"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnAceptar", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Cambiar fecha de procesamiento"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 395, 145 )
+		} )
+	}
+}

@@ -1,0 +1,70 @@
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.5" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :p:19:p, par l {seq l {space :0:226:x, comp btnAceptar:::p::p, space :::p, comp btnCancelar:::p::p, space :p:37:p}, seq l {par l {comp label1::l:p::p, comp label2::l:p::p, comp label4::l:p::p, comp label6::l:p::p, comp label3::l:p::p}, space :p:26:p, par l {seq {comp txtCodigo:::p::p, space u:::p, comp label5:::p::p}, comp txtDescripcion:::p:305:p, comp cboxMoneda:::p:254:p, comp comboBoxTipoCuenta:::p:254:p, comp cboxNaturaleza::t:::x}, space ::26:x}}}}"
+			"$verticalGroup": "par l {seq l {space :p:18:p, par b {comp label1::b:p::p, comp txtCodigo::b:p::p, comp label5::b:p::p}, space u:::p, par b {comp label2::b:p::p, comp txtDescripcion::b:p::p}, space :::x, par b {comp label3::b:p::p, comp cboxNaturaleza::b:p::p}, space s:::p, par l {comp label6::t:p::p, comp comboBoxTipoCuenta::t:p:22:p}, space u:::p, par l {comp label4:::p::p, comp cboxMoneda:::p::p}, space :p:26:p, par b {comp btnCancelar::b:p::p, comp btnAceptar::b:p::p}}}"
+		} ) {
+			name: "this"
+			"border": new javax.swing.border.EmptyBorder( 10, 10, 10, 10 )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Clave"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Descripción"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "Naturaleza"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "Moneda"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "txtCodigo"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "txtDescripcion"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": "3 dígitos"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "cboxNaturaleza"
+				"cursor": &Cursor0 new java.awt.Cursor( 12 )
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "cboxMoneda"
+				"cursor": #Cursor0
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnCancelar"
+				"text": "Cancelar"
+				"cursor": #Cursor0
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnCancelarActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnAceptar"
+				"text": "Aceptar"
+				"cursor": #Cursor0
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "btnAceptarActionPerformed", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label6"
+				"text": "Tipo"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "comboBoxTipoCuenta"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 470, 265 )
+		} )
+	}
+}
