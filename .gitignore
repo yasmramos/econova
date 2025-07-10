@@ -31,3 +31,5 @@ resources
 cache*
 test.pdf
 openssl/*
+wizard.dat
+application.properties
