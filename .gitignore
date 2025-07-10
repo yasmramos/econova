@@ -33,3 +33,4 @@ test.pdf
 openssl/*
 wizard.dat
 application.properties
+bsondb.db
