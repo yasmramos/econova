@@ -9,6 +9,8 @@ import com.univsoftdev.econova.core.module.ModuleInitializationException;
 import com.univsoftdev.econova.core.utils.EncryptionUtil;
 import io.avaje.inject.BeanScope;
 import io.avaje.config.Config;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * multiplataforma y serializable. Gestiona dependencias, sesión, caché, módulos
  * y configuración global.
  */
+@Singleton
 @Data
 public class AppContext implements Serializable {
 
@@ -55,6 +58,7 @@ public class AppContext implements Serializable {
      * Constructor privado mejorado. Inicializa todas las dependencias y
      * recursos.
      */
+    @Inject
     private AppContext() {
         // Inicialización original de AppContext  
         this.appConfig = new AppConfig();
