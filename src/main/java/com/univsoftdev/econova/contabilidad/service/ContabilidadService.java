@@ -29,26 +29,25 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class ContabilidadService {
 
-    @Inject
-    final Database database;
-    @Inject
-    final CuentaService cuentaService;
-    @Inject
-    final BalanceGeneralService balanceGeneralService;
-    @Inject
-    final PlanDeCuentasService planDeCuentasService;
-    @Inject
-    final AsientoService asientoService;
-    @Inject
-    final TransaccionService transaccionService;
+    private Database database;
+    private CuentaService cuentaService;
+    private BalanceGeneralService balanceGeneralService;
+    private PlanDeCuentasService planDeCuentasService;
+    private AsientoService asientoService;
+    private TransaccionService transaccionService;
 
     public ContabilidadService() {
-        this.database = null;
-        this.cuentaService = null;
-        this.balanceGeneralService = null;
-        this.planDeCuentasService = null;
-        this.asientoService = null;
-        this.transaccionService = null;
+
+    }
+
+    @Inject
+    public ContabilidadService(Database database, CuentaService cuentaService, BalanceGeneralService balanceGeneralService, PlanDeCuentasService planDeCuentasService, AsientoService asientoService, TransaccionService transaccionService) {
+        this.database = database;
+        this.cuentaService = cuentaService;
+        this.balanceGeneralService = balanceGeneralService;
+        this.planDeCuentasService = planDeCuentasService;
+        this.asientoService = asientoService;
+        this.transaccionService = transaccionService;
     }
 
     @Transactional
@@ -317,8 +316,8 @@ public class ContabilidadService {
     public boolean validateAsiento(Asiento asiento) {
         return asientoService.validateAsiento(asiento);
     }
-    
-    public void save(Model model){
+
+    public void save(Model model) {
         database.save(model);
     }
 
