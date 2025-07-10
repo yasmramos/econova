@@ -7,8 +7,8 @@ import com.univsoftdev.econova.contabilidad.model.Transaccion;
 import com.univsoftdev.econova.core.Service;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
 import io.ebean.Database;
+import io.ebean.annotation.Transactional;
 import jakarta.inject.Singleton;
-import com.google.inject.persist.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
