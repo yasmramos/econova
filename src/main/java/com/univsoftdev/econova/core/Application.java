@@ -1,6 +1,7 @@
 package com.univsoftdev.econova.core;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.univsoftdev.econova.AppContext;
 import com.univsoftdev.econova.MainFormApp;
 import com.univsoftdev.econova.Splash;
 import java.net.URI;
@@ -10,18 +11,17 @@ import org.slf4j.LoggerFactory;
 
 public class Application {
 
-    private Context context;
+    private AppContext context;
     private UpdateManager updateManager;
     private final static Logger logger = LoggerFactory.getLogger(Application.class);
 
     public Application() {
-        Version currentVersion = new Version(1, 0, 0, 0);
-        context = new Context("Application", currentVersion);
+        context = AppContext.getInstance();
         initializeUpdateManager();
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
-    public Application(Context context) {
+    public Application(AppContext context) {
         this.context = context;
         initializeUpdateManager();
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
@@ -59,11 +59,11 @@ public class Application {
         logger.info("Application has been shut down.");
     }
 
-    public Context getContext() {
+    public AppContext getContext() {
         return context;
     }
 
-    public void setContext(Context context) {
+    public void setContext(AppContext context) {
         this.context = context;
     }
 
