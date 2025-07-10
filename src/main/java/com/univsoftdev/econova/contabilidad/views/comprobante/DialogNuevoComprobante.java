@@ -20,6 +20,7 @@ import javax.swing.table.*;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import io.avaje.inject.BeanScope;
+import jakarta.validation.constraints.NotNull;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -27,7 +28,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.miginfocom.swing.*;
-import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class DialogNuevoComprobante extends JDialog {
@@ -647,7 +647,8 @@ public class DialogNuevoComprobante extends JDialog {
                     "No hay usuario autenticado en la sesión"));
 
             // Procesar transacciones
-            AsientoProcessor processor = new AsientoProcessor(contabilidadService, asiento);
+            final var asientoProcessorFactory = injector.get(AsientoProcessorFactory.class);
+            AsientoProcessor processor = asientoProcessorFactory.create(asiento);
             processor.procesarTabla((DefaultTableModel) table1.getModel());
 
             if (!processor.getErrores().isEmpty()) {
