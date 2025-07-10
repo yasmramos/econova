@@ -30,17 +30,17 @@ import lombok.extern.slf4j.Slf4j;
 public class ContabilidadService {
 
     @Inject
-    private final Database database;
+    final Database database;
     @Inject
-    private final CuentaService cuentaService;
+    final CuentaService cuentaService;
     @Inject
-    private final BalanceGeneralService balanceGeneralService;
+    final BalanceGeneralService balanceGeneralService;
     @Inject
-    private final PlanDeCuentasService planDeCuentasService;
+    final PlanDeCuentasService planDeCuentasService;
     @Inject
-    private final AsientoService asientoService;
+    final AsientoService asientoService;
     @Inject
-    private final TransaccionService transaccionService;
+    final TransaccionService transaccionService;
 
     public ContabilidadService() {
         this.database = null;
