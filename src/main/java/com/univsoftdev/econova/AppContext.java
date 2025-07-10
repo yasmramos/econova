@@ -2,6 +2,7 @@ package com.univsoftdev.econova;
 
 import com.univsoftdev.econova.cache.CacheManager;
 import com.univsoftdev.econova.core.Version;
+import com.univsoftdev.econova.core.config.AppConfig;
 import com.univsoftdev.econova.core.module.Module;
 import com.univsoftdev.econova.core.module.ModuleDependencyManager;
 import com.univsoftdev.econova.core.module.ModuleInitializationException;
@@ -48,6 +49,7 @@ public class AppContext implements Serializable {
     private final List<Module> modules;
     private final Map<String, Object> resources;
     private ModuleDependencyManager moduleDependencyManager;
+    private final AppConfig appConfig;
 
     /**
      * Constructor privado mejorado. Inicializa todas las dependencias y
@@ -55,11 +57,12 @@ public class AppContext implements Serializable {
      */
     private AppContext() {
         // Inicialización original de AppContext  
+        this.appConfig = new AppConfig();
         this.version = new Version(0, 1, 0, 20250304);
         this.appName = "Econova";
         this.injector = BeanScope.builder().shutdownHook(true).build();
         this.cacheManager = new CacheManager();
-        this.session = new AppSession(cacheManager);
+        this.session = new AppSession(cacheManager, appConfig);
 
         // Inicialización migrada de Context  
         this.eventLog = new ArrayList<>();
@@ -86,6 +89,10 @@ public class AppContext implements Serializable {
             }
         }
         return inst;
+    }
+
+    public AppConfig getAppConfig() {
+        return appConfig;
     }
 
     // === GESTIÓN DE MÓDULOS MEJORADA ===  
