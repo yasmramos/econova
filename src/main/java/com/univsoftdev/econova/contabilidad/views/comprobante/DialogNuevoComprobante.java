@@ -6,7 +6,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.ApplicationSession;
+import com.univsoftdev.econova.AppSession;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
 import com.univsoftdev.econova.contabilidad.SubSistemas;
 import com.univsoftdev.econova.contabilidad.model.Asiento;
@@ -42,7 +42,7 @@ public class DialogNuevoComprobante extends JDialog {
     private final AppContext appContext;
     private final DefaultTableModel modelo;
     private NumberFormat formatoMoneda;
-    private ApplicationSession session;
+    private AppSession session;
     private int nro;
     private boolean persistido = false;
 
