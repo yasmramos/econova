@@ -12,7 +12,7 @@ import java.util.UUID;
  * Sesión de usuario para la aplicación Econova. Gestiona el usuario, contexto
  * contable y preferencias de sesión. Seguro, serializable y multiplataforma.
  */
-public class ApplicationSession implements AutoCloseable {
+public class AppSession implements AutoCloseable {
 
     private Ejercicio ejercicio;
     private Unidad unidad;
@@ -23,7 +23,7 @@ public class ApplicationSession implements AutoCloseable {
     /**
      * Crea una sesión con un nuevo cache manager único.
      */
-    public ApplicationSession() {
+    public AppSession() {
         this(new CacheManager(UUID.randomUUID().toString() + ".cache"));
     }
 
@@ -32,7 +32,7 @@ public class ApplicationSession implements AutoCloseable {
      *
      * @param cacheManager
      */
-    public ApplicationSession(@NotNull CacheManager cacheManager) {
+    public AppSession(@NotNull CacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
 
