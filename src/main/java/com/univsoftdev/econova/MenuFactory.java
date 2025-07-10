@@ -5,7 +5,7 @@ import com.univsoftdev.econova.contabilidad.forms.FormDashboardContabilidad;
 import com.univsoftdev.econova.contabilidad.views.*;
 import com.univsoftdev.econova.contabilidad.views.clasificador.*;
 import com.univsoftdev.econova.contabilidad.views.comprobante.*;
-import com.univsoftdev.econova.core.component.About;
+import com.univsoftdev.econova.contabilidad.component.About;
 import raven.modal.drawer.item.Item;
 import raven.modal.drawer.item.MenuItem;
 
