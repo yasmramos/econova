@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class PlanDeCuentasService extends Service<PlanDeCuentas> {
 
-    @Inject
     private final CuentaService cuentaService;
       
     @Inject
