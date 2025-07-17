@@ -1,6 +1,7 @@
 package com.univsoftdev.econova.core.model;
 
 import com.univsoftdev.econova.MyTenantSchemaProvider;
+import com.univsoftdev.econova.core.multitenancy.TenantContext;
 import com.univsoftdev.econova.config.model.User;
 import io.ebean.annotation.SoftDelete;
 import io.ebean.annotation.TenantId;
@@ -22,7 +23,12 @@ import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Optional;
 
+/**
+ * Modelo base mejorado con soporte completo para multitenancy.
+ * Incluye gestión automática de tenant ID y esquema usando el nuevo sistema de contexto.
+ */
 @MappedSuperclass
 public abstract class BaseModel extends io.ebean.Model implements Serializable {
 
@@ -37,11 +43,11 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
     private boolean deleted = false;
 
     @TenantId
-    @Column(unique = true, length = 50)
+    @Column(name = "tenant_id", length = 50)
     protected String tenantId;
 
     @NotNull
-    @Column(unique = true, name = "schema_tenant")
+    @Column(name = "schema_tenant", length = 50)
     private String schemaTenant;
 
     @Version
@@ -70,12 +76,70 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
     protected void onCreate() {
         this.whenCreated = Instant.now();
         this.whenModified = Instant.now();
-        this.schemaTenant = MyTenantSchemaProvider.getCurrentTenant().get();
+        
+        // Usar el nuevo sistema de contexto de tenant
+        Optional<TenantContext> contextOpt = TenantContext.getCurrent();
+        if (contextOpt.isPresent()) {
+            TenantContext context = contextOpt.get();
+            this.tenantId = context.getTenantId();
+            this.schemaTenant = context.getSchemaName();
+        } else {
+            // Fallback al sistema anterior para compatibilidad
+            String tenant = MyTenantSchemaProvider.getCurrentTenant().get();
+            this.tenantId = tenant != null ? tenant : "accounting";
+            this.schemaTenant = tenant != null ? tenant : "accounting";
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.whenModified = Instant.now();
+        
+        // Validar que el tenant ID no haya cambiado
+        Optional<TenantContext> contextOpt = TenantContext.getCurrent();
+        if (contextOpt.isPresent()) {
+            TenantContext context = contextOpt.get();
+            if (!context.getTenantId().equals(this.tenantId)) {
+                throw new IllegalStateException(
+                    String.format("Intento de actualizar entidad de tenant '%s' desde contexto de tenant '%s'",
+                        this.tenantId, context.getTenantId()));
+            }
+        }
+    }
+
+    /**
+     * Verifica si la entidad pertenece al tenant especificado
+     */
+    public boolean belongsToTenant(String tenantId) {
+        return tenantId != null && tenantId.equals(this.tenantId);
+    }
+
+    /**
+     * Verifica si la entidad pertenece al tenant actual
+     */
+    public boolean belongsToCurrentTenant() {
+        return belongsToTenant(TenantContext.getCurrentTenantId());
+    }
+
+    /**
+     * Valida que la entidad pertenezca al tenant actual
+     */
+    public void validateTenantOwnership() {
+        if (!belongsToCurrentTenant()) {
+            throw new IllegalStateException(
+                String.format("Entidad pertenece al tenant '%s' pero el contexto actual es '%s'",
+                    this.tenantId, TenantContext.getCurrentTenantId()));
+        }
+    }
+
+    // Getters y setters
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
     public String getSchemaTenant() {
@@ -141,5 +205,4 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
     public void setWhoModified(User whoModified) {
         this.whoModified = whoModified;
     }
-
 }
