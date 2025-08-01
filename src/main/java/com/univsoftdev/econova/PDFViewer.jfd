@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.2" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -41,6 +41,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 910, 630 )
 		} )
 	}
 }

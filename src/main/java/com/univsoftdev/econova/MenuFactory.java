@@ -6,9 +6,11 @@ import com.univsoftdev.econova.contabilidad.views.*;
 import com.univsoftdev.econova.contabilidad.views.clasificador.*;
 import com.univsoftdev.econova.contabilidad.views.comprobante.*;
 import com.univsoftdev.econova.contabilidad.component.About;
+import jakarta.inject.Singleton;
 import raven.modal.drawer.item.Item;
 import raven.modal.drawer.item.MenuItem;
 
+@Singleton
 public class MenuFactory {
 
     public static MenuItem[] buildMenuItems() {
@@ -26,7 +28,7 @@ public class MenuFactory {
             new Item.Label("OTHER"),
             new Item("Configuración", "setting.svg", FormConfig.class)
                     .subMenu(new Item("Codificadores", FormCodificadores.class)
-                            .subMenu("Unidades", FormUnidades.class))
+                            .subMenu("Unidades", FormEmpresas.class))
                     .subMenu(new Item("Parámetros", FormParametros.class)
                             .subMenu("Ejercicio", FormEjercicios.class)
                             .subMenu("Monedas", FormMonedas.class)

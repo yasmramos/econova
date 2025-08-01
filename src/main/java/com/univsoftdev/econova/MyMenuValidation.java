@@ -1,16 +1,19 @@
 package com.univsoftdev.econova;
 
+import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.system.Form;
+import jakarta.inject.Singleton;
 import raven.modal.Drawer;
 import raven.modal.drawer.menu.MenuValidation;
 
+@Singleton
 public class MyMenuValidation extends MenuValidation {
 
-    public static void setUser(ModelUser user) {
+    public static void setUser(User user) {
         MyMenuValidation.user = user;
     }
 
-    public static ModelUser user;
+    public static User user;
 
     @Override
     public boolean menuValidation(int[] index) {
@@ -41,9 +44,9 @@ public class MyMenuValidation extends MenuValidation {
         if (user == null) {
             return false;
         }
-        if (user.getRole() == ModelUser.Role.ADMIN) {
-            return true;
-        }
+//        if (user.getRole() == ModelUser.Role.ADMIN) {
+//            return true;
+//        }
 
         boolean status
                 // `Modal`

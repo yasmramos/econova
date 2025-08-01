@@ -1,18 +1,29 @@
 package com.univsoftdev.econova;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
+
 import org.apache.pdfbox.Loader;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 public class PDFViewer extends javax.swing.JFrame {
 
@@ -22,9 +33,6 @@ public class PDFViewer extends javax.swing.JFrame {
     private int paginaActual = 0;
     private int totalPaginas = 0;
     private String filePath;
-    private JLabel pageLabel;
-    private JButton btnAnterior;
-    private JButton btnSiguiente;
     private double zoom = 1.0;
     private final double ZOOM_STEP = 0.1;
     private JButton btnZoomIn;
@@ -172,38 +180,53 @@ public class PDFViewer extends javax.swing.JFrame {
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-	this.toolBar1 = new JToolBar();
-	this.button1 = new JButton();
-	this.panel1 = new JPanel();
-	this.label1 = new JLabel();
+	private void initComponents() {
+		toolBar1 = new JToolBar();
+		btnAnterior = new JButton();
+		pageLabel = new JLabel();
+		btnSiguiente = new JButton();
+		button1 = new JButton();
+		panel1 = new JPanel();
+		label1 = new JLabel();
 
-	//======== this ========
-	setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-	var contentPane = getContentPane();
-	contentPane.setLayout(new BorderLayout());
+		//======== this ========
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		Container contentPane = getContentPane();
+		contentPane.setLayout(new BorderLayout());
 
-	//======== toolBar1 ========
-	{
+		//======== toolBar1 ========
+		{
 
-	    //---- button1 ----
-	    this.button1.setText("Imprimir"); //NOI18N
-	    this.toolBar1.add(this.button1);
-	}
-	contentPane.add(this.toolBar1, BorderLayout.NORTH);
+			//---- btnAnterior ----
+			btnAnterior.setText("Anterior");
+			toolBar1.add(btnAnterior);
 
-	//======== panel1 ========
-	{
-	    this.panel1.setBorder(new EmptyBorder(5, 5, 5, 5));
-	    this.panel1.setLayout(new BorderLayout());
+			//---- pageLabel ----
+			pageLabel.setText("P\u00e1gina 1 de 1");
+			toolBar1.add(pageLabel);
 
-	    //---- label1 ----
-	    this.label1.setBorder(new EmptyBorder(5, 5, 5, 5));
-	    this.panel1.add(this.label1, BorderLayout.CENTER);
-	}
-	contentPane.add(this.panel1, BorderLayout.CENTER);
-	pack();
-	setLocationRelativeTo(getOwner());
+			//---- btnSiguiente ----
+			btnSiguiente.setText("Siguiente");
+			toolBar1.add(btnSiguiente);
+
+			//---- button1 ----
+			button1.setText("Imprimir");
+			toolBar1.add(button1);
+		}
+		contentPane.add(toolBar1, BorderLayout.NORTH);
+
+		//======== panel1 ========
+		{
+			panel1.setBorder(new EmptyBorder(5, 5, 5, 5));
+			panel1.setLayout(new BorderLayout());
+
+			//---- label1 ----
+			label1.setBorder(new EmptyBorder(5, 5, 5, 5));
+			panel1.add(label1, BorderLayout.CENTER);
+		}
+		contentPane.add(panel1, BorderLayout.CENTER);
+		pack();
+		setLocationRelativeTo(getOwner());
     }// </editor-fold>//GEN-END:initComponents
 
 //    public static void main(String args[]) {
@@ -213,9 +236,12 @@ public class PDFViewer extends javax.swing.JFrame {
 //    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JToolBar toolBar1;
-    private JButton button1;
-    private JPanel panel1;
-    private JLabel label1;
+	private JToolBar toolBar1;
+	private JButton btnAnterior;
+	private JLabel pageLabel;
+	private JButton btnSiguiente;
+	private JButton button1;
+	private JPanel panel1;
+	private JLabel label1;
     // End of variables declaration//GEN-END:variables
 }

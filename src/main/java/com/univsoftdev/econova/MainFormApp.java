@@ -10,6 +10,7 @@ import com.univsoftdev.econova.config.service.EmpresaService;
 import com.univsoftdev.econova.config.view.FormDatabaseConnection;
 import com.univsoftdev.econova.config.view.FormSeleccionUnidad;
 import com.univsoftdev.econova.contabilidad.component.About;
+import com.univsoftdev.econova.core.config.AppConfig;
 import com.univsoftdev.econova.core.system.FormManager;
 import com.univsoftdev.econova.core.utils.AppPreferences;
 import com.univsoftdev.econova.core.utils.DialogUtils;
@@ -43,7 +44,7 @@ public class MainFormApp extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setExtendedState(MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
-        this.appContext = AppContext.getInstance();
+        this.appContext = Injector.get(AppContext.class);
         this.setTitle(appContext.getAppName() + " " + appContext.getVersion().toString());
         getJMenuBar().setVisible(false);
         Drawer.installDrawer(this, EconovaDrawerBuilder.getInstance());
@@ -54,7 +55,7 @@ public class MainFormApp extends JFrame {
             @Override
             public void windowOpened(WindowEvent e) {
                 SwingUtilities.invokeLater(() -> {
-                    EmpresaService empresaService = appContext.getInjector().get(EmpresaService.class);
+                    EmpresaService empresaService = Injector.get(EmpresaService.class);
                     if (empresaService.findAll().isEmpty()) {
                         Wizard wizard = new Wizard(frame, true);
                         wizard.setLocationRelativeTo(null);
@@ -68,16 +69,18 @@ public class MainFormApp extends JFrame {
     }
 
     private void salir(ActionEvent e) {
+        
         System.exit(0);
     }
 
     private void cambiarUnidadContable(ActionEvent e) {
-        DialogUtils.showModalDialog(this, new FormSeleccionUnidad(), "Selección de Unidad Contable");
+        //DialogUtils.showModalDialog(this, new FormSeleccionUnidad(), "Selección de Unidad Contable");
     }
 
     private void thisWindowClosing(WindowEvent e) {
         try {
-            AppContext.getInstance().reset();
+            Injector.get(AppContext.class).reset();
+            Injector.close();
             Config.asProperties().store(new FileOutputStream("application.properties"), null);
         } catch (FileNotFoundException ex) {
             System.getLogger(MainFormApp.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -87,7 +90,7 @@ public class MainFormApp extends JFrame {
     }
 
     private void cambiarFechaProcesamiento(ActionEvent e) {
-        DialogUtils.showModalDialog(this, new FormCambiarFechaProcesamiento(), "Selección de Unidad Contable");
+        DialogUtils.showModalDialog(this, new FormCambiarFechaProcesamiento(), "Cambiar Fecha de Procesamiento");
     }
 
     private void initComponents() {
@@ -421,7 +424,7 @@ public class MainFormApp extends JFrame {
                 menu.add(itemAcercaDe);
                 menu.add(itemSalir);
 
-                TrayIcon trayIcon = new TrayIcon(image, AppContext.getInstance().getAppName(), menu);
+                TrayIcon trayIcon = new TrayIcon(image, Injector.get(AppConfig.class).getAppName(), menu);
                 trayIcon.setImageAutoSize(true);
 
                 try {
