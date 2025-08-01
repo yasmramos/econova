@@ -32,6 +32,18 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Crea una nueva empresa con validaciones básicas
+     * @param nombre
+     * @param razonSocial
+     * @param nif
+     * @param direccion
+     * @param telefono
+     * @param email
+     * @param codigoPostal
+     * @param ciudad
+     * @param provincia
+     * @param pais
+     * @param cif
+     * @return 
      */
     public Empresa crearEmpresa(
             @NotBlank String nombre,
@@ -69,6 +81,17 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Actualiza los datos básicos de una empresa
+     * @param empresaId
+     * @param nombre
+     * @param email
+     * @param direccion
+     * @param razonSocial
+     * @param telefono
+     * @param provincia
+     * @param pais
+     * @param codigoPostal
+     * @param ciudad
+     * @return 
      */
     public Empresa actualizarEmpresa(
             Long empresaId,
@@ -120,6 +143,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene una empresa por su NIF
+     * @param nif
+     * @return 
      */
     public Optional<Empresa> obtenerEmpresaPorNif(String nif) {
         return database.createQuery(Empresa.class)
@@ -130,6 +155,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene una empresa por su CIF
+     * @param cif
+     * @return 
      */
     public Optional<Empresa> obtenerEmpresaPorCif(String cif) {
         return database.createQuery(Empresa.class)
@@ -137,9 +164,17 @@ public class EmpresaService extends Service<Empresa> {
                 .eq("cif", cif)
                 .findOneOrEmpty();
     }
+    
+    public Optional<Empresa> findByCode(String code) {
+        return database.createQuery(Empresa.class)
+                .where()
+                .eq("codigo", code)
+                .findOneOrEmpty();
+    }
 
     /**
      * Obtiene todas las empresas ordenadas por nombre
+     * @return 
      */
     public List<Empresa> obtenerTodasLasEmpresas() {
         return database.createQuery(Empresa.class)
@@ -149,6 +184,15 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Crea una nueva unidad organizativa asociada a la empresa
+     * @param empresaId
+     * @param codigoUnidad
+     * @param nombreUnidad
+     * @param direccionUnidad
+     * @param correoUnidad
+     * @param nae
+     * @param dpa
+     * @param reup
+     * @return 
      */
     public Unidad crearUnidadParaEmpresa(
             Long empresaId,
@@ -174,6 +218,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene todas las unidades organizativas de una empresa
+     * @param empresaId
+     * @return 
      */
     public List<Unidad> obtenerUnidadesDeEmpresa(Long empresaId) {
         return database.createQuery(Unidad.class)
@@ -212,6 +258,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene una empresa por ID con manejo de excepciones
+     * @param empresaId
+     * @return 
      */
     public Empresa obtenerEmpresaPorId(Long empresaId) {
         return database.find(Empresa.class, empresaId);
@@ -219,6 +267,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Busca empresas por nombre (búsqueda parcial case-insensitive)
+     * @param nombre
+     * @return 
      */
     public List<Empresa> buscarEmpresasPorNombre(String nombre) {
         return database.createQuery(Empresa.class)
@@ -230,6 +280,7 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Elimina una empresa (solo si no tiene unidades asociadas)
+     * @param empresaId
      */
     public void eliminarEmpresa(Long empresaId) {
         Empresa empresa = obtenerEmpresaPorId(empresaId);
@@ -244,6 +295,8 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene estadísticas básicas de la empresa
+     * @param empresaId
+     * @return 
      */
     public EstadisticasEmpresa obtenerEstadisticas(Long empresaId) {
         Empresa empresa = obtenerEmpresaPorId(empresaId);
@@ -254,7 +307,7 @@ public class EmpresaService extends Service<Empresa> {
                 cantidadUnidades
         );
     }
-
+    
     /**
      * Record para representar estadísticas de la empresa
      */

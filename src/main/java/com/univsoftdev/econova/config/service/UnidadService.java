@@ -59,7 +59,6 @@ public class UnidadService extends Service<Unidad> {
 
         Unidad nuevaUnidad = new Unidad(codigo, nombre);
         nuevaUnidad.setEmpresa(empresa);
-        nuevaUnidad.setSchemaTenant(schema);
         database.save(nuevaUnidad);
 
         log.info("Nueva unidad creada: {} - {}", codigo, nombre);

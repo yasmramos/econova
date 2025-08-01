@@ -2,7 +2,7 @@ package com.univsoftdev.econova.config.service;
 
 import jakarta.inject.Inject;
 import com.univsoftdev.econova.config.model.Rol;
-import com.univsoftdev.econova.contabilidad.model.Permiso;
+import com.univsoftdev.econova.contabilidad.model.Permission;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.Service;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
@@ -34,12 +34,12 @@ public class RolService extends Service<Rol> {
         validarNombreUnico(nombre);
 
         Rol nuevoRol = new Rol();
-        nuevoRol.setNombre(nombre);
-        nuevoRol.setDescripcion(descripcion);
+        nuevoRol.setName(nombre);
+        nuevoRol.setDescription(descripcion);
 
-        Set<Permiso> permisos = new HashSet<>();
+        Set<Permission> permisos = new HashSet<>();
         for (Long permisoId : permisosIds) {
-            Permiso permiso = database.find(Permiso.class, permisoId);
+            Permission permiso = database.find(Permission.class, permisoId);
             permisos.add(permiso);
         }
         nuevoRol.setPermisos(permisos);
@@ -54,16 +54,16 @@ public class RolService extends Service<Rol> {
      */
     public Rol asignarPermisos(Long rolId, Set<Long> permisosIds) {
         Rol rol = obtenerRolPorId(rolId);
-        Set<Permiso> nuevosPermisos = new HashSet<>();
+        Set<Permission> nuevosPermisos = new HashSet<>();
 
         for (Long permisoId : permisosIds) {
-            Permiso permiso = database.find(Permiso.class, permisoId);
+            Permission permiso = database.find(Permission.class, permisoId);
             nuevosPermisos.add(permiso);
         }
 
         rol.setPermisos(nuevosPermisos);
         database.update(rol);
-        log.info("Permisos actualizados para rol: {}", rol.getNombre());
+        log.info("Permisos actualizados para rol: {}", rol.getName());
         return rol;
     }
 
@@ -124,7 +124,7 @@ public class RolService extends Service<Rol> {
         }
 
         database.delete(rol);
-        log.info("Rol eliminado: {}", rol.getNombre());
+        log.info("Rol eliminado: {}", rol.getName());
     }
 
     /**
@@ -132,8 +132,8 @@ public class RolService extends Service<Rol> {
      */
     public boolean tienePermiso(Long rolId, String codigoPermiso) {
         Rol rol = obtenerRolPorId(rolId);
-        return rol.getPermisos().stream()
-                .anyMatch(p -> p.getCodigo().equals(codigoPermiso));
+        return rol.getPermissions().stream()
+                .anyMatch(p -> p.getCode().equals(codigoPermiso));
     }
 
     /**
@@ -141,9 +141,9 @@ public class RolService extends Service<Rol> {
      */
     public Rol actualizarDescripcion(Long rolId, String descripcion) {
         Rol rol = obtenerRolPorId(rolId);
-        rol.setDescripcion(descripcion);
+        rol.setDescription(descripcion);
         database.update(rol);
-        log.info("Descripción actualizada para rol: {}", rol.getNombre());
+        log.info("Descripción actualizada para rol: {}", rol.getName());
         return rol;
     }
 

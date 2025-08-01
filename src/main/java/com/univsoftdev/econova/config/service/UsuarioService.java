@@ -4,12 +4,12 @@ import jakarta.inject.Inject;
 import com.univsoftdev.econova.config.model.Rol;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.Service;
-import com.univsoftdev.econova.seguridad.PasswordHasher;
-import com.univsoftdev.econova.seguridad.Argon2PasswordHasher;
+import com.univsoftdev.econova.security.PasswordHasher;
 import com.univsoftdev.econova.Validations;
 import io.ebean.Database;
 import jakarta.inject.Singleton;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
+import com.univsoftdev.econova.security.Permissions;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import java.util.Set;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 
 /**
  * Servicio para gestión de usuarios, autenticación y control de acceso.
@@ -30,49 +31,66 @@ public class UsuarioService extends Service<User> {
     private final RolService rolService;
 
     @Inject
-    public UsuarioService(Database database, RolService rolService) {
+    public UsuarioService(Database database, RolService rolService, PasswordHasher passwordHasher) {
         super(database, User.class);
-        this.passwordHasher = new Argon2PasswordHasher();
         this.rolService = rolService;
+        this.passwordHasher = passwordHasher;
     }
 
     public List<User> findByActivos() {
-        return findAll().stream().filter(u -> u.isActivo() == true).toList();
+        return findAll().stream().filter(u -> u.isActive() == true).toList();
     }
 
     public List<User> findByInactivos() {
-        return findAll().stream().filter(u -> u.isActivo() == false).toList();
+        return findAll().stream().filter(u -> u.isActive() == false).toList();
     }
 
     /**
      * Crea un nuevo usuario con validaciones y seguridad
+     *
+     * @param nombre
+     * @param identificador
+     * @param email
+     * @param password
+     * @return
      */
-    public User crearUsuario(String nombre, String identificador, String email,
-            String password, boolean activo) {
+    @RequiresPermissions(value = {Permissions.CREATE_USER})
+    public User crearUsuario(String identificador, String nombre, String email,
+            String password) {
         validarIdentificadorUnico(identificador);
         validarEmailUnico(email);
         Validations.isValidEmail(email);
+        Validations.validatePasswordStrength(password);
 
         User nuevoUsuario = new User();
         nuevoUsuario.setFullName(nombre);
         nuevoUsuario.setUserName(identificador);
         nuevoUsuario.setEmail(email);
         nuevoUsuario.setPassword(passwordHasher.hash(password));
-        nuevoUsuario.setActivo(activo);
+        nuevoUsuario.setActive(true);
 
         database.save(nuevoUsuario);
         log.info("Nuevo usuario creado: {}", identificador);
         return nuevoUsuario;
     }
 
+    public User crearUsuario(String identificador, String nombre,
+            String password) {
+        return crearUsuario(identificador, nombre, null, password);
+    }
+
     /**
      * Autentica un usuario por identificador y contraseña
+     *
+     * @param identificador
+     * @param password
+     * @return
      */
     public User autenticar(String identificador, String password) {
         User usuario = obtenerUsuarioPorIdentificador(identificador)
                 .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
 
-        if (!usuario.isActivo()) {
+        if (!usuario.isActive()) {
             throw new UnauthorizedException("Usuario inactivo");
         }
 
@@ -86,25 +104,34 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Actualiza la contraseña de un usuario con validación de historial
+     *
+     * @param usuarioId
+     * @param nuevaPassword
      */
     public void actualizarPassword(Long usuarioId, String nuevaPassword) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+        Validations.validatePasswordStrength(nuevaPassword);
 
-        if (usuario.esContrasennaRepetida(nuevaPassword)) {
+        User usuario = getUserById(usuarioId);
+
+        if (passwordHasher.verify(usuario.getPassword(), nuevaPassword)) {
             throw new BusinessLogicException("No puede usar una contraseña anterior");
         }
 
-        usuario.setPassword(nuevaPassword);
-        usuario.actualizarRegistroDeContrasenna(nuevaPassword);
+        usuario.setPassword(passwordHasher.hash(nuevaPassword));
+        usuario.actualizarRegistroDeContrasenna(passwordHasher.hash(nuevaPassword));
         database.update(usuario);
         log.info("Contraseña actualizada para usuario: {}", usuario.getUserName());
     }
 
     /**
      * Asigna roles a un usuario
+     *
+     * @param usuarioId
+     * @param rolesIds
+     * @return
      */
     public User asignarRoles(Long usuarioId, Set<Long> rolesIds) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+        User usuario = getUserById(usuarioId);
         Set<Rol> roles = new HashSet<>();
 
         for (Long rolId : rolesIds) {
@@ -120,6 +147,9 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Obtiene un usuario por su identificador único
+     *
+     * @param identificador
+     * @return
      */
     public Optional<User> obtenerUsuarioPorIdentificador(String identificador) {
         return database.createQuery(User.class)
@@ -130,6 +160,9 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Obtiene un usuario por su email
+     *
+     * @param email
+     * @return
      */
     public Optional<User> obtenerUsuarioPorEmail(String email) {
         return database.createQuery(User.class)
@@ -140,6 +173,8 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Obtiene todos los usuarios activos
+     *
+     * @return
      */
     public List<User> obtenerUsuariosActivos() {
         return database.createQuery(User.class)
@@ -151,10 +186,14 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Activa/desactiva un usuario
+     *
+     * @param usuarioId
+     * @param activo
+     * @return
      */
     public User cambiarEstadoUsuario(Long usuarioId, boolean activo) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
-        usuario.setActivo(activo);
+        User usuario = getUserById(usuarioId);
+        usuario.setActive(activo);
         database.update(usuario);
         log.info("Estado de usuario actualizado: {} - {}", usuario.getUserName(), activo ? "ACTIVO" : "INACTIVO");
         return usuario;
@@ -180,8 +219,11 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Obtiene un usuario por ID con manejo de excepciones
+     *
+     * @param usuarioId
+     * @return
      */
-    public User obtenerUsuarioPorId(Long usuarioId) {
+    public User getUserById(Long usuarioId) {
         return database.find(User.class, usuarioId);
     }
 
@@ -189,15 +231,15 @@ public class UsuarioService extends Service<User> {
      * Verifica si un usuario tiene un permiso específico
      */
     public boolean tienePermiso(Long usuarioId, String permiso) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+        User usuario = getUserById(usuarioId);
         return usuario.tienePermiso(permiso);
     }
 
     /**
      * Verifica si un usuario tiene un rol específico
      */
-    public boolean tieneRol(Long usuarioId, String nombreRol) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+    public boolean hasRol(Long usuarioId, String nombreRol) {
+        User usuario = getUserById(usuarioId);
         return usuario.tieneRol(nombreRol);
     }
 
@@ -205,7 +247,7 @@ public class UsuarioService extends Service<User> {
      * Actualiza los datos básicos de un usuario
      */
     public User actualizarDatosUsuario(Long usuarioId, String nombre, String email) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+        User usuario = getUserById(usuarioId);
 
         if (nombre != null) {
             usuario.setFullName(nombre);
@@ -227,7 +269,7 @@ public class UsuarioService extends Service<User> {
         User usuario = obtenerUsuarioPorEmail(email)
                 .orElseThrow(() -> new BusinessLogicException("Usuario no encontrado"));
 
-        if (!usuario.isActivo()) {
+        if (!usuario.isActive()) {
             throw new BusinessLogicException("Usuario inactivo");
         }
 
@@ -248,17 +290,19 @@ public class UsuarioService extends Service<User> {
 
     /**
      * Verifica si un usuario es administrador del sistema
+     *
+     * @param usuarioId
      */
-    public boolean esAdminSistema(Long usuarioId) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+    public boolean isSystemAdmin(Long usuarioId) {
+        User usuario = getUserById(usuarioId);
         return usuario.isAdminSistema();
     }
 
     /**
      * Verifica si un usuario es administrador económico
      */
-    public boolean esAdminEconomico(Long usuarioId) {
-        User usuario = obtenerUsuarioPorId(usuarioId);
+    public boolean isEconomicAdmin(Long usuarioId) {
+        User usuario = getUserById(usuarioId);
         return usuario.isAdminEconomico();
     }
 }
