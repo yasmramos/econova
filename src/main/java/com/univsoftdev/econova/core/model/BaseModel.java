@@ -1,6 +1,5 @@
 package com.univsoftdev.econova.core.model;
 
-import com.univsoftdev.econova.MyTenantSchemaProvider;
 import com.univsoftdev.econova.config.model.User;
 import io.ebean.annotation.SoftDelete;
 import io.ebean.annotation.TenantId;
@@ -19,7 +18,6 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Version;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -37,12 +35,8 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
     private boolean deleted = false;
 
     @TenantId
-    @Column(unique = true, length = 50)
+    @Column(length = 50, nullable = false)
     protected String tenantId;
-
-    @NotNull
-    @Column(unique = true, name = "schema_tenant")
-    private String schemaTenant;
 
     @Version
     private Long version;
@@ -70,20 +64,11 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
     protected void onCreate() {
         this.whenCreated = Instant.now();
         this.whenModified = Instant.now();
-        this.schemaTenant = MyTenantSchemaProvider.getCurrentTenant().get();
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.whenModified = Instant.now();
-    }
-
-    public String getSchemaTenant() {
-        return schemaTenant;
-    }
-
-    public void setSchemaTenant(String schemaTenant) {
-        this.schemaTenant = schemaTenant;
     }
 
     public Long getId() {
@@ -140,6 +125,14 @@ public abstract class BaseModel extends io.ebean.Model implements Serializable {
 
     public void setWhoModified(User whoModified) {
         this.whoModified = whoModified;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
 }
