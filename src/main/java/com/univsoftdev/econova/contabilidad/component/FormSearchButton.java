@@ -11,7 +11,7 @@ public class FormSearchButton extends JButton {
     private static final long serialVersionUID = 1L;
 
     public FormSearchButton() {
-        super("Quick Search...", new FlatSVGIcon("raven/modal/demo/icons/search.svg", 0.4f));
+        super("Quick Search...", new FlatSVGIcon("econova/icons/search.svg", 0.4f));
         init();
     }
 

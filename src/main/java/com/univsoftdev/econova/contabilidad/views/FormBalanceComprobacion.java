@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad.views;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import java.awt.event.*;
 import com.univsoftdev.econova.config.model.Ejercicio;
 import com.univsoftdev.econova.config.model.Periodo;
@@ -13,7 +13,6 @@ import javax.swing.table.*;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
-import io.avaje.inject.BeanScope;
 import java.awt.event.ItemEvent;
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -24,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FormBalanceComprobacion extends Form {
 
     private transient EjercicioService ejercService;
-    private transient BeanScope injector;
     private BalanceGeneralService balanceService;
 
     public FormBalanceComprobacion() {
@@ -297,9 +295,8 @@ public class FormBalanceComprobacion extends Form {
     private void init() {
         try {
             // Inicializar el injector y los servicios necesarios
-            injector = AppContext.getInstance().getInjector();
-            ejercService = injector.get(EjercicioService.class);
-            balanceService = injector.get(BalanceGeneralService.class);
+            ejercService = Injector.get(EjercicioService.class);
+            balanceService = Injector.get(BalanceGeneralService.class);
 
             // Obtener todos los ejercicios
             java.util.List<Ejercicio> ejercicios = ejercService.findAll();

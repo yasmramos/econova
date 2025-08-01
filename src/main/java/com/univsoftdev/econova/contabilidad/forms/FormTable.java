@@ -242,7 +242,7 @@ public class FormTable extends Form {
 
         JTextField txtSearch = new JTextField();
         txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search...");
-        txtSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("raven/modal/demo/icons/search.svg", 0.4f));
+        txtSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("econova/icons/search.svg", 0.4f));
         JButton cmdCreate = new JButton("Create");
         JButton cmdEdit = new JButton("Edit");
         JButton cmdDelete = new JButton("Delete");

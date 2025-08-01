@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "8.2.2.0.382" Java: "21.0.5" encoding: "UTF-8"
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -10,7 +10,7 @@ new FormModel {
 		} ) {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, comp label1:::p::p, space ::576:x}, seq l {comp toolBar1::::819:x, space :::p}}"
+				"$horizontalGroup": "par l {seq {space :::p, comp label1:::p::p, space ::577:x}, seq l {comp toolBar1::::819:x, space :::p}}"
 				"$verticalGroup": "par l {seq {comp label1:::p::p, space :::p, comp toolBar1:::p:25:p, space :::x}}"
 			} ) {
 				name: "panel1"
@@ -32,6 +32,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "buttonExportar"
 						"text": "Exportar"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "exportar", true ) )
 					} )
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
@@ -57,7 +58,7 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 					name: "tabbedPane1"
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {seq l {space :p:26:p, par l {par t:::p {seq l {comp label5:::p::p, space :::x, comp textFieldAnalisisEn:::p:255:p}, seq {comp label4:::p::p, space :p:64:p, comp textFieldLongitud:::p:255:p}, seq t {par l {seq l {comp label3:::p::p, space :::x}, seq t {comp label2:::p::p, space :p:66:p}}, par l {comp textFieldFormato:::p:254:p, comp textFieldEstructura:::::x}}}, comp panel3:::p::p}, space ::57:x}}"
+						"$horizontalGroup": "par l {seq l {space :p:26:p, par l {par t:::p {seq l {comp label5:::p::p, space :::x, comp textFieldAnalisisEn:::p:255:p}, seq {comp label4:::p::p, space :p:64:p, comp textFieldLongitud:::p:255:p}, seq t {par l {seq l {comp label3:::p::p, space :::x}, seq t {comp label2:::p::p, space :p:66:p}}, par l {comp textFieldFormato:::p:254:p, comp textFieldEstructura:::::x}}}, comp panel3:::p::p}, space ::72:x}}"
 						"$verticalGroup": "par l {seq l {space :p:28:p, par b {comp label2::b:p::p, comp textFieldFormato::b:p::p}, space u:::p, par b {comp label3::b:p::p, comp textFieldEstructura::b:p::p}, space u:::p, par b {comp label4::b:p::p, comp textFieldLongitud::b:p::p}, space u:::p, par b {comp label5::b:p::p, comp textFieldAnalisisEn::b:p::p}, space :p:26:p, comp panel3:::p::p, space :::x}}"
 					} ) {
 						name: "panel2"

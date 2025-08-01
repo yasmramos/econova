@@ -9,7 +9,7 @@ import javax.swing.*;
 public class FormSearchButton extends JButton {
 
     public FormSearchButton() {
-        super("Quick Search...", new FlatSVGIcon("raven/modal/demo/icons/search.svg", 0.4f));
+        super("Quick Search...", new FlatSVGIcon("econova/icons/search.svg", 0.4f));
         init();
     }
 

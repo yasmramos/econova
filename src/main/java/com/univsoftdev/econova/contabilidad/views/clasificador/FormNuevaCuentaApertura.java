@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
 import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
 import com.univsoftdev.econova.contabilidad.TipoApertura;
@@ -14,14 +14,13 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import raven.modal.ModalDialog;
 import raven.modal.component.Modal;
 
+@Slf4j
 public class FormNuevaCuentaApertura extends Modal {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FormNuevaCuenta.class);
     private JTable table;
     private Cuenta cuenta;
 
@@ -47,7 +46,7 @@ public class FormNuevaCuentaApertura extends Modal {
             String descripcion = txtDescripcion.getText().trim();
             NaturalezaCuenta naturaleza = NaturalezaCuenta.valueOf(String.valueOf(cboxNaturaleza.getSelectedItem()));
 
-            var planDeCuentasService = AppContext.getInstance().getInjector().get(PlanDeCuentasService.class);
+            var planDeCuentasService = Injector.get(PlanDeCuentasService.class);
             var monedaC = new Moneda("CUP", "Moneda Nacional");
             var subCuenta = new Cuenta(codigo, descripcion, naturaleza, null, monedaC);
             subCuenta.setTipoApertura(TipoApertura.SIN_APERTURA);
@@ -60,7 +59,7 @@ public class FormNuevaCuentaApertura extends Modal {
             model.addRow(new Object[]{codigo, descripcion, naturaleza, "", "Activa", monedaC.getSymbol()});
 
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
+            log.error(ex.getMessage());
         }
         ModalDialog.closeModal(this.getId());
     }

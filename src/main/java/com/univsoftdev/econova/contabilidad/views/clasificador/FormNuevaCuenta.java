@@ -2,6 +2,7 @@ package com.univsoftdev.econova.contabilidad.views.clasificador;
 
 import com.univsoftdev.econova.AppContext;
 import com.univsoftdev.econova.Econova;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
 import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
@@ -48,7 +49,7 @@ public class FormNuevaCuenta extends Modal {
             TipoCuenta categoria = TipoCuenta.valueOf(String.valueOf(comboBoxTipoCuenta.getSelectedItem()));
             Moneda monedaC = new Moneda("CUP", "Moneda Cubana");
 
-            var planDeCuentasService = AppContext.getInstance().getInjector().get(PlanDeCuentasService.class);
+            var planDeCuentasService = Injector.get(PlanDeCuentasService.class);
             
             cuenta = new Cuenta(codigo, descripcion, naturaleza, categoria, monedaC);
             cuenta.setTipoApertura(TipoApertura.SIN_APERTURA);

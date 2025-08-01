@@ -46,7 +46,7 @@ public class FormSearchPanel extends JPanel {
         textSearch = new JTextField();
         panelResult = new JPanel(new MigLayout("insets 3 10 3 10,fillx,wrap", "[fill]"));
         textSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search...");
-        textSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("raven/modal/demo/icons/search.svg", 0.4f));
+        textSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("econova/icons/search.svg", 0.4f));
         textSearch.putClientProperty(FlatClientProperties.STYLE, "" +
                 "border:3,3,3,3;" +
                 "background:null;" +
@@ -379,7 +379,7 @@ public class FormSearchPanel extends JPanel {
                 JButton cmdFavorite = createButton("favorite", "favorite.svg", 0.4f, "Component.accentColor", 0.9f);
                 panel.add(cmdFavorite);
             } else {
-                JLabel label = new JLabel(new SVGIconUIColor("raven/modal/demo/icons/favorite_filled.svg", 0.4f, "Component.accentColor", 0.8f));
+                JLabel label = new JLabel(new SVGIconUIColor("econova/icons/favorite_filled.svg", 0.4f, "Component.accentColor", 0.8f));
                 label.putClientProperty(FlatClientProperties.STYLE, "" +
                         "border:3,3,3,3;");
                 panel.add(label);
@@ -390,7 +390,7 @@ public class FormSearchPanel extends JPanel {
         }
 
         private JButton createButton(String name, String icon, float scale, String hoverKey, float alpha) {
-            SVGIconUIColor svgIcon = new SVGIconUIColor("raven/modal/demo/icons/" + icon, scale, "Label.disabledForeground", alpha);
+            SVGIconUIColor svgIcon = new SVGIconUIColor("econova/icons/" + icon, scale, "Label.disabledForeground", alpha);
             JButton button = new JButton(svgIcon);
             button.setName(name);
             button.setFocusable(false);

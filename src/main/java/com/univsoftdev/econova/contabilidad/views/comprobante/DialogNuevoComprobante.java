@@ -7,8 +7,9 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.univsoftdev.econova.AppContext;
 import com.univsoftdev.econova.AppSession;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.SubSistemas;
+import com.univsoftdev.econova.contabilidad.SubSistema;
 import com.univsoftdev.econova.contabilidad.model.Asiento;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
 import com.univsoftdev.econova.contabilidad.service.ContabilidadService;
@@ -38,7 +39,6 @@ public class DialogNuevoComprobante extends JDialog {
     private Asiento asiento;
     private final JTable tableComprobantes;
     private final ContabilidadService contabilidadService;
-    private final BeanScope injector;
     private final AppContext appContext;
     private final DefaultTableModel modelo;
     private NumberFormat formatoMoneda;
@@ -53,12 +53,11 @@ public class DialogNuevoComprobante extends JDialog {
         formatoMoneda.setMinimumFractionDigits(2);
         formatoMoneda.setMaximumFractionDigits(2);
 
-        this.appContext = AppContext.getInstance();
+        this.appContext = Injector.get(AppContext.class);
         this.session = appContext.getSession();
 
         // Inyección de dependencias
-        injector = appContext.getInjector();
-        this.contabilidadService = injector.get(ContabilidadService.class);
+        this.contabilidadService = Injector.get(ContabilidadService.class);
 
         String[] columnas = {"CTA", "SBCTA", "SCTRO", "ANAL", "EPIG", "Débito", "Crédito"};
 
@@ -310,7 +309,7 @@ public class DialogNuevoComprobante extends JDialog {
                             asiento.getDescripcion(),
                             asiento.getEstadoAsiento(),
                             asiento.getFecha(),
-                            SubSistemas.CONTABILIDAD.getDescripcion(),
+                            SubSistema.CONTABILIDAD.getDescripcion(),
                             asiento.getWhoModified().getFullName(),
                             asiento.getUnidad().getCodigo()
                         });
@@ -633,7 +632,7 @@ public class DialogNuevoComprobante extends JDialog {
         try {
             // Configurar el asiento con todos los campos obligatorios
             asiento.setNro(nro);
-            asiento.setSubSistema(SubSistemas.CONTABILIDAD);
+            asiento.setSubSistema(SubSistema.CONTABILIDAD);
             asiento.setDescripcion(txtDescripcion.getText());
             asiento.setFecha(datePickerSwing1.getSelectedDate());
             asiento.setEstadoAsiento(estadoAsiento);
@@ -643,11 +642,11 @@ public class DialogNuevoComprobante extends JDialog {
                     "No se ha configurado la unidad organizativa en la sesión"));
             asiento.setPeriodo(Objects.requireNonNull(session.getPeriodo(),
                     "No se ha configurado el período contable en la sesión"));
-            asiento.setUsuario(Objects.requireNonNull(session.getCurrentUser(),
+            asiento.setUsuario(Objects.requireNonNull(session.getUser(),
                     "No hay usuario autenticado en la sesión"));
 
             // Procesar transacciones
-            final var asientoProcessorFactory = injector.get(AsientoProcessorFactory.class);
+            final var asientoProcessorFactory = Injector.get(AsientoProcessorFactory.class);
             AsientoProcessor processor = asientoProcessorFactory.create(asiento);
             processor.procesarTabla((DefaultTableModel) table1.getModel());
 
@@ -695,7 +694,7 @@ public class DialogNuevoComprobante extends JDialog {
         if (session.getPeriodo() == null) {
             errores.append("- No se ha configurado el período contable\n");
         }
-        if (session.getCurrentUser() == null) {
+        if (session.getUser() == null) {
             errores.append("- No hay usuario autenticado\n");
         }
 

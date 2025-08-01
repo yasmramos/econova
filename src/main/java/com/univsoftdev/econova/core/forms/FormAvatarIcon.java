@@ -218,7 +218,7 @@ public class FormAvatarIcon extends Form {
         int height = Math.max(sliderHeight.getValue(), 1);
         int borderWidth = sliderBorderWidth.getValue();
         int innerBorderWidth = sliderInnerBorderWidth.getValue();
-        AvatarIcon avatarIcon = new AvatarIcon(getClass().getResource("/raven/modal/demo/images/profile_6.jpg"), width, height, value);
+        AvatarIcon avatarIcon = new AvatarIcon(getClass().getResource("/econova/images/profile_6.jpg"), width, height, value);
         if (jrColor.isSelected()) {
             avatarIcon.setBorderColor(borderColor);
         } else {

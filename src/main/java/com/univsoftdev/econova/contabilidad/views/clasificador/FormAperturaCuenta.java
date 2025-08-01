@@ -1,6 +1,7 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
 import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
 import java.awt.*;
@@ -25,7 +26,7 @@ public class FormAperturaCuenta extends Modal {
 
     public FormAperturaCuenta() {
         initComponents();
-        this.planDeCuentasService = AppContext.getInstance().getInjector().get(PlanDeCuentasService.class);
+        this.planDeCuentasService = Injector.get(PlanDeCuentasService.class);
     }
 
     public FormAperturaCuenta(JTree tree, PlanDeCuentasService planDeCuentasService, Cuenta cuenta) {

@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
 import com.univsoftdev.econova.core.utils.DialogUtils;
@@ -155,7 +155,7 @@ public class FormApertura extends Modal {
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 
     private void init() {
-        planDeCuentasService = AppContext.getInstance().getInjector().get(PlanDeCuentasService.class);
+        planDeCuentasService = Injector.get(PlanDeCuentasService.class);
 
         DefaultTableModel model = (DefaultTableModel) table1.getModel();
         java.util.List<Cuenta> allCuentas = planDeCuentasService.findAllCuentas();

@@ -2,7 +2,7 @@ package com.univsoftdev.econova.contabilidad.views.comprobante;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
 import com.univsoftdev.econova.contabilidad.model.Asiento;
 import com.univsoftdev.econova.contabilidad.service.AsientoService;
@@ -15,7 +15,6 @@ import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import com.univsoftdev.econova.core.utils.table.TableHeaderAlignment;
-import io.avaje.inject.BeanScope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -35,7 +34,6 @@ import net.miginfocom.swing.*;
 public class FormComprobantes extends Form {
 
     private static final long serialVersionUID = -2243449267251361338L;
-    private transient final BeanScope injector = AppContext.getInstance().getInjector();
     private transient final AsientoService asientoService;
 
     /**
@@ -45,7 +43,7 @@ public class FormComprobantes extends Form {
     public FormComprobantes() {
         initComponents();
         ajustarTabla();
-        asientoService = injector.get(AsientoService.class);
+        asientoService = Injector.get(AsientoService.class);
         configurarTabla();
         configurarEventos();
     }
@@ -270,8 +268,8 @@ public class FormComprobantes extends Form {
      * Filtra y muestra los comprobantes del periodo.
      */
     private void mostrarComprobantesPeriodo() {
-        Periodo periodo = AppContext.getInstance().getSession().getPeriodo();
-        java.util.List<Asiento> listaDeAsientos = asientoService.findAll().stream()
+        final var periodo = Injector.get(AppContext.class).getSession().getPeriodo();
+        final var listaDeAsientos = asientoService.findAll().stream()
                 .filter(a -> estaEntreFechas(a.getFecha(), periodo.getFechaInicio(), periodo.getFechaFin()))
                 .toList();
         updateTableView(listaDeAsientos);

@@ -2,15 +2,21 @@ package com.univsoftdev.econova.core.auth;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.univsoftdev.econova.EconovaDrawerBuilder;
-import com.univsoftdev.econova.ModelUser;
-import com.univsoftdev.econova.config.view.FormSeleccionUnidad;
+import com.univsoftdev.econova.UserContext;
+import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.config.view.FormSeleccionEmpresa;
 import com.univsoftdev.econova.core.component.LabelButton;
 import net.miginfocom.swing.MigLayout;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.system.FormManager;
 import com.univsoftdev.econova.core.utils.DialogUtils;
+import com.univsoftdev.econova.ebean.config.MyCurrentUserProvider;
+import io.ebean.DB;
+import io.ebean.Database;
+import jakarta.inject.Inject;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -20,11 +26,15 @@ import org.apache.shiro.subject.Subject;
 import raven.modal.ModalDialog;
 import raven.modal.component.DropShadowBorder;
 import raven.modal.component.SimpleModalBorder;
+import raven.modal.option.Option;
 
 @Slf4j
 public class Login extends Form {
 
     private static final long serialVersionUID = -4621709978240314840L;
+
+    @Inject
+    private Database db;
 
     public Login() {
         init();
@@ -104,14 +114,14 @@ public class Login extends Form {
         cmdLogin.addActionListener(e -> {
             String userName = txtUsername.getText();
             String password = String.valueOf(txtPassword.getPassword());
-            ModelUser user = getUser(userName, password);
+            User user = getUser(userName, password).get();
             EconovaDrawerBuilder.getInstance().setUser(user);
             FormManager.login();
 
             SwingUtilities.invokeLater(() -> {
                 JFrame mainFrame = FormManager.getFrame();
                 if (mainFrame != null) {
-                    DialogUtils.showModalDialog(mainFrame, new FormSeleccionUnidad(), "Seleccione la Unidad");
+                    DialogUtils.showModalDialog(mainFrame, new FormSeleccionEmpresa(), "Seleccione la Empresa");
                 }
             });
 
@@ -142,35 +152,47 @@ public class Login extends Form {
         }
     }
 
-    private ModelUser getUser(String user, String password) {
+    private Optional<User> getUser(String username, String password) {
         try {
             Subject currentUser = SecurityUtils.getSubject();
             if (!currentUser.isAuthenticated()) {
-                UsernamePasswordToken token = new UsernamePasswordToken(user, password);
+                UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+
                 try {
                     currentUser.login(token);
+                    User loggedUser = db.find(User.class)
+                            .where()
+                            .eq("userName", username)
+                            .findOne();
+
+                    UserContext.get().setUser(loggedUser);
+                    return Optional.ofNullable(loggedUser);
+
                 } catch (AuthenticationException ex) {
-                    log.error("No se pudo iniciar seción: ", ex);
+                    log.error("No se pudo iniciar sesión: ", ex);
+                    showLoginError("Credenciales inválidas");
+                    return Optional.empty();
                 }
             }
         } catch (UnknownAccountException e) {
-            ModalDialog.showModal(this, new SimpleModalBorder(
-                    new JLabel("¡No se pudo iniciar seción:  " + e.getMessage()),
-                    "Inicio de Sesión Fallido",
-                    SimpleModalBorder.OK_OPTION,
-                    (controller, action) -> {
-                        if (action == SimpleModalBorder.OK_OPTION) {
-                            FormManager.login(); // Continuar al dashboard  
-                        }
-                    }
-            ));
+            showLoginError("¡No se pudo iniciar sesión: " + e.getMessage());
+            return Optional.empty();
         }
-        // just testing.
-        // input any user and password is admin by default
-        // user='staff' password='123' if we want to test validation menu for role staff
-        if (user.equals("staff") && password.equals("123")) {
-            return new ModelUser("Justin White", "justinwhite@gmail.com", ModelUser.Role.STAFF);
+
+        // Código de prueba (debería eliminarse en producción)
+        if ("admin".equals(username) && "123".equals(password)) {
+            return Optional.of(new User("Justin White", "justinwhite@gmail.com"));
         }
-        return new ModelUser("Ra Ven", "raven@gmail.com", ModelUser.Role.ADMIN);
+        return Optional.of(new User("Ra Ven", "raven@gmail.com"));
+    }
+
+    private void showLoginError(String message) {
+        ModalDialog.showModal(this,
+                new SimpleModalBorder(
+                        new JLabel(message),
+                        "Inicio de Sesión Fallido"
+                ),
+                Option.getDefault()
+        );
     }
 }
