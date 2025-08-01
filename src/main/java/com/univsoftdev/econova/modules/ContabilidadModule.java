@@ -9,10 +9,10 @@ import jakarta.inject.Singleton;
 
 @Factory
 public class ContabilidadModule {
-     
-    @Bean  
-    @Singleton  
-    public TransaccionFactory transaccionFactory(AppConfig appConfig, AppContext appContext) {  
-        return new TransaccionFactory(appConfig, appContext);  
-    }  
+
+    @Bean
+    @Singleton
+    public TransaccionFactory transaccionFactory(AppConfig appConfig, AppContext appContext) {
+        return new TransaccionFactory(appConfig, appContext);
+    }
 }
