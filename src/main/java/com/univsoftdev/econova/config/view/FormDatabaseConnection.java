@@ -1,8 +1,10 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.PostgreSQLDatabaseLister;
-import com.univsoftdev.econova.core.system.Form;
 import java.util.Arrays;
+
+import com.univsoftdev.econova.core.system.Form;
+import com.univsoftdev.econova.db.postgres.PostgreSQLDatabaseLister;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -98,6 +100,7 @@ public class FormDatabaseConnection extends Form {
         btnAceptar.setText("Aceptar");
         btnAceptar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAceptar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAceptarActionPerformed(evt);
             }

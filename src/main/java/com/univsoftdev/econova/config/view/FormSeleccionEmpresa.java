@@ -2,9 +2,9 @@ package com.univsoftdev.econova.config.view;
 
 import com.univsoftdev.econova.AppContext;
 import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Empresa;
+import com.univsoftdev.econova.config.service.EmpresaService;
+import com.univsoftdev.econova.core.utils.DialogUtils;
 import java.awt.event.*;
-import com.univsoftdev.econova.config.service.UnidadService;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import java.awt.*;
 import javax.swing.*;
@@ -13,22 +13,22 @@ import javax.swing.table.*;
 import raven.modal.ModalDialog;
 import raven.modal.component.Modal;
 
-public class FormSeleccionUnidad extends Modal {
+public class FormSeleccionEmpresa extends Modal {
 
-    private final UnidadService unidadService;
+    private final EmpresaService empresaService;
     private final AppContext appContext;
 
-    public FormSeleccionUnidad(Empresa empresa) {
+    public FormSeleccionEmpresa() {
         initComponents();
         this.setSize(462, 496);
-        unidadService = Injector.get(UnidadService.class);
+        empresaService = Injector.get(EmpresaService.class);
         appContext = Injector.get(AppContext.class);
 
         final var model = (DefaultTableModel) table1.getModel();
-        final var unidades = empresa.getUnidades();
+        final var unidades = empresaService.findAll();
 
         unidades.forEach(u -> {
-            model.addRow(new Object[]{u.getCodigo(), u.getNombre()});
+            model.addRow(new Object[]{u.getCode(), u.getName()});
         });
 
         new TableColumnAdjuster(table1).adjustColumns();
@@ -39,11 +39,15 @@ public class FormSeleccionUnidad extends Modal {
         final int row = table1.getSelectedRow();
         final int col = 0;
         final var codigo = (String) table1.getValueAt(row, col);
-        final var unidadOpt = unidadService.findByCodigo(codigo);
+        final var empresa = empresaService.findByCode(codigo);
 
-        if (unidadOpt.isPresent()) {
-            appContext.getSession().setUnidad(unidadOpt.get());
+        if (empresa.isPresent()) {
+            var emp = empresa.get();  
+            appContext.getSession().setEmpresa(emp);
             ModalDialog.closeModal(this.getId());
+            if (!emp.getUnidades().isEmpty()) {
+                DialogUtils.showModalDialog(this, new FormSeleccionUnidad(emp), "Seleccione la Unidad");
+            }
         }
     }
 
@@ -66,7 +70,7 @@ public class FormSeleccionUnidad extends Modal {
 	    this.panel1.setLayout(new BorderLayout());
 
 	    //---- label1 ----
-	    this.label1.setText("Unidades"); //NOI18N
+	    this.label1.setText("Empresas"); //NOI18N
 	    this.label1.setBorder(new EmptyBorder(5, 5, 5, 5));
 	    this.panel1.add(this.label1, BorderLayout.WEST);
 	}
@@ -78,7 +82,6 @@ public class FormSeleccionUnidad extends Modal {
 	    //---- table1 ----
 	    this.table1.setModel(new DefaultTableModel(
 		new Object[][] {
-		    {null, null},
 		},
 		new String[] {
 		    "C\u00f3digo", "Nombre" //NOI18N

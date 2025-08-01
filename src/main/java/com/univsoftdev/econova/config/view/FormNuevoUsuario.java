@@ -1,10 +1,10 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.MyTenantSchemaProvider;
-import com.univsoftdev.econova.seguridad.Argon2PasswordHasher;
+import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
+import com.univsoftdev.econova.security.Argon2PasswordHasher;
 import com.univsoftdev.econova.config.service.UsuarioService;
 import com.univsoftdev.econova.config.model.User;
+import jakarta.inject.Inject;
 import java.awt.event.*;
 import java.util.Arrays;
 import javax.swing.*;
@@ -16,14 +16,17 @@ import raven.modal.component.Modal;
 public class FormNuevoUsuario extends Modal {
 
     private static final long serialVersionUID = 1191104289857202935L;
-    private final UsuarioService usuarioService;
+
+    @Inject
+    private UsuarioService usuarioService;
     private final JTable table;
+
+    @Inject
+    private MyTenantSchemaProvider tenantSchemaProvider;
 
     public FormNuevoUsuario(JTable table) {
         initComponents();
         this.table = table;
-        final var injector = AppContext.getInstance().getInjector();
-        usuarioService = injector.get(UsuarioService.class);
     }
 
     private void aceptarActionPerformed(ActionEvent e) {
@@ -52,8 +55,7 @@ public class FormNuevoUsuario extends Modal {
             usuario.setFullName(nombre);
             usuario.setUserName(identificador);
             usuario.setPassword(hashedPassword); // Store the hashed password, not the plain one
-            usuario.setSchemaTenant(MyTenantSchemaProvider.getCurrentTenant().get());
-            usuario.setActivo(true);
+            usuario.setActive(true);
             usuarioService.save(usuario);
 
             var model = (DefaultTableModel) table.getModel();
@@ -63,7 +65,7 @@ public class FormNuevoUsuario extends Modal {
                 "Econova",
                 usuario.isAdminSistema() ? "X" : "",
                 usuario.isAdminEconomico() ? "X" : "",
-                usuario.isActivo()
+                usuario.isActive()
             });
 
             JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);

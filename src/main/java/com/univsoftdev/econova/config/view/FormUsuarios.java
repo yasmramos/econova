@@ -1,38 +1,48 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
+import java.beans.*;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.config.service.UsuarioService;
 import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.core.config.AppConfig;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.DialogUtils;
-import io.avaje.inject.BeanScope;
+import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
+import com.univsoftdev.econova.security.Permissions;
+import com.univsoftdev.econova.security.Roles;
 import java.awt.*;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.subject.Subject;
 
 @Slf4j
 public class FormUsuarios extends Form {
-
+    
     private static final long serialVersionUID = 4339277786555247095L;
-    private BeanScope injector;
     private DefaultTableModel model;
     private UsuarioService usuarioService;
-
+    
     public FormUsuarios() {
         initComponents();
         try {
-            injector = AppContext.getInstance().getInjector();
-            usuarioService = injector.get(UsuarioService.class);
-
+            usuarioService = Injector.get(UsuarioService.class);
+            Subject subject = SecurityUtils.getSubject();
+            if (!subject.hasRole(Roles.SYSTEM_ADMIN.name())) {
+                menuItemAdicionar.setEnabled(false);
+                menuItemEliminar.setEnabled(false);
+                menuItemModificar.setEnabled(false);
+            }
             // Verificar modelo de tabla
             if (!(tableUsuarios.getModel() instanceof DefaultTableModel)) {
                 throw new IllegalStateException("El modelo de la tabla no es DefaultTableModel");
             }
-
+            
             DefaultTableModel modelTable = (DefaultTableModel) tableUsuarios.getModel();
             java.util.List<User> usuarios = usuarioService.findAll();
 
@@ -43,14 +53,14 @@ public class FormUsuarios extends Form {
                     if (usuario != null) {
                         var adminSistema = usuario.isAdminSistema() ? "X" : "";
                         var adminEconomico = usuario.isAdminEconomico() ? "X" : "";
-                        var isActivo = usuario.isActivo();
+                        var isActivo = usuario.isActive();
 
                         // Solo agregar si está activo
                         if (isActivo) {
                             modelTable.addRow(new Object[]{
                                 usuario.getFullName() != null ? usuario.getFullName() : "",
                                 usuario.getUserName() != null ? usuario.getUserName() : "",
-                                "Econova",
+                                Injector.get(AppConfig.class).getAppName(),
                                 adminSistema,
                                 adminEconomico,
                                 "Si"
@@ -59,17 +69,20 @@ public class FormUsuarios extends Form {
                     }
                 }
             }
-
+            
+            TableColumnAdjuster adjuster = new TableColumnAdjuster(tableUsuarios);
+            adjuster.adjustColumns();
         } catch (IllegalStateException e) {
             log.error(e.getMessage());
             JOptionPane.showMessageDialog(null, "Error al cargar usuarios: " + e.getMessage());
         }
     }
-
+    
+    @RequiresPermissions(value = {Permissions.CREATE_USER})
     private void adicionarActionPerformed(ActionEvent e) {
         DialogUtils.showModalDialog(this, new FormNuevoUsuario(tableUsuarios), "Nuevo Usuario");
     }
-
+    
     private void eliminar(ActionEvent e) {
         model = (DefaultTableModel) tableUsuarios.getModel();
         final int row = tableUsuarios.getSelectedRow();
@@ -83,15 +96,15 @@ public class FormUsuarios extends Form {
             JOptionPane.showMessageDialog(null, "No se ha podido eliminar el usuario.");
         }
     }
-
+    
     private void modificar(ActionEvent e) {
         // TODO add your code here
     }
-
+    
     private void activar(ActionEvent e) {
         // TODO add your code here
     }
-
+    
     private void verTodos(ActionEvent e) {
         java.util.List<User> inactivos = usuarioService.findByInactivos();
         model = (DefaultTableModel) tableUsuarios.getModel();
@@ -99,32 +112,38 @@ public class FormUsuarios extends Form {
             model.addRow(new Object[]{
                 usuario.getFullName() != null ? usuario.getFullName() : "",
                 usuario.getUserName() != null ? usuario.getUserName() : "",
-                "Econova",
+                Injector.get(AppConfig.class).getAppName(),
                 usuario.isAdminSistema() ? "X" : "",
                 usuario.isAdminEconomico() ? "X" : "",
                 "Si"
             });
         }
     }
-
+    
     private void permisosConfiguracion(ActionEvent e) {
         DialogUtils.showModalDialog(this, new DialogPermisosConfiguracion(), "Permisos de Configuración");
     }
-
+    
     private void permisosSimplificados(ActionEvent e) {
         // TODO add your code here
     }
-
+    
     private void crearUsuarioAdministrador(ActionEvent e) {
         // TODO add your code here
     }
-
+    
+    private void tableUsuariosPropertyChange(PropertyChangeEvent e) {
+        labelUserCount.setText(String.format("{0} USUARIOS", tableUsuarios.getRowCount()));
+    }
+    
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.panel1 = new JPanel();
 	this.label1 = new JLabel();
 	this.scrollPane1 = new JScrollPane();
 	this.tableUsuarios = new JTable();
+	this.panel2 = new JPanel();
+	this.labelUserCount = new JLabel();
 	this.popupMenu1 = new JPopupMenu();
 	this.menuItemAdicionar = new JMenuItem();
 	this.menuItemEliminar = new JMenuItem();
@@ -162,9 +181,22 @@ public class FormUsuarios extends Form {
 		}
 	    ));
 	    this.tableUsuarios.setComponentPopupMenu(this.popupMenu1);
+	    this.tableUsuarios.addPropertyChangeListener("rowCount", e -> tableUsuariosPropertyChange(e)); //NOI18N
 	    this.scrollPane1.setViewportView(this.tableUsuarios);
 	}
 	add(this.scrollPane1, BorderLayout.CENTER);
+
+	//======== panel2 ========
+	{
+	    this.panel2.setLayout(new BorderLayout());
+
+	    //---- labelUserCount ----
+	    this.labelUserCount.setText("0 USUARIOS"); //NOI18N
+	    this.labelUserCount.setBorder(new EmptyBorder(5, 5, 5, 5));
+	    this.labelUserCount.setLabelFor(this.tableUsuarios);
+	    this.panel2.add(this.labelUserCount, BorderLayout.WEST);
+	}
+	add(this.panel2, BorderLayout.SOUTH);
 
 	//======== popupMenu1 ========
 	{
@@ -218,6 +250,8 @@ public class FormUsuarios extends Form {
     private JLabel label1;
     private JScrollPane scrollPane1;
     private JTable tableUsuarios;
+    private JPanel panel2;
+    private JLabel labelUserCount;
     private JPopupMenu popupMenu1;
     private JMenuItem menuItemAdicionar;
     private JMenuItem menuItemEliminar;

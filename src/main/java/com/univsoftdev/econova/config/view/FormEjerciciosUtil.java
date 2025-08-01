@@ -1,6 +1,7 @@
 package com.univsoftdev.econova.config.view;
 
 import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.config.model.Ejercicio;
 import com.univsoftdev.econova.config.model.Periodo;
 import com.univsoftdev.econova.config.service.EjercicioService;
@@ -55,7 +56,7 @@ public class FormEjerciciosUtil {
     private static void updatePeriodosTable(JTable tablePeriodos, String yearStr) {
         clearTable(tablePeriodos);
 
-        final var ejercicioService = AppContext.getInstance().getInjector().get(EjercicioService.class);
+        final var ejercicioService = Injector.get(EjercicioService.class);
 
         try {
             int year = Integer.parseInt(yearStr);
@@ -113,7 +114,7 @@ public class FormEjerciciosUtil {
         modelPeriodos.setRowCount(0);
 
         // Load exercises if any are registered
-        final var ejercService = AppContext.getInstance().getInjector().get(EjercicioService.class);
+        final var ejercService = Injector.get(EjercicioService.class);
         final var ejercicios = ejercService.findAll();
 
         for (final var ejercicio : ejercicios) {

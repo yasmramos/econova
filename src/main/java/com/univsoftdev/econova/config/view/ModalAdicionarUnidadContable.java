@@ -1,8 +1,12 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.MyTenantSchemaProvider;
+import com.univsoftdev.econova.Injector;
+import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
+import com.univsoftdev.econova.config.model.Empresa;
 import com.univsoftdev.econova.config.model.Unidad;
+import com.univsoftdev.econova.config.service.EmpresaService;
 import com.univsoftdev.econova.core.simple.SimpleMessageModal;
+import jakarta.inject.Inject;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -16,14 +20,19 @@ public class ModalAdicionarUnidadContable extends Modal {
 
     private static final long serialVersionUID = 2095217302656241995L;
     private JTable table;
+    private Empresa empresa;
+    
+    @Inject
+    MyTenantSchemaProvider tenantSchemaProvider;
 
     public ModalAdicionarUnidadContable() {
         initComponents();
     }
 
-    public ModalAdicionarUnidadContable(JTable table1) {
+    public ModalAdicionarUnidadContable(JTable table1, Empresa empresa) {
         initComponents();
         this.table = table1;
+        this.empresa = empresa;
     }
 
     private void cancelarActionPerformed(ActionEvent e) {
@@ -40,9 +49,8 @@ public class ModalAdicionarUnidadContable extends Modal {
             unidad.setNae(String.valueOf(comboBoxNae.getSelectedItem()).trim());
             unidad.setDpa(String.valueOf(comboBoxDpa.getSelectedItem()).trim());
             unidad.setReup(String.valueOf(comboBoxReuup.getSelectedItem()).trim());
-            unidad.setSchemaTenant(MyTenantSchemaProvider.getCurrentTenant().get());
-            unidad.save();
-            
+            empresa.addUnidad(unidad);
+            Injector.get(EmpresaService.class).update(empresa);
             ModalDialog.closeModal(this.getId());
             
             var model = (DefaultTableModel)table.getModel();
@@ -56,9 +64,27 @@ public class ModalAdicionarUnidadContable extends Modal {
                 unidad.getDpa(),
                 unidad.getReup()
             });
-            
+            ModalDialog.showModal(
+                    this, 
+                    new SimpleMessageModal(
+                            SimpleMessageModal.Type.ERROR, 
+                            "Se ha añadido la Unidad correctamente.", 
+                            "Información", 
+                            SimpleModalBorder.OK_OPTION, 
+                            null), 
+                    Option.getDefault()
+            );
         } catch (Exception ex) {
-            ModalDialog.showModal(this, new SimpleMessageModal(SimpleMessageModal.Type.ERROR, ex.getMessage(), "ERROR", SimpleModalBorder.YES_NO_OPTION, null), Option.getDefault());
+            ModalDialog.showModal(
+                    this, 
+                    new SimpleMessageModal(
+                            SimpleMessageModal.Type.ERROR, 
+                            ex.getMessage(), 
+                            "ERROR", 
+                            SimpleModalBorder.YES_NO_OPTION, 
+                            null), 
+                    Option.getDefault()
+            );
         }
     }
 

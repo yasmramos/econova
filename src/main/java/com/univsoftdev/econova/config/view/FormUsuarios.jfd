@@ -52,9 +52,23 @@ new FormModel {
 						add( null )
 					} )
 					"componentPopupMenu": new FormReference( "popupMenu1" )
+					addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "tableUsuariosPropertyChange", true, "rowCount" ) )
 				} )
 			}, new FormLayoutConstraints( class java.lang.String ) {
 				"value": "Center"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel2"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "labelUserCount"
+					"text": "0 USUARIOS"
+					"border": new javax.swing.border.EmptyBorder( 5, 5, 5, 5 )
+					"labelFor": new FormReference( "tableUsuarios" )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "West"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "South"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

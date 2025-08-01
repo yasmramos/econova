@@ -1,13 +1,12 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.config.model.Unidad;
 import com.univsoftdev.econova.config.service.UnidadService;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import com.univsoftdev.econova.core.system.Form;
-import com.univsoftdev.econova.core.utils.DialogUtils;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import java.awt.*;
 
@@ -17,7 +16,7 @@ public class FormUnidades extends Form {
 
     public FormUnidades() {
         initComponents();
-        UnidadService unidadService = AppContext.getInstance().getInjector().get(UnidadService.class);
+        UnidadService unidadService = Injector.get(UnidadService.class);
         java.util.List<Unidad> findAll = unidadService.findAll();
 
         var model = (DefaultTableModel) table1.getModel();
@@ -38,9 +37,7 @@ public class FormUnidades extends Form {
     }
 
     private void adicionarActionPerformed(ActionEvent e) {
-        DialogUtils.showModalDialog(this, new ModalAdicionarUnidadContable(table1), "Adicionar Unidad Contable");
-        TableColumnAdjuster adjuster = new TableColumnAdjuster(table1);
-        adjuster.adjustColumns();
+
     }
 
     private void initComponents() {
