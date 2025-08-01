@@ -5,15 +5,20 @@ import jakarta.inject.Singleton;
 import com.univsoftdev.econova.config.model.Periodo;
 import com.univsoftdev.econova.contabilidad.model.Asiento;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.config.model.Ejercicio;
 import com.univsoftdev.econova.config.model.Unidad;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.SubSistemas;
+import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
+import com.univsoftdev.econova.contabilidad.SubSistema;
+import com.univsoftdev.econova.contabilidad.TipoApertura;
 import com.univsoftdev.econova.contabilidad.TipoCuenta;
+import com.univsoftdev.econova.contabilidad.model.LibroMayor;
+import com.univsoftdev.econova.contabilidad.model.Moneda;
 import com.univsoftdev.econova.contabilidad.model.PlanDeCuentas;
 import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.security.Permissions;
 import io.ebean.Database;
 import io.ebean.Model;
 import io.ebean.annotation.Transactional;
@@ -24,24 +29,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 
 @Slf4j
 @Singleton
 public class ContabilidadService {
-
+    
     private Database database;
     private CuentaService cuentaService;
     private BalanceGeneralService balanceGeneralService;
     private PlanDeCuentasService planDeCuentasService;
     private AsientoService asientoService;
     private TransaccionService transaccionService;
-
+    
     public ContabilidadService() {
-
+        
     }
-
+    
     @Inject
-    public ContabilidadService(Database database, CuentaService cuentaService, BalanceGeneralService balanceGeneralService, PlanDeCuentasService planDeCuentasService, AsientoService asientoService, TransaccionService transaccionService) {
+    public ContabilidadService(
+            Database database, 
+            CuentaService cuentaService, 
+            BalanceGeneralService balanceGeneralService, 
+            PlanDeCuentasService planDeCuentasService, 
+            AsientoService asientoService, 
+            TransaccionService transaccionService
+    ) {
         this.database = database;
         this.cuentaService = cuentaService;
         this.balanceGeneralService = balanceGeneralService;
@@ -49,13 +63,15 @@ public class ContabilidadService {
         this.asientoService = asientoService;
         this.transaccionService = transaccionService;
     }
-
+    
     @Transactional
+    @RequiresPermissions(value = {Permissions.SUPER_ADMIN})
+    @RequiresRoles(value = {})
     public Asiento crearAsientoContable(
             int numeroAsiento,
             String descripcion,
             LocalDate fecha,
-            SubSistemas subSistema,
+            SubSistema subSistema,
             List<Transaccion> transacciones, User usuario, Unidad unidad, Periodo periodo, Ejercicio ejercicio) throws ContabilidadException {
 
         // Validaciones básicas
@@ -105,10 +121,10 @@ public class ContabilidadService {
         if (asiento.getEstadoAsiento() == EstadoAsiento.CONFIRMADO) {
             aplicarTransaccionesACuentas(asiento);
         }
-
+        
         return asiento;
     }
-
+    
     private void validarTransaccion(Transaccion transaccion) throws ContabilidadException {
         if (transaccion.getCuenta() == null) {
             throw new ContabilidadException("La cuenta de la transacción no puede ser nula");
@@ -120,7 +136,7 @@ public class ContabilidadService {
             throw new ContabilidadException("El tipo de transacción no puede ser nulo");
         }
     }
-
+    
     private Transaccion convertirATransaccion(Transaccion transaccionContable, Asiento asiento) {
         Transaccion transaccion = new Transaccion();
         transaccion.setTipo(transaccionContable.getTipo());
@@ -130,7 +146,7 @@ public class ContabilidadService {
         transaccion.setAsiento(asiento);
         return transaccion;
     }
-
+    
     private void aplicarTransaccionesACuentas(Asiento asiento) throws ContabilidadException {
         for (Transaccion transaccion : asiento.getTransacciones()) {
             Cuenta cuenta = transaccion.getCuenta();
@@ -141,16 +157,13 @@ public class ContabilidadService {
             }
         }
     }
-
-    public void crearPlanDeCuentas() {
-        PlanDeCuentas planDeCuentas = planDeCuentasService.getPlanDeCuentas();
-        if (planDeCuentas == null) {
-            planDeCuentas = new PlanDeCuentas("Cuentas");
-            planDeCuentas.setId(1L);
-        }
-        planDeCuentasService.createPlanDeCuentas(planDeCuentas);
+    
+    public PlanDeCuentas crearPlanDeCuentas(Long id, String nombre) {
+        PlanDeCuentas planDeCuentas = new PlanDeCuentas(nombre);
+        planDeCuentas.setId(id);
+        return planDeCuentasService.createPlanDeCuentas(planDeCuentas);
     }
-
+    
     @Transactional
     public void registrarAsiento(Asiento asiento) {
         if (asiento == null || asiento.getTransacciones() == null || asiento.getTransacciones().isEmpty()) {
@@ -169,7 +182,7 @@ public class ContabilidadService {
             }
         });
     }
-
+    
     @Transactional
     public void cierreEjercicioFiscalAnual(String year) {
         if (year == null || year.trim().isEmpty()) {
@@ -192,10 +205,10 @@ public class ContabilidadService {
 
         // Transferir saldos de cuentas de ingresos y gastos a la cuenta de patrimonio
         transferirSaldosAPatrimonio(year);
-
+        
         log.info("Cierre del ejercicio fiscal anual {} completado exitosamente.", year);
     }
-
+    
     @Transactional
     public void cierreEjercicioFiscalMensual(Periodo periodo) {
         if (periodo == null) {
@@ -208,7 +221,7 @@ public class ContabilidadService {
         // Lógica para generar el balance general del mes o actualizar estados
         balanceGeneralService.generarBalanceGeneralMensual(periodo);
     }
-
+    
     @Transactional
     public void addCuenta(Cuenta cuenta) throws ContabilidadException {
         Objects.requireNonNull(cuenta, "La cuenta no puede ser nula");
@@ -218,19 +231,26 @@ public class ContabilidadService {
                 .ifPresent(existing -> {
                     try {
                         throw new ContabilidadException(
-                                String.format("Ya existe una cuenta con el código %s", cuenta.getCodigo())
+                                String.format(
+                                        "Ya existe una cuenta con el código %s",
+                                        cuenta.getCodigo())
                         );
                     } catch (ContabilidadException ex) {
                         log.error(ex.getMessage());
                     }
                 });
-        if (cuenta.getSaldo() == null || cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0) {
+        if (cuenta.getSaldo() == null
+                || cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0) {
             throw new ContabilidadException("El saldo de la cuenta no puede ser negativo");
         }
-
-        cuentaService.save(cuenta);
+        
+        cuentaService.addCuenta(cuenta);
     }
-
+    
+    public void addCuentas(Cuenta... cuentas) throws ContabilidadException {
+        cuentaService.addCuentas(cuentas);
+    }
+    
     private void validarCuentasCuadradas() {
         var cuentas = cuentaService.findAll();
         for (Cuenta cuenta : cuentas) {
@@ -242,7 +262,7 @@ public class ContabilidadService {
             }
         }
     }
-
+    
     private void cerrarCuentasTemporales(String year) {
         // Obtener todas las cuentas de ingresos y gastos
         List<Cuenta> cuentasIngresos = cuentaService.findByTipoCuenta(TipoCuenta.INGRESO);
@@ -266,7 +286,7 @@ public class ContabilidadService {
         }
         registrarAsiento(asientoGastos);
     }
-
+    
     private void transferirSaldosAPatrimonio(String year) {
         // Obtener la cuenta de patrimonio
         Cuenta cuentaPatrimonio = cuentaService.findByCodigo("1000").get(); // Ejemplo de código de cuenta de patrimonio
@@ -285,7 +305,7 @@ public class ContabilidadService {
         }
         registrarAsiento(asientoTransferencia);
     }
-
+    
     private BigDecimal calcularSaldoNeto(String year) {
         // Obtener todas las cuentas de ingresos y gastos
         List<Cuenta> cuentasIngresos = cuentaService.findByTipoCuenta(TipoCuenta.INGRESO);
@@ -304,24 +324,40 @@ public class ContabilidadService {
         // Calcular el saldo neto
         return totalIngresos.subtract(totalGastos);
     }
-
+    
     public int obtenerSiguienteCodigoDeAsiento(Periodo periodo) {
         return asientoService.obtenerSiguienteCodigo(periodo);
     }
-
+    
     public List<Cuenta> findAllCuentas() {
         return cuentaService.findAll();
     }
-
+    
     public boolean validateAsiento(Asiento asiento) {
         return asientoService.validateAsiento(asiento);
     }
-
+    
     public void save(Model model) {
         database.save(model);
     }
-
+    
     public Optional<Cuenta> findCuentaByCodigo(String codigoCompleto) {
         return cuentaService.findByCodigo(codigoCompleto);
+    }
+    
+    public Cuenta crearCuenta(String codigo, String nombre, NaturalezaCuenta naturaleza, TipoCuenta tipoCuenta, Moneda moneda, PlanDeCuentas planDeCuentas) {
+        Cuenta cuenta = new Cuenta();
+        cuenta.setCodigo(codigo);
+        cuenta.setNombre(nombre);
+        cuenta.setNaturaleza(naturaleza);
+        cuenta.setTipoCuenta(tipoCuenta);
+        cuenta.setTipoApertura(TipoApertura.SIN_APERTURA);
+        cuenta.setMoneda(moneda);
+        cuenta.setPlanDeCuenta(planDeCuentas);
+        cuenta.setActiva(true);
+        cuenta.setApertura(false);
+        cuenta.setLibroMayor(new LibroMayor(cuenta));
+        database.save(cuenta);
+        return cuenta;
     }
 }

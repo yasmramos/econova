@@ -1,25 +1,37 @@
 package com.univsoftdev.econova.core.view.components;
 
+import com.univsoftdev.econova.contabilidad.SubSistema;
 import java.awt.event.*;
 import javax.swing.*;
 import com.univsoftdev.econova.core.component.*;
+import com.univsoftdev.econova.core.config.AppConfig;
+import io.avaje.config.Config;
+import java.time.LocalDate;
 import raven.modal.ModalDialog;
 import raven.modal.component.Modal;
 
 public class FormCambiarFechaProcesamiento extends Modal {
-    
+
     public FormCambiarFechaProcesamiento() {
         initComponents();
+        datePickerFechaProcesamiento.setSelectedDate(Config.getAs("econova.accounting.current.date", (value) -> {
+            return LocalDate.parse(value);
+        }));
     }
-    
+
     private void btnCancelar(ActionEvent e) {
         ModalDialog.closeModal(this.getId());
     }
 
     private void btnAceptar(ActionEvent e) {
-	var fecha = datePickerFechaProcesamiento.getSelectedDate();
+        var fecha = datePickerFechaProcesamiento.getSelectedDate();
+        SubSistema subsistema = Config.getEnum(SubSistema.class, "econova.current.subsistema");
+        AppConfig app;
+        if (subsistema == SubSistema.CONTABILIDAD) {
+            Config.setProperty("econova.accounting.current.date", fecha.toString());
+        }
     }
-    
+
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.datePickerFechaProcesamiento = new DatePickerSwing();

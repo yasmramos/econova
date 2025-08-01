@@ -3,12 +3,10 @@ package com.univsoftdev.econova.core.module;
 import com.univsoftdev.econova.AppContext;
 import java.util.*;  
 import java.util.concurrent.ConcurrentHashMap;  
-import org.slf4j.Logger;  
-import org.slf4j.LoggerFactory;  
+import lombok.extern.slf4j.Slf4j;
   
+@Slf4j
 public class ModuleDependencyManager {  
-      
-    private static final Logger logger = LoggerFactory.getLogger(ModuleDependencyManager.class);  
       
     private final Map<String, Module> registeredModules = new ConcurrentHashMap<>();  
     private final Map<String, ModuleState> moduleStates = new ConcurrentHashMap<>();  
@@ -29,7 +27,7 @@ public class ModuleDependencyManager {
           
         registeredModules.put(moduleId, module);  
         moduleStates.put(moduleId, ModuleState.REGISTERED);  
-        logger.info("Módulo registrado: {} v{}", module.getModuleName(), module.getVersion());  
+        log.info("Módulo registrado: {} v{}", module.getModuleName(), module.getVersion());  
     }  
       
     /**  
@@ -87,7 +85,7 @@ public class ModuleDependencyManager {
                     try {  
                         initializeModule(optDependency);  
                     } catch (Exception e) {  
-                        logger.warn("Fallo al inicializar dependencia opcional {}: {}", optDepId, e.getMessage());  
+                        log.warn("Fallo al inicializar dependencia opcional {}: {}", optDepId, e.getMessage());  
                     }  
                 }  
             }  
@@ -96,7 +94,7 @@ public class ModuleDependencyManager {
             module.initialize(appContext);  
             moduleStates.put(moduleId, ModuleState.INITIALIZED);  
               
-            logger.info("Módulo inicializado exitosamente: {}", module.getModuleName());  
+            log.info("Módulo inicializado exitosamente: {}", module.getModuleName());  
               
         } catch (Exception e) {  
             moduleStates.put(moduleId, ModuleState.FAILED);  
@@ -166,7 +164,7 @@ public class ModuleDependencyManager {
                     moduleStates.put(module.getModuleId(), ModuleState.SHUTDOWN);  
                 }  
             } catch (Exception e) {  
-                logger.error("Error cerrando módulo {}: {}", module.getModuleName(), e.getMessage(), e);  
+                log.error("Error cerrando módulo {}: {}", module.getModuleName(), e.getMessage(), e);  
             }  
         }  
     }  

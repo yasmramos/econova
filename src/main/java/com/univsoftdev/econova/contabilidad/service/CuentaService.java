@@ -2,8 +2,10 @@ package com.univsoftdev.econova.contabilidad.service;
 
 import jakarta.inject.Singleton;
 import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
+import com.univsoftdev.econova.contabilidad.TipoApertura;
 import com.univsoftdev.econova.contabilidad.TipoCuenta;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.model.LibroMayor;
 import com.univsoftdev.econova.core.Service;
 
 import io.ebean.Database;
@@ -69,13 +71,15 @@ public class CuentaService extends Service<Cuenta> {
         cuentaPadre.addSubCuenta(subCuenta);
     }
 
+    @Transactional
     public void addCuenta(Cuenta cuenta) {
+        cuenta.setLibroMayor(new LibroMayor(cuenta));
         database.save(cuenta);
     }
 
     public void addCuentas(Cuenta... cuentas) {
         for (Cuenta cuenta : cuentas) {
-            database.save(cuenta);
+            addCuenta(cuenta);
         }
     }
 

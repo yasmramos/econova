@@ -1,79 +1,139 @@
 package com.univsoftdev.econova.core.config;
 
 import io.avaje.config.Config;
-import jakarta.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Configuración centralizada de la aplicación usando Avaje Config. Delega todas
  * las responsabilidades de configuración desde AppContext y ApplicationSession.
  */
-@Singleton
+@Slf4j
 public class AppConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppConfig.class);
-
-    // === CONFIGURACIÓN DE APLICACIÓN ===  
-    public String getAppName() {
+    public static String getAppName() {
         return Config.get("econova.app.name", "Econova");
     }
 
-    public String getAppVersion() {
+    public static String getAppVersion() {
         return Config.get("econova.app.version", "0.1.0");
     }
 
-    public String getDefaultLanguage() {
+    public static String getDefaultLanguage() {
         return Config.get("econova.app.language", "es");
     }
 
-    public String getDefaultTheme() {
+    public static String getDefaultTheme() {
         return Config.get("econova.app.theme", "light");
     }
 
-    // === CONFIGURACIÓN DE BASE DE DATOS ===  
-    public String getDatabaseName() {
+    public static String getDatabaseName() {
         return Config.get("econova.database.name", "econova");
     }
 
-    public String getDatabaseUrl() {
+    public static void setDatabaseName(String name) {
+        set("econova.database.name", name);
+    }
+
+    public static String getDatabaseDriver() {
+        return Config.get("econova.database.driver", "org.postgresql.Driver");
+    }
+
+    public static void setDatabaseDriver(String driver) {
+        set("econova.database.driver", driver);
+    }
+
+    private static void set(String key, String value) {
+        Config.setProperty(key, value);
+        try {
+            Config.asProperties().store(new FileOutputStream("application.properties"), "Configuración Actualizada");
+        } catch (FileNotFoundException ex) {
+            log.error(ex.getMessage());
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+        }
+    }
+
+    public static String getDatabaseUrl() {
         return Config.get("econova.database.url", "jdbc:postgresql://localhost:5432/econova");
     }
 
-    // === CONFIGURACIÓN DE SEGURIDAD ===  
-    public String getEncryptionKey() {
+    public static void setDatabaseUrl(String url) {
+        set("econova.database.url", url);
+    }
+
+    public static String getEncryptionKey() {
         String key = Config.get("econova.encryption.key", System.getenv("ECONOVA_ENCRYPTION_KEY"));
         if (key == null || key.equals("your-32-character-encryption-key")) {
-            logger.warn("Usando clave de encriptación por defecto. Configura ECONOVA_ENCRYPTION_KEY en producción.");
+            log.warn("Usando clave de encriptación por defecto. Configura variable de entorno ECONOVA_ENCRYPTION_KEY.");
         }
         return key;
     }
 
-    // === CONFIGURACIÓN DE USUARIO ===  
-    public UserConfig getUserConfig(String userId) {
+    public static UserConfig getUserConfig(String userId) {
         return new UserConfig(userId != null ? userId : "default");
     }
 
-    public UserConfig getDefaultUserConfig() {
+    public static UserConfig getDefaultUserConfig() {
         return getUserConfig("default");
     }
 
-    // === CONFIGURACIÓN DE UI ===  
-    public int getDefaultGridPageSize() {
+    public static int getDefaultGridPageSize() {
         return Config.getInt("econova.ui.grid.pageSize", 25);
     }
 
-    public boolean isDarkModeEnabled() {
+    public static boolean isDarkModeEnabled() {
         return Config.getBool("econova.ui.darkMode", false);
     }
 
-    // === CONFIGURACIÓN DE CACHÉ ===  
-    public long getCacheMaxSize() {
+    public static long getCacheMaxSize() {
         return Config.getLong("econova.cache.maxSize", 1000);
     }
 
-    public int getCacheExpirationMinutes() {
+    public static int getCacheExpirationMinutes() {
         return Config.getInt("econova.cache.expirationMinutes", 60);
+    }
+
+    public static String getDefaultCurrency() {
+        return Config.get("econova.currency.default.code", "CUP");
+    }
+
+    public static String getDefaultCurrencyName() {
+        return Config.get("econova.currency.default.name", "Moneda Nacional");
+    }
+
+    public static String getDatabasePassword() {
+        return Config.get("econova.database.password", "postgres");
+    }
+
+    public static void setDatabasePassword(String password) {
+        set("econova.database.password", password);
+    }
+    
+    public static void setDatabaseUser(String user) {
+        set("econova.database.user", user);
+    }
+    
+    public static String getDatabaseUser() {
+        return Config.get("econova.database.user", "postgres");
+    }
+    
+    public static String getDatabaseAdminPassword() {
+        return Config.get("econova.database.admin.password", "postgres");
+    }
+
+    public static void setDatabaseAdminPassword(String password) {
+        set("econova.database.admin.password", password);
+    }
+    
+    public static void setDatabaseAdminUser(String user) {
+        set("econova.database.admin.username", user);
+    }
+    
+    public static String getDatabaseAdminUser() {
+        return Config.get("econova.database.username", "postgres");
     }
 
     /**
@@ -113,7 +173,6 @@ public class AppConfig {
             return Config.getInt(prefix + "." + key, defaultValue);
         }
 
-        // === PREFERENCIAS ESPECÍFICAS ===  
         public String getPreferredLanguage() {
             return getPreference("ui.language", "es");
         }
@@ -138,13 +197,20 @@ public class AppConfig {
             setPreference("ui.grid.pageSize", pageSize);
         }
 
-        // === PREFERENCIAS DE FORMULARIOS ===  
         public void setFormPreference(String formName, String key, String value) {
             setPreference("forms." + formName + "." + key, value);
         }
 
         public String getFormPreference(String formName, String key, String defaultValue) {
             return getPreference("forms." + formName + "." + key, defaultValue);
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public String getPrefix() {
+            return prefix;
         }
     }
 }

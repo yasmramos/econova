@@ -86,8 +86,9 @@ public class PlanDeCuentasService extends Service<PlanDeCuentas> {
     }
 
     @Transactional
-    public void createPlanDeCuentas(PlanDeCuentas planDeCuentas) {
+    public PlanDeCuentas createPlanDeCuentas(PlanDeCuentas planDeCuentas) {
         database.save(planDeCuentas);
+        return planDeCuentas;
     }
 
     @Transactional

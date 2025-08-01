@@ -6,7 +6,7 @@ import com.univsoftdev.econova.contabilidad.LineaBalance;
 import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
 import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.config.model.Periodo;
 
 import jakarta.inject.Inject;

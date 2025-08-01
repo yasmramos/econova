@@ -19,10 +19,10 @@ public class SimpleCustomToast extends ToastCustomPanel {
     private void init() {
         setOpaque(false);
         setLayout(new MigLayout("ay center,insets 0", "", "[sg h,bottom][sg h,top]"));
-        JLabel labelProfile = new JLabel(new AvatarIcon(getClass().getResource("/raven/modal/demo/images/profile_2.jpg"), 50, 50, 999));
+        JLabel labelProfile = new JLabel(new AvatarIcon(getClass().getResource("/econova/images/profile_2.jpg"), 50, 50, 999));
         JLabel labelName = new JLabel("Samantha Smith");
         JLabel labelDescription = new JLabel("Experienced marketing professional with a focus on digital advertising.");
-        JButton buttonClose = new JButton(new FlatSVGIcon("raven/modal/demo/icons/close.svg", 0.3f));
+        JButton buttonClose = new JButton(new FlatSVGIcon("econova/icons/close.svg", 0.3f));
         buttonClose.setFocusable(false);
 
         labelName.putClientProperty(FlatClientProperties.STYLE, "" +

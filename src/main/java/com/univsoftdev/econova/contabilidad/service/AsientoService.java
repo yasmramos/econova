@@ -7,7 +7,7 @@ import com.univsoftdev.econova.contabilidad.model.Transaccion;
 import com.univsoftdev.econova.core.Service;
 import io.ebean.Database;
 import jakarta.inject.Singleton;
-import com.univsoftdev.econova.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.config.model.User;
 import io.ebean.annotation.Transactional;
 import jakarta.inject.Inject;

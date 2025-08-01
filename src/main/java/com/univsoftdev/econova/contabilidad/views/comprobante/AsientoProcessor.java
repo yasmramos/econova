@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad.views.comprobante;
 
-import com.univsoftdev.econova.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
 import com.univsoftdev.econova.contabilidad.model.Asiento;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
@@ -89,7 +89,7 @@ public class AsientoProcessor {
             Transaccion transaccion = transaccionFactory.createTransaccion(transaccionData, cuenta, asiento);
             asiento.getTransacciones().add(transaccion);
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException("Error en transacción fila " + (filaIndex + 1) + ": " + e.getMessage(), e);
         }
     }

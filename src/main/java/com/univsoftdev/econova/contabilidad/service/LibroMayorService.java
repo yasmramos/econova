@@ -3,7 +3,7 @@ package com.univsoftdev.econova.contabilidad.service;
 import jakarta.inject.Singleton;
 import com.univsoftdev.econova.config.model.Periodo;
 import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.contabilidad.model.Transaccion;
 import com.univsoftdev.econova.contabilidad.report.LibroMayorEntry;
 import com.univsoftdev.econova.contabilidad.report.LibroMayorReport;

@@ -1,5 +1,6 @@
 package com.univsoftdev.econova.contabilidad.model;
 
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
 import com.univsoftdev.econova.config.model.Periodo;
 import java.time.LocalDate;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.univsoftdev.econova.*;
-import com.univsoftdev.econova.contabilidad.SubSistemas;
+import com.univsoftdev.econova.contabilidad.SubSistema;
 import com.univsoftdev.econova.core.model.AuditBaseModel;
 
 import jakarta.persistence.CascadeType;
@@ -51,7 +52,7 @@ public class Asiento extends AuditBaseModel {
     private final List<Transaccion> transacciones = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private SubSistemas subSistema;
+    private SubSistema subSistema;
     
     public Asiento() {
     }
@@ -119,11 +120,11 @@ public class Asiento extends AuditBaseModel {
                 ? descripcion.substring(0, maxLength) + "..." : descripcion;
     }
 
-    public SubSistemas getSubSistema() {
+    public SubSistema getSubSistema() {
         return subSistema;
     }
 
-    public void setSubSistema(@NotNull SubSistemas subSistema) {
+    public void setSubSistema(@NotNull SubSistema subSistema) {
         this.subSistema = subSistema;
     }
 

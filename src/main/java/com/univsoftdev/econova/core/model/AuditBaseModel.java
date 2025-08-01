@@ -34,15 +34,7 @@ public abstract class AuditBaseModel extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ejercicio_id", nullable = false, updatable = false)
     protected Ejercicio ejercicio;
-    
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
+  
     public User getUsuario() {
         return usuario;
     }

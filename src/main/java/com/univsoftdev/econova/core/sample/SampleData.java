@@ -51,9 +51,9 @@ public class SampleData {
 
     private static Icon getProfileIcon(String name, boolean defaultIcon) {
         if (defaultIcon) {
-            return new ImageIcon(SampleData.class.getResource("/raven/modal/demo/images/" + name));
+            return new ImageIcon(SampleData.class.getResource("/econova/images/" + name));
         } else {
-            AvatarIcon avatarIcon = new AvatarIcon(SampleData.class.getResource("/raven/modal/demo/images/" + name), 55, 55, 3f);
+            AvatarIcon avatarIcon = new AvatarIcon(SampleData.class.getResource("/econova/images/" + name), 55, 55, 3f);
             avatarIcon.setType(AvatarIcon.Type.MASK_SQUIRCLE);
             return avatarIcon;
         }

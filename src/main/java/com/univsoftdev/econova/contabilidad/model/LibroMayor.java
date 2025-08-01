@@ -1,5 +1,6 @@
 package com.univsoftdev.econova.contabilidad.model;
 
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.core.model.BaseModel;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -7,7 +8,6 @@ import java.util.List;
 import java.math.BigDecimal;
 import lombok.EqualsAndHashCode;
 import com.univsoftdev.econova.*;
-import lombok.Builder;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity

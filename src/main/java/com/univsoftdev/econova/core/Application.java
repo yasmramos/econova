@@ -6,23 +6,15 @@ import com.univsoftdev.econova.MainFormApp;
 import com.univsoftdev.econova.Splash;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Application {
 
     private AppContext context;
     private UpdateManager updateManager;
-    private final static Logger logger = LoggerFactory.getLogger(Application.class);
 
     public Application() {
-        context = AppContext.getInstance();
-        initializeUpdateManager();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-    }
-
-    public Application(AppContext context) {
-        this.context = context;
         initializeUpdateManager();
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -34,7 +26,7 @@ public class Application {
             updateManager = new UpdateManager(updateUri.toString(), context.getVersion());
             updateManager.checkForUpdates();
         } catch (URISyntaxException e) {
-            logger.error("Invalid URI: " + updateServerUri, e);
+            log.error("Invalid URI: " + updateServerUri, e);
             throw new RuntimeException("Failed to initialize UpdateManager", e);
         }
     }
@@ -47,7 +39,7 @@ public class Application {
             new Splash(null, true).setVisible(true);
             MainFormApp.main(args);
         } catch (RuntimeException e) {
-            logger.error("Error initializing ebean orm: {}", e.getMessage(), e);
+            log.error("Error initializing ebean orm: {}", e.getMessage(), e);
         }
     }
 
@@ -56,7 +48,7 @@ public class Application {
             updateManager.shutdown();
         }
         context.setRunning(false);
-        logger.info("Application has been shut down.");
+        log.info("Application has been shut down.");
     }
 
     public AppContext getContext() {

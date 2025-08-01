@@ -10,14 +10,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.spec.KeySpec;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class EncryptionUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(EncryptionUtil.class);
     private static final int GCM_IV_LENGTH = 12; // Longitud del IV para GCM
     private static final int GCM_TAG_LENGTH = 128; // Longitud de la etiqueta de autenticación
 
@@ -39,7 +38,7 @@ public class EncryptionUtil {
             SecretKey tmp = factory.generateSecret(spec);
             return new SecretKeySpec(tmp.getEncoded(), "AES");
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            logger.error("Error al derivar la clave AES: " + e.getMessage());
+            log.error("Error al derivar la clave AES: " + e.getMessage());
             throw new RuntimeException("Error al derivar la clave AES", e);
         }
     }
@@ -84,7 +83,7 @@ public class EncryptionUtil {
             return Base64.getEncoder().encodeToString(combined);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
                 | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            logger.error("Error al cifrar: " + e.getMessage());
+            log.error("Error al cifrar: " + e.getMessage());
             return null;
         }
     }
@@ -119,7 +118,7 @@ public class EncryptionUtil {
             return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
                 | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            logger.error("Error al descifrar: " + e.getMessage());
+            log.error("Error al descifrar: " + e.getMessage());
             return null;
         }
     }

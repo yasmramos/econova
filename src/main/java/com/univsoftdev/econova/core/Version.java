@@ -17,6 +17,12 @@ public class Version implements Comparable<Version>, Serializable {
     private int preReleaseNumber; //Número de la versión pre-lanzamiento
     private boolean maintenance; // Indica si es una versión de mantenimiento
 
+    public Version(int major, int minor, int patch) {
+        this.major = major;
+        this.minor = minor;
+        this.patch = patch;
+    }
+
     public Version(int major, int minor, int patch, int build) {
         this.major = major;
         this.minor = minor;

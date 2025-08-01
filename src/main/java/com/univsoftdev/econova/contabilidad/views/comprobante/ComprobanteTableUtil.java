@@ -25,6 +25,9 @@ public class ComprobanteTableUtil {
         formatoMoneda.setMaximumFractionDigits(2);
     }
 
+    private ComprobanteTableUtil() {
+    }
+
     public static void configurarEventos(JTable table1, DefaultTableModel modelo, JTextField textFieldTotalDebito, JTextField textFieldTotalCredito) {
         table1.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
                 .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "accionEnter");
@@ -57,12 +60,11 @@ public class ComprobanteTableUtil {
                         modelo.setValueAt("", fila, (columna == 5) ? 6 : 5);
                     }
                 }
-
                 actualizarTotales(modelo, textFieldTotalDebito, textFieldTotalCredito);
             }
         });
         table1.setShowGrid(true);
-        table1.setGridColor(Color.gray);
+        //table1.setGridColor(Color.gray);
         table1.setIntercellSpacing(new Dimension(1, 1));
     }
 

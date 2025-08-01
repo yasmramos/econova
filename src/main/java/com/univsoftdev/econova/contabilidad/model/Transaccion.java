@@ -1,5 +1,6 @@
 package com.univsoftdev.econova.contabilidad.model;
 
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.config.model.Unidad;
 import jakarta.persistence.Column;

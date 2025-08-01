@@ -30,14 +30,16 @@ public class I18N {
     }
 
     public static I18N getInstance(String bundleName, Locale locale) {
-        if (instance == null) {
+        I18N inst = I18N.instance;
+        if (inst == null) {
             synchronized (I18N.class) {
-                if (instance == null) {
-                    instance = new I18N(bundleName, locale);
+                inst = I18N.instance;
+                if (inst == null) {
+                    I18N.instance = inst = new I18N(bundleName, locale);
                 }
             }
         }
-        return instance;
+        return inst;
     }
 
     public String getString(String key) {

@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.contabilidad.model;
 
 import com.univsoftdev.econova.config.model.User;
-import com.univsoftdev.econova.seguridad.PasswordHasher;
+import com.univsoftdev.econova.security.PasswordHasher;
 import com.univsoftdev.econova.core.model.BaseModel;
 import jakarta.persistence.*;
 import java.util.LinkedList;
