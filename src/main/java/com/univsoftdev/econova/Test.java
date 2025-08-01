@@ -70,7 +70,7 @@ public class Test {
 
         UserContext.set("yaramos", "accounting");
         
-        KeystoreManager keystoreManager = Injector.get(KeystoreManager.class);
+        KeystoreManager keystoreManager = new KeystoreManager("masterPassword".toCharArray());
         keystoreManager.storePassword("config.encryption.password", PasswordGenerator.generateStrongPassword(16));
         keystoreManager.storePassword("ebean.enc.password", PasswordGenerator.generateStrongPassword(16));
         keystoreManager.close();
