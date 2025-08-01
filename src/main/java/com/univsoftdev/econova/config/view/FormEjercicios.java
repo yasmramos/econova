@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.config.model.Ejercicio;
 import com.univsoftdev.econova.config.service.EjercicioService;
 import java.beans.*;
@@ -10,7 +10,6 @@ import javax.swing.table.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.DialogUtils;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
-import io.avaje.inject.BeanScope;
 import java.awt.*;
 import java.util.Optional;
 import javax.swing.*;
@@ -20,15 +19,13 @@ import lombok.extern.slf4j.Slf4j;
 public class FormEjercicios extends Form {
 
     private static final long serialVersionUID = -618088926103956911L;
-    private final transient BeanScope injector;
     private final transient EjercicioService ejercicioService;
 
     public FormEjercicios() {
         initComponents();
         FormEjerciciosUtil.setupTableSelectionListener(tableEjercicios, tablePeriodos);
         updateView();
-        injector = AppContext.getInstance().getInjector();
-        ejercicioService = injector.get(EjercicioService.class);
+        ejercicioService = Injector.get(EjercicioService.class);
     }
 
     private void adicionarActionPerformed(ActionEvent e) {

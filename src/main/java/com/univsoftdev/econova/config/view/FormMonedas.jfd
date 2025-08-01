@@ -21,7 +21,7 @@ new FormModel {
 				name: "scrollPane1"
 				"componentPopupMenu": new FormReference( "popupMenu1" )
 				add( new FormComponent( "javax.swing.JTable" ) {
-					name: "table1"
+					name: "tableMonedas"
 					"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
 						add( new java.util.Vector {
 							add( null )
@@ -55,8 +55,19 @@ new FormModel {
 			name: "popupMenu1"
 			add( new FormComponent( "javax.swing.JMenuItem" ) {
 				name: "menuItemAdicionarMoneda"
-				"text": "Adicionar Moneda"
+				"text": "Adicionar"
+				"toolTipText": "Adiciona una nueva moneda"
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "adicionarMoneda", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem1"
+				"text": "Eliminar"
+				"toolTipText": "Elimina la moneda seleccionada"
+			} )
+			add( new FormComponent( "javax.swing.JMenuItem" ) {
+				name: "menuItem2"
+				"text": "Modificar"
+				"toolTipText": "Modifica la moneda seleccionada"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 750, 30 )

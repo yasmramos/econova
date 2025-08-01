@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.MyTenantSchemaProvider;
+import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
 import com.univsoftdev.econova.config.model.Ejercicio;
 import com.univsoftdev.econova.config.model.Periodo;
 import java.awt.*;
@@ -12,6 +12,7 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.utils.DialogUtils;
+import jakarta.inject.Inject;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ public class FormNuevoEjercicioEstandar extends Modal {
     private Ejercicio ejercicio;
     private JTable tablePeriodos;
     private JTable tableEjercicios;
+    
+    @Inject
+    private MyTenantSchemaProvider tenantSchemaProvider;
     
     public FormNuevoEjercicioEstandar() {
         initComponents();
@@ -178,7 +182,6 @@ public class FormNuevoEjercicioEstandar extends Modal {
 
             // Guardar ejercicio
             try {
-                ejercicio.setSchemaTenant(MyTenantSchemaProvider.getCurrentTenant().get());
                 ejercicio.save();
                 JOptionPane.showMessageDialog(this, "Ejercicio guardado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } catch (HeadlessException ex) {

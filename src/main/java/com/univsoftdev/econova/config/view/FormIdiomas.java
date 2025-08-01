@@ -5,6 +5,7 @@ import javax.swing.border.*;
 import javax.swing.table.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.DialogUtils;
+import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import java.awt.*;
 import java.util.Locale;
 import javax.swing.*;
@@ -19,6 +20,8 @@ public class FormIdiomas extends Form {
     public FormIdiomas() {
         initComponents();
         Locale[] availableLocales = Locale.getAvailableLocales();
+        TableColumnAdjuster adjuster = new TableColumnAdjuster(tableIdiomas);
+        adjuster.adjustColumns();
     }
 
     private void menuItemAdicionar(ActionEvent e) {
@@ -29,16 +32,16 @@ public class FormIdiomas extends Form {
 
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
-	panel1 = new JPanel();
-	label1 = new JLabel();
-	scrollPane1 = new JScrollPane();
-	table1 = new JTable();
-	panel2 = new JPanel();
-	label2 = new JLabel();
-	popupMenu1 = new JPopupMenu();
-	menuItem1 = new JMenuItem();
-	menuItem3 = new JMenuItem();
-	menuItem2 = new JMenuItem();
+	this.panel1 = new JPanel();
+	this.label1 = new JLabel();
+	this.scrollPane1 = new JScrollPane();
+	this.tableIdiomas = new JTable();
+	this.panel2 = new JPanel();
+	this.label2 = new JLabel();
+	this.popupMenu1 = new JPopupMenu();
+	this.menuItem1 = new JMenuItem();
+	this.menuItem3 = new JMenuItem();
+	this.menuItem2 = new JMenuItem();
 
 	//======== this ========
 	setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -46,71 +49,71 @@ public class FormIdiomas extends Form {
 
 	//======== panel1 ========
 	{
-	    panel1.setLayout(new BorderLayout());
+	    this.panel1.setLayout(new BorderLayout());
 
 	    //---- label1 ----
-	    label1.setText("Idiomas");
-	    panel1.add(label1, BorderLayout.WEST);
+	    this.label1.setText("Idiomas"); //NOI18N
+	    this.panel1.add(this.label1, BorderLayout.WEST);
 	}
-	add(panel1, BorderLayout.NORTH);
+	add(this.panel1, BorderLayout.NORTH);
 
 	//======== scrollPane1 ========
 	{
 
-	    //---- table1 ----
-	    table1.setModel(new DefaultTableModel(
+	    //---- tableIdiomas ----
+	    this.tableIdiomas.setModel(new DefaultTableModel(
 		new Object[][] {
 		},
 		new String[] {
-		    "Idioma", "Nativo"
+		    "Idioma", "Nativo" //NOI18N
 		}
 	    ));
 	    {
-		TableColumnModel cm = table1.getColumnModel();
+		TableColumnModel cm = this.tableIdiomas.getColumnModel();
 		cm.getColumn(1).setPreferredWidth(50);
 	    }
-	    table1.setAutoCreateRowSorter(true);
-	    scrollPane1.setViewportView(table1);
+	    this.tableIdiomas.setAutoCreateRowSorter(true);
+	    this.scrollPane1.setViewportView(this.tableIdiomas);
 	}
-	add(scrollPane1, BorderLayout.CENTER);
+	add(this.scrollPane1, BorderLayout.CENTER);
 
 	//======== panel2 ========
 	{
-	    panel2.setBorder(new EmptyBorder(5, 5, 5, 5));
-	    panel2.setLayout(new BorderLayout());
+	    this.panel2.setBorder(new EmptyBorder(5, 5, 5, 5));
+	    this.panel2.setLayout(new BorderLayout());
 
 	    //---- label2 ----
-	    label2.setText("0");
-	    panel2.add(label2, BorderLayout.WEST);
+	    this.label2.setText("0"); //NOI18N
+	    this.panel2.add(this.label2, BorderLayout.WEST);
 	}
-	add(panel2, BorderLayout.SOUTH);
+	add(this.panel2, BorderLayout.SOUTH);
 
 	//======== popupMenu1 ========
 	{
 
 	    //---- menuItem1 ----
-	    menuItem1.setText("Adicionar");
-	    menuItem1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    menuItem1.addActionListener(e -> menuItemAdicionar(e));
-	    popupMenu1.add(menuItem1);
+	    this.menuItem1.setText("Adicionar"); //NOI18N
+	    this.menuItem1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.menuItem1.addActionListener(e -> menuItemAdicionar(e));
+	    this.popupMenu1.add(this.menuItem1);
 
 	    //---- menuItem3 ----
-	    menuItem3.setText("Modificar");
-	    menuItem3.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    popupMenu1.add(menuItem3);
+	    this.menuItem3.setText("Modificar"); //NOI18N
+	    this.menuItem3.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.popupMenu1.add(this.menuItem3);
 
 	    //---- menuItem2 ----
-	    menuItem2.setText("Eliminar");
-	    menuItem2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    popupMenu1.add(menuItem2);
+	    this.menuItem2.setText("Eliminar"); //NOI18N
+	    this.menuItem2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.popupMenu1.add(this.menuItem2);
 	}
 
 	//---- bindings ----
-	bindingGroup = new BindingGroup();
-	bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ,
-	    table1, BeanProperty.create("rowCount"),
-	    label2, BeanProperty.create("text")));
-	bindingGroup.bind();
+	this.bindingGroup = new BindingGroup();
+	this.bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ,
+	    this.tableIdiomas, BeanProperty.create("rowCount"), //NOI18N
+	    this.label2, BeanProperty.create("text"))); //NOI18N
+	this.bindingGroup.bind();
 	// JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
     }
 
@@ -118,7 +121,7 @@ public class FormIdiomas extends Form {
     private JPanel panel1;
     private JLabel label1;
     private JScrollPane scrollPane1;
-    private JTable table1;
+    private JTable tableIdiomas;
     private JPanel panel2;
     private JLabel label2;
     private JPopupMenu popupMenu1;

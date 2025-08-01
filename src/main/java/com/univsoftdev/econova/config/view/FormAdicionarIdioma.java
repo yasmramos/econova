@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.config.model.Idioma;
 import com.univsoftdev.econova.config.service.IdiomaService;
 import java.awt.*;
@@ -18,7 +18,7 @@ public class FormAdicionarIdioma extends Modal {
 
     public FormAdicionarIdioma() {
         initComponents();
-        this.idiomaService = AppContext.getInstance().getInjector().get(IdiomaService.class);
+        this.idiomaService = Injector.get(IdiomaService.class);
         final Locale[] availableLocales = Locale.getAvailableLocales();
         for (final Locale availableLocale : availableLocales) {
             comboBoxIdiomas.addItem(availableLocale.getCountry());
