@@ -2,9 +2,9 @@ package com.univsoftdev.econova.component.wizard;
 
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
-import com.univsoftdev.econova.PostgreSQLDatabaseLister;
-import com.univsoftdev.econova.SwingUtils;
-import com.univsoftdev.econova.seguridad.PostgreSQLConnection;
+import com.univsoftdev.econova.db.postgres.PostgreSQLDatabaseLister;
+import com.univsoftdev.econova.core.swing.SwingUtils;
+import com.univsoftdev.econova.security.PostgreSQLConnection;
 import java.awt.Color;
 import java.awt.HeadlessException;
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ public class DatabaseWizardStep extends WizardPage {
         super("Configuración Base de Datos", "");
         initComponents();
         setDefaultValues();
-    }
+    }    
 
     private void setDefaultValues() {
         txtDatabaseName.setText(DEFAULT_DB_NAME);
@@ -49,20 +49,19 @@ public class DatabaseWizardStep extends WizardPage {
             return false;
         }
 
-        // Guardar configuración en el wizard
-        settings.put("database.name", txtDatabaseName.getText().trim());
-        settings.put("database.admin.username", txtNombreUsuarioAdmin.getText().trim());
-        settings.put("database.server", txtServidor.getText().trim());
-        settings.put("database.port", txtPuerto.getText().trim());
+        settings.put("econova.database.name", txtDatabaseName.getText().trim());
+        settings.put("econova.database.admin.username", txtNombreUsuarioAdmin.getText().trim());
+        settings.put("econova.database.server", txtServidor.getText().trim());
+        settings.put("econova.database.port", txtPuerto.getText().trim());
 
         // Manejo seguro de la contraseña
         char[] password = txtPassword.getPassword();
-        settings.put("database.admin.password", new String(password));
+        settings.put("econova.database.admin.password", new String(password));
         Arrays.fill(password, '\0');
-
+        WizardDataOutput.saveObject(settings);
         return true;
     }
-    
+
     private boolean validateFields() {
         // Validar servidor
         if (txtServidor.getText().trim().isEmpty()) {
@@ -93,7 +92,7 @@ public class DatabaseWizardStep extends WizardPage {
             showError("El nombre de la base de datos es obligatorio");
             return false;
         }
-
+       
         return true;
     }
 

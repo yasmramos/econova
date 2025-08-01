@@ -1,5 +1,6 @@
 package com.univsoftdev.econova.component.wizard;
 
+import com.univsoftdev.econova.bsondb.BsonDb;
 import com.github.cjwizard.StackWizardSettings;
 import com.github.cjwizard.WizardContainer;
 import com.github.cjwizard.WizardListener;
@@ -18,8 +19,7 @@ import javax.swing.LayoutStyle;
 import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.UUID;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,6 @@ public class Wizard extends javax.swing.JDialog {
     private JPanel mainPanel; // Panel principal con CardLayout
     private JPanel wizardContent; // Panel del contenido del wizard
     private SplashPanel splashPanel; // Panel de presentación
-    private BsonDb db = new BsonDb("wizard.dat");
 
     public Wizard(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -45,7 +44,7 @@ public class Wizard extends javax.swing.JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                db.close();
+                
             }
         });
     }
@@ -107,11 +106,7 @@ public class Wizard extends javax.swing.JDialog {
                 }
 
                 procesarDatos();
-                try {
-                    Files.deleteIfExists(Paths.get(db.getDbFile()));
-                } catch (IOException ex) {
-                    log.error("No se pudo eliminar los datos almacenados del wizard.", ex);
-                }
+                
                 Wizard.this.dispose();
             }
 
@@ -166,10 +161,22 @@ public class Wizard extends javax.swing.JDialog {
         Toast.showPromise(this, "Conectando a la base de datos...", new ToastPromise(UUID.randomUUID().toString()) {
             @Override
             public void execute(ToastPromise.PromiseCallback pc) {
-                pc.update("Creando estructura de la base de datos...");
-
-                pc.done(Toast.Type.SUCCESS, "Proceso finalizado.");
+                try {
+                    Thread.sleep(500);
+                    pc.update("Creando estructura de la base de datos...");
+                  
+                    Thread.sleep(1000); // Simular trabajo  
+                    pc.done(Toast.Type.SUCCESS, "Proceso finalizado.");
+                } catch (InterruptedException e) {
+                    // Manejar interrupción  
+                }
             }
+
+            @Override
+            public boolean useThread() {
+                return false;
+            }
+
         });
     }
 

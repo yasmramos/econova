@@ -2,7 +2,7 @@ package com.univsoftdev.econova.component.wizard;
 
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
-import com.univsoftdev.econova.SwingUtils;
+import com.univsoftdev.econova.core.swing.SwingUtils;
 
 public class UnidadWizardStep extends WizardPage{
 

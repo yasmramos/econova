@@ -1,13 +1,14 @@
 package com.univsoftdev.econova.component.wizard;
 
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 import com.formdev.flatlaf.FlatClientProperties;
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
-import com.univsoftdev.econova.SwingUtils;
+import com.univsoftdev.econova.core.swing.SwingUtils;
 import com.univsoftdev.econova.Validations;
 import com.univsoftdev.econova.core.utils.DialogUtils;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
 
 public class EmpresaWizardPage extends WizardPage {
 
@@ -46,6 +47,10 @@ public class EmpresaWizardPage extends WizardPage {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        
+        if (tableEmpresas.getRowCount() < 0) {
+            return false;
         }
         return true;
     }
@@ -195,7 +200,7 @@ public class EmpresaWizardPage extends WizardPage {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(41, 41, 41))))
+                                .addGap(42, 42, 42))))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addGap(0, 0, Short.MAX_VALUE))))
@@ -205,18 +210,18 @@ public class EmpresaWizardPage extends WizardPage {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(29, 29, 29)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(57, 57, 57)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnAdd))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 416, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(39, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -237,6 +242,19 @@ public class EmpresaWizardPage extends WizardPage {
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
+    private void validateDatosEmpresa(){
+        var code = txtCode.getText().trim();
+        var name = txtName.getText().trim();
+        
+        if (code == null || code.isEmpty()) {
+            
+        }
+        
+        if (name == null || name.isEmpty()) {
+            
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JLabel jLabel1;
