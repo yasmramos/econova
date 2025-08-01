@@ -1,5 +1,6 @@
 package com.univsoftdev.econova;
 
+import com.univsoftdev.econova.core.exception.BusinessLogicException;
 import jakarta.validation.constraints.NotNull;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,13 @@ public class Validations {
             throw new IllegalArgumentException("Formato de email inválido.");
         }
         return true;
+    }
+    
+    public static void validatePasswordStrength(String password) {
+        if (password == null || password.length() < 8) {
+            throw new BusinessLogicException("La contraseña debe tener al menos 8 caracteres");
+        }
+        
     }
 
     public static boolean isValidPassword(@NotNull String password) {
