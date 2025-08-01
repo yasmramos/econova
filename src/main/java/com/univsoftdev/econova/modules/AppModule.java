@@ -43,19 +43,14 @@ public class AppModule {
     public KryoSerializer kryoSerializer() {
         return new KryoSerializer();
     }
-    
+
     @Bean
     @Singleton
-    public Database database(){
+    public Database database() {
         return new EbeanConfig().configure();
     }
-    
+
     @Bean
-    @Singleton
-    public KeystoreManager keystoreManager() {
-        return new KeystoreManager("wajefgawegaljal435s4dg35sa435g4a3s4dg43sg435as4g35".toCharArray());
-    }
-    
     @Singleton
     public FlywayMigrator flywayMigrator() {
         return new FlywayMigrator();
