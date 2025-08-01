@@ -2,10 +2,12 @@ package com.univsoftdev.econova;
 
 import com.univsoftdev.econova.cache.CacheManager;
 import com.univsoftdev.econova.config.model.Ejercicio;
+import com.univsoftdev.econova.config.model.Empresa;
 import com.univsoftdev.econova.config.model.Periodo;
 import com.univsoftdev.econova.config.model.Unidad;
 import com.univsoftdev.econova.config.model.User;
-import com.univsoftdev.econova.core.config.AppConfig;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,110 +18,73 @@ import lombok.extern.slf4j.Slf4j;
  * contable y preferencias de sesión. Seguro, serializable y multiplataforma.
  */
 @Slf4j
+@Singleton
 public class AppSession implements AutoCloseable {
 
-    // Datos de sesión  
-    private Ejercicio ejercicio;  
-    private Unidad unidad;  
-    private Periodo periodo;  
-    private String license;  
-    private final CacheManager cacheManager;  
-      
-    // Delegación de configuración  
-    private final AppConfig appConfig;  
-    private final AppConfig.UserConfig userConfig;  
-    private final Map<String, Object> sessionCache = new HashMap<>();  
-      
-    public AppSession(@NotNull CacheManager cacheManager, @NotNull AppConfig appConfig) {  
-        this.cacheManager = cacheManager;  
-        this.appConfig = appConfig;  
-          
-        User currentUser = getCurrentUser();  
-        String userId = currentUser != null ? currentUser.getId().toString() : null;  
-        this.userConfig = appConfig.getUserConfig(userId);  
-          
-        log.info("Sesión inicializada para usuario: {}", userId != null ? userId : "default");  
-    }  
-      
-    // === DELEGACIÓN A APPCONFIG ===  
-      
-    public AppConfig getAppConfig() {  
-        return appConfig;  
-    }  
-      
-    public AppConfig.UserConfig getUserConfig() {  
-        return userConfig;  
-    }  
-      
-    // === MÉTODOS DE CONVENIENCIA ===  
-      
-    public String getPreferredLanguage() {  
-        return userConfig.getPreferredLanguage();  
-    }  
-      
-    public void setPreferredLanguage(String language) {  
-        userConfig.setPreferredLanguage(language);  
-    }  
-      
-    public String getPreferredTheme() {  
-        return userConfig.getPreferredTheme();  
-    }  
-      
-    public void setPreferredTheme(String theme) {  
-        userConfig.setPreferredTheme(theme);  
-    }  
-      
-    // === GESTIÓN DE CACHÉ DE SESIÓN ===  
-      
-    public void cacheSessionData(String key, Object data) {  
-        sessionCache.put(key, data);  
-        cacheManager.put("session_" + key, data);  
-    }  
-      
-    public <T> T getCachedSessionData(String key, Class<T> type) {  
-        Object cached = sessionCache.get(key);  
-        if (cached != null && type.isInstance(cached)) {  
-            return type.cast(cached);  
-        }  
-          
-        Object fromCache = cacheManager.get("session_" + key);  
-        if (fromCache != null && type.isInstance(fromCache)) {  
-            sessionCache.put(key, fromCache);  
-            return type.cast(fromCache);  
-        }  
-          
-        return null;  
-    }  
-      
-    // === LIMPIEZA ===  
-      
-    public void clear() {  
-        try {  
-            this.unidad = null;  
-            this.periodo = null;  
-            this.ejercicio = null;  
-            this.license = null;  
-              
-            sessionCache.clear();  
-            cacheManager.clear();  
-              
-            log.info("Sesión limpiada exitosamente");  
-        } catch (Exception e) {  
-            log.error("Error al limpiar sesión: {}", e.getMessage(), e);  
-        }  
-    }  
-      
-    @Override  
-    public void close() {  
-        clear();  
-    }  
+    private final CacheManager cacheManager;
+    private Ejercicio ejercicio;
+    private Empresa empresa;
+    private Unidad unidad;
+    private Periodo periodo;
+    private String license;
+    private final Map<String, Object> sessionCache = new HashMap<>();
 
-    public User getCurrentUser() {
-        return MyCurrentUserProvider.getUser();
+    @Inject
+    public AppSession(@NotNull CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+        User currentUser = getUser();
+        String userId = currentUser != null ? currentUser.getId().toString() : null;
+
+        log.info("Sesión inicializada para usuario: {}", userId != null ? userId : "default");
     }
 
-    public void setCurrentUser(@NotNull User currentUser) {
-        MyCurrentUserProvider.setUser(currentUser);
+    public void cacheSessionData(String key, Object data) {
+        sessionCache.put(key, data);
+        cacheManager.put("session_" + key, data);
+    }
+
+    public <T> T getCachedSessionData(String key, Class<T> type) {
+        Object cached = sessionCache.get(key);
+        if (cached != null && type.isInstance(cached)) {
+            return type.cast(cached);
+        }
+
+        Object fromCache = cacheManager.get("session_" + key);
+        if (fromCache != null && type.isInstance(fromCache)) {
+            sessionCache.put(key, fromCache);
+            return type.cast(fromCache);
+        }
+
+        return null;
+    }
+
+    public void clear() {
+        try {
+            this.unidad = null;
+            this.periodo = null;
+            this.ejercicio = null;
+            this.license = null;
+
+            sessionCache.clear();
+            cacheManager.clear();
+
+            log.info("Sesión limpiada exitosamente");
+        } catch (Exception e) {
+            log.error("Error al limpiar sesión: {}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void close() {
+        clear();
+    }
+
+    public final User getUser() {
+        return UserContext.get().getUser();
+    }
+
+    public void setUser(@NotNull User user) {
+        UserContext.get().setUser(user);
     }
 
     public Unidad getUnidad() {
@@ -153,4 +118,13 @@ public class AppSession implements AutoCloseable {
     public void setLicense(@NotNull String license) {
         this.license = license;
     }
+
+    public Empresa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresa empresa) {
+        this.empresa = empresa;
+    }
+
 }

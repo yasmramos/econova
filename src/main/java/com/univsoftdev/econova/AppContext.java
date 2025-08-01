@@ -1,50 +1,40 @@
 package com.univsoftdev.econova;
 
-import com.univsoftdev.econova.cache.CacheManager;
-import com.univsoftdev.econova.core.Version;
-import com.univsoftdev.econova.core.config.AppConfig;
-import com.univsoftdev.econova.core.module.Module;
-import com.univsoftdev.econova.core.module.ModuleDependencyManager;
-import com.univsoftdev.econova.core.module.ModuleInitializationException;
-import com.univsoftdev.econova.core.utils.EncryptionUtil;
-import io.avaje.inject.BeanScope;
-import io.avaje.config.Config;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JMenuBar;
-import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.univsoftdev.econova.cache.CacheManager;
+import com.univsoftdev.econova.core.Version;
+import com.univsoftdev.econova.core.config.AppConfig;
+import com.univsoftdev.econova.core.module.ModuleDependencyManager;
+import com.univsoftdev.econova.core.module.ModuleInitializationException;
+import com.univsoftdev.econova.core.utils.EncryptionUtil;
+import com.univsoftdev.econova.core.module.Module;
+import com.univsoftdev.econova.core.module.ModuleShutdownException;
+import io.avaje.config.Config;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Contexto global unificado de la aplicación Econova. Singleton thread-safe,
  * multiplataforma y serializable. Gestiona dependencias, sesión, caché, módulos
  * y configuración global.
  */
+@Slf4j
 @Singleton
-@Data
 public class AppContext implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = LoggerFactory.getLogger(AppContext.class);
-    private static volatile AppContext instance;
 
-    // Propiedades originales de AppContext  
+    private final transient AppSession session;
+    private final transient CacheManager cacheManager;
     private final Version version;
     private final String appName;
-    private transient final AppSession session;
-    private transient final CacheManager cacheManager;
     private String databaseName;
-    private boolean loggedIn = false;
-    private JMenuBar mainMenuBar;
-    private BeanScope injector;
-
-    // Propiedades migradas de Context  
     private String language;
     private String theme;
     private boolean running;
@@ -52,65 +42,36 @@ public class AppContext implements Serializable {
     private final List<Module> modules;
     private final Map<String, Object> resources;
     private ModuleDependencyManager moduleDependencyManager;
-    private final AppConfig appConfig;
 
-    /**
-     * Constructor privado mejorado. Inicializa todas las dependencias y
-     * recursos.
-     */
     @Inject
-    private AppContext() {
-        // Inicialización original de AppContext  
-        this.appConfig = new AppConfig();
+    public AppContext(AppSession session, CacheManager cacheManager) {
+        this.session = session;
+        this.cacheManager = cacheManager;
         this.version = new Version(0, 1, 0, 20250304);
-        this.appName = "Econova";
-        this.injector = BeanScope.builder().shutdownHook(true).build();
-        this.cacheManager = new CacheManager();
-        this.session = new AppSession(cacheManager, appConfig);
-
-        // Inicialización migrada de Context  
+        this.appName = AppConfig.getAppName();
         this.eventLog = new ArrayList<>();
         this.modules = new ArrayList<>();
-        this.language = Config.get("app.language", "es");
-        this.theme = Config.get("app.theme", "light");
+        this.language = AppConfig.getDefaultLanguage();
+        this.theme = AppConfig.getDefaultTheme();
         this.running = false;
         this.resources = new HashMap<>();
         this.moduleDependencyManager = new ModuleDependencyManager(this);
-        logger.info("AppContext inicializado con configuración unificada");
+        log.info("AppContext inicializado");
     }
 
-    /**
-     * Obtiene la instancia singleton thread-safe
-     */
-    public static AppContext getInstance() {
-        AppContext inst = AppContext.instance;
-        if (inst == null) {
-            synchronized (AppContext.class) {
-                inst = AppContext.instance;
-                if (inst == null) {
-                    AppContext.instance = inst = new AppContext();
-                }
-            }
-        }
-        return inst;
-    }
-
-    public AppConfig getAppConfig() {
-        return appConfig;
-    }
-
-    // === GESTIÓN DE MÓDULOS MEJORADA ===  
     /**
      * Añade un módulo con validación y manejo de errores mejorado
+     *
+     * @param module
      */
     public void addModule(Module module) {
         if (module == null) {
-            logger.warn("Intento de añadir módulo nulo");
+            log.warn("Intento de añadir módulo nulo");
             return;
         }
 
         if (modules.contains(module)) {
-            logger.warn("El módulo {} ya está registrado", module.getClass().getSimpleName());
+            log.warn("El módulo {} ya está registrado", module.getClass().getSimpleName());
             return;
         }
 
@@ -118,10 +79,10 @@ public class AppContext implements Serializable {
             modules.add(module);
             module.initialize(this); // Corregido el error tipográfico  
             logEvent("Módulo añadido: " + module.getClass().getSimpleName());
-            logger.info("Módulo {} inicializado correctamente", module.getClass().getSimpleName());
+            log.info("Módulo {} inicializado correctamente", module.getClass().getSimpleName());
         } catch (ModuleInitializationException e) {
             modules.remove(module); // Rollback en caso de error  
-            logger.error("Error al inicializar módulo {}: {}",
+            log.error("Error al inicializar módulo {}: {}",
                     module.getClass().getSimpleName(), e.getMessage(), e);
             throw new RuntimeException("Fallo al inicializar módulo", e);
         }
@@ -137,6 +98,9 @@ public class AppContext implements Serializable {
 
     /**
      * Remueve un módulo de forma segura
+     *
+     * @param module
+     * @return
      */
     public boolean removeModule(Module module) {
         if (module == null) {
@@ -149,16 +113,15 @@ public class AppContext implements Serializable {
                 logEvent("Módulo removido: " + module.getClass().getSimpleName());
                 return true;
             }
-        } catch (Exception e) {
-            logger.error("Error al remover módulo: {}", e.getMessage(), e);
+        } catch (ModuleShutdownException e) {
+            log.error("Error al remover módulo: {}", e.getMessage(), e);
         }
         return false;
     }
 
-    // === GESTIÓN DE RECURSOS MEJORADA ===  
     public void addResource(String key, Object resource) {
         if (key == null || key.trim().isEmpty()) {
-            logger.warn("Intento de añadir recurso con clave nula o vacía");
+            log.warn("Intento de añadir recurso con clave nula o vacía");
             return;
         }
         resources.put(key, resource);
@@ -181,11 +144,10 @@ public class AppContext implements Serializable {
         logEvent("Recursos limpiados: " + count + " elementos");
     }
 
-    // === GESTIÓN DE EVENTOS MEJORADA ===  
     public void logEvent(String event) {
         if (event != null && !event.trim().isEmpty()) {
             eventLog.add(event);
-            logger.info("Evento registrado: {}", event);
+            log.info("Evento registrado: {}", event);
         }
     }
 
@@ -193,15 +155,17 @@ public class AppContext implements Serializable {
         return new ArrayList<>(eventLog); // Copia defensiva  
     }
 
-    // === GESTIÓN DE CREDENCIALES SEGURA ===  
     /**
      * Encripta datos usando el sistema de encriptación seguro
+     *
+     * @param data
+     * @return
      */
     public String encryptData(String data) {
         String encryptionKey = Config.get("econova.encryption.key",
                 System.getenv("ECONOVA_ENCRYPTION_KEY"));
         if (encryptionKey == null) {
-            logger.error("Clave de encriptación no configurada");
+            log.error("Clave de encriptación no configurada");
             throw new IllegalStateException("Clave de encriptación no disponible");
         }
         return EncryptionUtil.encryptWithCustomKey(data, encryptionKey);
@@ -221,7 +185,6 @@ public class AppContext implements Serializable {
         logEvent("Contexto reiniciado");
     }
 
-    // === MÉTODOS DE ESTADO ===  
     public boolean isRunning() {
         return running;
     }
@@ -231,7 +194,6 @@ public class AppContext implements Serializable {
         logEvent("Estado de ejecución: " + (running ? "iniciado" : "detenido"));
     }
 
-    // Getters y setters adicionales...  
     public String getLanguage() {
         return language;
     }
@@ -249,4 +211,41 @@ public class AppContext implements Serializable {
         this.theme = theme;
         logEvent("Tema cambiado a: " + theme);
     }
+
+    public Version getVersion() {
+        return version;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public AppSession getSession() {
+        return session;
+    }
+
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public List<Module> getModules() {
+        return modules;
+    }
+
+    public Map<String, Object> getResources() {
+        return resources;
+    }
+
+    public ModuleDependencyManager getModuleDependencyManager() {
+        return moduleDependencyManager;
+    }
+
+    public void setModuleDependencyManager(ModuleDependencyManager moduleDependencyManager) {
+        this.moduleDependencyManager = moduleDependencyManager;
+    }
+
 }
