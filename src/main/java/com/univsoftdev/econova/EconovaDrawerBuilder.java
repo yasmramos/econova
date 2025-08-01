@@ -5,9 +5,8 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.system.FormManager;
+import jakarta.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import raven.modal.drawer.DrawerPanel;
 import raven.modal.drawer.menu.*;
 import raven.modal.drawer.renderer.DrawerStraightDotLineStyle;
@@ -17,20 +16,19 @@ import raven.modal.drawer.simple.header.SimpleHeaderData;
 import raven.extras.AvatarIcon;
 
 import javax.swing.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import raven.modal.drawer.item.MenuItem;
 import raven.modal.drawer.simple.footer.LightDarkButtonFooter;
 import raven.modal.drawer.simple.header.SimpleHeader;
 
+@Slf4j
 public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     private final int SHADOW_SIZE = 12;
-    private User currentUser;
-    private static final Logger LOGGER = LoggerFactory.getLogger(EconovaDrawerBuilder.class);
-    private final AppContext appContext = AppContext.getInstance();
+    private final AppContext appContext = Injector.get(AppContext.class);
     private static EconovaDrawerBuilder instance;
-    private ModelUser user;
+    private User user;
+    
 
     private EconovaDrawerBuilder() {
         super(createSimpleMenuOption());
@@ -38,7 +36,6 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
         lightDarkButtonFooter.addModeChangeListener(isDarkMode -> {
             // event for light dark mode changed
         });
-        this.currentUser = appContext.getSession().getCurrentUser();
     }
 
     public static EconovaDrawerBuilder getInstance() {
@@ -48,27 +45,27 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
         return instance;
     }
 
-    public ModelUser getUser() {
+    public User getUser() {
         return user;
     }
 
-    public void setUser(ModelUser user) {
-        boolean updateMenuItem = this.user == null || this.user.getRole() != user.getRole();
+    public void setUser(User user) {
+        boolean updateMenuItem = this.user == null || this.user.getRoles() != user.getRoles();
 
         this.user = user;
 
         // set user to menu validation
         MyMenuValidation.setUser(user);
-
+        appContext.getSession().setUser(user);
         // setup drawer header
         SimpleHeader header = (SimpleHeader) getHeader();
         SimpleHeaderData data = header.getSimpleHeaderData();
         AvatarIcon icon = (AvatarIcon) data.getIcon();
-        String iconName = user.getRole() == ModelUser.Role.ADMIN ? "avatar_male.svg" : "avatar_female.svg";
+        String iconName = "avatar_male.svg";
 
-        icon.setIcon(new FlatSVGIcon("raven/modal/demo/drawer/image/" + iconName, 100, 100));
+        icon.setIcon(new FlatSVGIcon("econova/drawer/image/" + iconName, 100, 100));
         data.setTitle(user.getUserName());
-        data.setDescription(user.getMail());
+        data.setDescription(user.getEmail());
         header.setSimpleHeaderData(data);
 
         if (updateMenuItem) {
@@ -78,7 +75,7 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     @Override
     public SimpleHeaderData getSimpleHeaderData() {
-        final AvatarIcon icon = new AvatarIcon(getClass().getResource("/raven/modal/demo/drawer/image/profile.png"), 50, 50, 3.5f);
+        final AvatarIcon icon = new AvatarIcon(getClass().getResource("/econova/drawer/image/profile.png"), 50, 50, 3.5f);
         icon.setType(AvatarIcon.Type.MASK_SQUIRCLE);
         icon.setBorder(2, 2);
 
@@ -102,7 +99,7 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     @Override
     public SimpleFooterData getSimpleFooterData() {
-        var context = AppContext.getInstance();
+        var context = Injector.get(AppContext.class);
         return new SimpleFooterData()
                 .setTitle("Econova")
                 .setDescription("Version " + context.getVersion().toString());
@@ -110,10 +107,10 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     @NotNull
     public static MenuOption createSimpleMenuOption() {
-        
+
         final MenuOption simpleMenuOption = new MenuOption();
         final MenuItem[] items = MenuFactory.buildMenuItems();
-        
+
         simpleMenuOption.setMenuStyle(new MenuStyle() {
             @Override
             public void styleMenu(JComponent component) {
@@ -154,12 +151,12 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
                 Form form = formClass.getDeclaredConstructor().newInstance();
                 FormManager.showForm(form);
             } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                LOGGER.error(ex.getMessage());
+                log.error(ex.getMessage());
                 ex.printStackTrace();
             }
         });
         simpleMenuOption.setMenus(items)
-                .setBaseIconPath("raven/modal/demo/drawer/icon")
+                .setBaseIconPath("econova/drawer/icon")
                 .setIconScale(0.45f);
         return simpleMenuOption;
     }
@@ -189,7 +186,6 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
         drawerPanel.putClientProperty(FlatClientProperties.STYLE, getDrawerBackgroundStyle());
     }
 
-    @Contract(pure = true)
     @NotNull
     private static String getDrawerBackgroundStyle() {
         return "[light]background:tint($Panel.background,20%);"
