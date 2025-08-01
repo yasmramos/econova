@@ -91,7 +91,7 @@ public class Ejercicio extends BaseModel {
         this.current = current;
     }
 
-    public void validateDates() {
+    public final void validateDates() {
         if (fechaInicio.isAfter(fechaFin)) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
         }

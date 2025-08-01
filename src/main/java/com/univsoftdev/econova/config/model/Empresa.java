@@ -14,6 +14,8 @@ public class Empresa extends BaseModel {
 
     private static final long serialVersionUID = 1L;
 
+    private String code;
+
     @NotBlank(message = "El nombre no puede estar vacío.")
     @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres.")
     private String name;
@@ -50,7 +52,12 @@ public class Empresa extends BaseModel {
     @Size(max = 20, message = "El CIF no puede tener más de 20 caracteres.")
     @Column(name = "cif", unique = true)
     private String cif; // Código de Identificación Fiscal (opcional según tu país)
+    private String nae;
 
+    private String dpa;
+
+    private String reuup;
+    
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private final List<Unidad> unidades = new ArrayList<>();
 
@@ -63,8 +70,21 @@ public class Empresa extends BaseModel {
         this.nif = nif;
     }
 
-    public List<Unidad> getUnidades() {
-        return unidades;
+    @Override
+    public String toString() {
+        return String.format("Empresa [%s] - %s (%s)", getId(), name, nif);
+    }
+
+    public void addUnidad(@NotNull Unidad unidad) {
+        this.unidades.add(unidad);
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getName() {
@@ -155,9 +175,33 @@ public class Empresa extends BaseModel {
         this.cif = cif;
     }
 
-    // toString()
-    @Override
-    public String toString() {
-        return String.format("Empresa [%s] - %s (%s)", getId(), name, nif);
+    public String getNae() {
+        return nae;
     }
+
+    public void setNae(String nae) {
+        this.nae = nae;
+    }
+
+    public String getDpa() {
+        return dpa;
+    }
+
+    public void setDpa(String dpa) {
+        this.dpa = dpa;
+    }
+
+    public String getReuup() {
+        return reuup;
+    }
+
+    public void setReuup(String reuup) {
+        this.reuup = reuup;
+    }
+
+    public List<Unidad> getUnidades() {
+        return unidades;
+    }
+    
+    
 }

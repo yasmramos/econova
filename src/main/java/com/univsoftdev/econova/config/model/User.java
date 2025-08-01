@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.config.model;
 
-import com.univsoftdev.econova.seguridad.Argon2PasswordHasher;
-import com.univsoftdev.econova.seguridad.PasswordHasher;
+import com.univsoftdev.econova.security.Argon2PasswordHasher;
+import com.univsoftdev.econova.security.PasswordHasher;
 import com.univsoftdev.econova.Validations;
 import com.univsoftdev.econova.contabilidad.model.PasswordRegistry;
 import com.univsoftdev.econova.core.model.BaseModel;
@@ -25,7 +25,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_users")
+@Table(name = "sys_users", schema = "accounting")
 public class User extends BaseModel {
 
     private static final long serialVersionUID = 1L;
@@ -49,12 +49,9 @@ public class User extends BaseModel {
 
     @OneToOne
     private PasswordRegistry passwordRegistry;
-    private boolean activo;
+    private boolean active;
     private boolean adminSistema;
     private boolean adminEconomico;
-
-    @Column(name = "tenant_schema")
-    private String tenantSchema;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -75,6 +72,10 @@ public class User extends BaseModel {
         this.userName = identificador;
         this.password = hasher.hash(contrasenna); // Hashea la contraseña antes de almacenarla
     }
+    
+    public Set<Rol> getRoles(){
+        return roles;
+    }
 
     public boolean esContrasennaRepetida(String rawPassword) {
         if (passwordRegistry == null) {
@@ -92,7 +93,7 @@ public class User extends BaseModel {
     }
 
     public boolean tieneRol(String nombreRol) {
-        return roles.stream().anyMatch(r -> r.getNombre().equals(nombreRol));
+        return roles.stream().anyMatch(r -> r.getName().equals(nombreRol));
     }
 
     public boolean tienePermiso(String permiso) {
@@ -111,12 +112,12 @@ public class User extends BaseModel {
         this.passwordRegistry = passwordRegistry;
     }
 
-    public boolean isActivo() {
-        return activo;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setActivo(boolean activo) {
-        this.activo = activo;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public boolean isAdminSistema() {
@@ -189,15 +190,10 @@ public class User extends BaseModel {
         this.userName = userName;
     }
 
-    @NotNull
-    public Set<Rol> getRoles() {
-        return roles;
-    }
-
     public void setRoles(@NotNull Set<Rol> roles) {
         this.roles = roles;
-        this.adminSistema = roles.stream().anyMatch(r -> r.getNombre().equalsIgnoreCase("ADMIN_SISTEMA"));
-        this.adminEconomico = roles.stream().anyMatch(r -> r.getNombre().equalsIgnoreCase("ADMIN_ECONOMICO"));
+        this.adminSistema = roles.stream().anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN_SISTEMA"));
+        this.adminEconomico = roles.stream().anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN_ECONOMICO"));
     }
 
     public boolean esAdministrador() {
@@ -206,14 +202,6 @@ public class User extends BaseModel {
 
     public boolean puedeAccederAContabilidad() {
         return adminSistema || adminEconomico || tieneRol("CONTABILIDAD");
-    }
-
-    public String getTenantSchema() {
-        return tenantSchema;
-    }
-
-    public void setTenantSchema(String tenantSchema) {
-        this.tenantSchema = tenantSchema;
     }
 
     @Override

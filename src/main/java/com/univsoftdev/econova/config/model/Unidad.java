@@ -51,6 +51,7 @@ public class Unidad extends BaseModel {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Asiento> asientos = new ArrayList<>();
+    
     @ManyToOne
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;

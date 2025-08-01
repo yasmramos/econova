@@ -3,6 +3,7 @@ package com.univsoftdev.econova.config.model;
 import jakarta.validation.constraints.NotNull;
 
 public enum RolPredefinido {
+    
     ADMIN_SISTEMA("ADMIN_SISTEMA"),
     ADMIN_ECONOMICO("ADMIN_ECONOMICO"),
     CONTADOR("CONTADOR"),
