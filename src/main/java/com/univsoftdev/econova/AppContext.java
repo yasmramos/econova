@@ -41,7 +41,7 @@ public class AppContext implements Serializable {
     private final List<String> eventLog;
     private final List<Module> modules;
     private final Map<String, Object> resources;
-    private ModuleDependencyManager moduleDependencyManager;
+    private final transient ModuleDependencyManager moduleDependencyManager;
 
     @Inject
     public AppContext(AppSession session, CacheManager cacheManager) {
@@ -171,7 +171,6 @@ public class AppContext implements Serializable {
         return EncryptionUtil.encryptWithCustomKey(data, encryptionKey);
     }
 
-    // === MÉTODOS DE CONFIGURACIÓN ===  
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
         cacheManager.put("econova.database.name", databaseName);
@@ -242,10 +241,6 @@ public class AppContext implements Serializable {
 
     public ModuleDependencyManager getModuleDependencyManager() {
         return moduleDependencyManager;
-    }
-
-    public void setModuleDependencyManager(ModuleDependencyManager moduleDependencyManager) {
-        this.moduleDependencyManager = moduleDependencyManager;
     }
 
 }
