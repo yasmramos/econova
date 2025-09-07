@@ -1,6 +1,5 @@
 package com.univsoftdev.econova.component.wizard;
 
-import com.univsoftdev.econova.bsondb.BsonDb;
 import com.github.cjwizard.StackWizardSettings;
 import com.github.cjwizard.WizardContainer;
 import com.github.cjwizard.WizardListener;
@@ -19,7 +18,6 @@ import javax.swing.LayoutStyle;
 import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Map;
 import java.util.UUID;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import lombok.extern.slf4j.Slf4j;
