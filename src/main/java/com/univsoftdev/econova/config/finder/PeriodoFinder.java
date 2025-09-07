@@ -1,20 +1,20 @@
 package com.univsoftdev.econova.config.finder;
 
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.config.model.Period;
 import io.ebean.Finder;
 import java.util.List;
 
-public class PeriodoFinder extends Finder<Long, Periodo> {
+public class PeriodoFinder extends Finder<Long, Period> {
 
     public PeriodoFinder() {
-        super(Periodo.class);
+        super(Period.class);
     }
     
-    public Periodo findByNombre(String nombre) {
-        return db().find(Periodo.class).where().eq("nombre", nombre).findOne();
+    public Period findByNombre(String nombre) {
+        return db().find(Period.class).where().eq("nombre", nombre).findOne();
     }
 
-    public List<Periodo> findActuales() {
-        return db().find(Periodo.class).where().eq("current", true).findList();
+    public List<Period> findActuales() {
+        return db().find(Period.class).where().eq("current", true).findList();
     }
 }

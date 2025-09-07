@@ -1,26 +1,25 @@
 package com.univsoftdev.econova.config.finder;
 
-import com.univsoftdev.econova.config.model.Unidad;
+import com.univsoftdev.econova.config.model.Unit;
 import io.ebean.Finder;
 import java.util.List;
+import java.util.Optional;
 
-public class UnidadFinder extends Finder<Long, Unidad> {
+public class UnidadFinder extends Finder<Long, Unit> {
 
     public UnidadFinder() {
-        super(Unidad.class);
+        super(Unit.class);
     }
 
-    public Unidad findByCodigo(String codigo) {
-        return db().find(Unidad.class)
-                .where()
-                .eq("codigo", codigo)
-                .findOne();
+    public Optional<Unit> byCodigo(String codigo) {
+        return query().where().eq("codigo", codigo).findOneOrEmpty();
     }
 
-    public List<Unidad> findActivas() {
-        return db().find(Unidad.class)
-                .where()
-                .eq("activo", true)
-                .findList();
+    public List<Unit> byEmpresa(Long empresaId) {
+        return query().where().eq("empresa.id", empresaId).findList();
+    }
+
+    public List<Unit> activas() {
+        return query().where().eq("deleted", false).findList();
     }
 }

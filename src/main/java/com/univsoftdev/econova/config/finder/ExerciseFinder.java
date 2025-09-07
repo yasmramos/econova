@@ -1,11 +1,11 @@
 package com.univsoftdev.econova.config.finder;
 
-import com.univsoftdev.econova.config.model.Ejercicio;
+import com.univsoftdev.econova.config.model.Exercise;
 import io.ebean.Finder;
 
-public class EjercicioFinder extends Finder<Long, Ejercicio> {
+public class ExerciseFinder extends Finder<Long, Exercise> {
 
-    public EjercicioFinder() {
-        super(Ejercicio.class);
+    public ExerciseFinder() {
+        super(Exercise.class);
     }
 }
