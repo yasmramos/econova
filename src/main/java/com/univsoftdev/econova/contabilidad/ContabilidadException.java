@@ -1,4 +1,4 @@
-package com.univsoftdev.econova.contabilidad.service;
+package com.univsoftdev.econova.contabilidad;
 
 public class ContabilidadException extends Exception {
 
