@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;

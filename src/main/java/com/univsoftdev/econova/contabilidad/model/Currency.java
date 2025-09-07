@@ -13,33 +13,33 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "cont_monedas")
-public class Moneda extends BaseModel {
+@Table(name = "cont_currency")
+public class Currency extends BaseModel {
 
     private String symbol;
     private String displayName;
-    private String pais;
+    private String country;
     private boolean porDefecto;
     private int fraccion;
     private BigDecimal tasaCambio;
     
-    @OneToMany(mappedBy = "moneda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Cuenta> cuentas = new ArrayList<>();
+    @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Account> cuentas = new ArrayList<>();
     
-    @OneToMany(mappedBy = "moneda", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<Transaccion> transacciones = new ArrayList<>();
+    @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private final List<Transaction> transacciones = new ArrayList<>();
 
-    public Moneda() {
+    public Currency() {
     }
 
-    public Moneda(String codigo, String nombre) {
-        this.symbol = codigo;
-        this.displayName = nombre;
+    public Currency(String code, String name) {
+        this.symbol = code;
+        this.displayName = name;
     }
 
-    public Moneda(String codigo, String nombre, BigDecimal tasaCambio) {
-        this.symbol = codigo;
-        this.displayName = nombre;
+    public Currency(String code, String name, BigDecimal tasaCambio) {
+        this.symbol = code;
+        this.displayName = name;
         this.tasaCambio = tasaCambio;
     }
 
@@ -59,12 +59,12 @@ public class Moneda extends BaseModel {
         this.fraccion = fraccion;
     }
 
-    public String getPais() {
-        return pais;
+    public String getCountry() {
+        return country;
     }
 
-    public void setPais(String pais) {
-        this.pais = pais;
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getSymbol() {
@@ -91,15 +91,15 @@ public class Moneda extends BaseModel {
         this.tasaCambio = tasaCambio;
     }
 
-    public List<Cuenta> getCuentas() {
+    public List<Account> getCuentas() {
         return cuentas;
     }
 
-    public void setCuentas(List<Cuenta> cuentas) {
+    public void setCuentas(List<Account> cuentas) {
         this.cuentas = cuentas;
     }
 
-    public List<Transaccion> getTransacciones() {
+    public List<Transaction> getTransacciones() {
         return transacciones;
     }
 

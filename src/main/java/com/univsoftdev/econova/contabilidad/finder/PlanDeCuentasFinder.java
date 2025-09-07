@@ -1,24 +1,24 @@
 package com.univsoftdev.econova.contabilidad.finder;
 
-import com.univsoftdev.econova.contabilidad.model.PlanDeCuentas;
+import com.univsoftdev.econova.contabilidad.model.ChartOfAccounts;
 import io.ebean.Finder;
 import java.util.List;
 
-public class PlanDeCuentasFinder extends Finder<Long, PlanDeCuentas> {
+public class PlanDeCuentasFinder extends Finder<Long, ChartOfAccounts> {
 
     public PlanDeCuentasFinder() {
-        super(PlanDeCuentas.class);
+        super(ChartOfAccounts.class);
     }
 
-    public PlanDeCuentas findByNombre(String nombre) {
-        return db().find(PlanDeCuentas.class)
+    public ChartOfAccounts findByNombre(String nombre) {
+        return db().find(ChartOfAccounts.class)
                 .where()
                 .eq("nombre", nombre)
                 .findOne();
     }
 
-    public List<PlanDeCuentas> findActivos() {
-        return db().find(PlanDeCuentas.class)
+    public List<ChartOfAccounts> findActivos() {
+        return db().find(ChartOfAccounts.class)
                 .where()
                 .eq("activo", true)
                 .findList();

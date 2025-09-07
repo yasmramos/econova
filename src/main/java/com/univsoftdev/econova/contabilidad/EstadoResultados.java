@@ -4,9 +4,9 @@ import com.univsoftdev.econova.contabilidad.model.*;
 
 public class EstadoResultados {
 
-    private final PlanDeCuentas planDeCuentas;
+    private final ChartOfAccounts planDeCuentas;
 
-    public EstadoResultados(PlanDeCuentas planDeCuentas) {
+    public EstadoResultados(ChartOfAccounts planDeCuentas) {
         this.planDeCuentas = planDeCuentas;
     }
 

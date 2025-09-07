@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.contabilidad.model.Account;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
 import com.univsoftdev.econova.core.utils.DialogUtils;
 import java.awt.event.*;
@@ -158,17 +158,17 @@ public class FormApertura extends Modal {
         planDeCuentasService = Injector.get(PlanDeCuentasService.class);
 
         DefaultTableModel model = (DefaultTableModel) table1.getModel();
-        java.util.List<Cuenta> allCuentas = planDeCuentasService.findAllCuentas();
+        java.util.List<Account> allCuentas = planDeCuentasService.findAllCuentas();
 
-        for (Cuenta cuenta : allCuentas) {
-            String activa = (cuenta.isActiva()) ? "Activa" : "Inactiva";
+        for (Account cuenta : allCuentas) {
+            String activa = (cuenta.isActive()) ? "Activa" : "Inactiva";
             model.addRow(new Object[]{
-                cuenta.getCodigo(),
-                cuenta.getNombre(),
-                cuenta.getNaturaleza().name(),
-                cuenta.getTipoCuenta().name(),
+                cuenta.getCode(),
+                cuenta.getName(),
+                cuenta.getNatureOfAccount().name(),
+                cuenta.getAccountType().name(),
                 activa,
-                cuenta.getMoneda().getSymbol()});
+                cuenta.getCurrency().getSymbol()});
         }
     }
 }

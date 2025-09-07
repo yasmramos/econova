@@ -4,6 +4,5 @@ import io.avaje.inject.Factory;
 
 @Factory
 public class AftModule{
-
     
 }

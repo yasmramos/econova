@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad.model;
 
-import com.univsoftdev.econova.contabilidad.TipoCuenta;
+import com.univsoftdev.econova.contabilidad.AccountType;
 import com.univsoftdev.econova.core.model.BaseModel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -14,118 +14,118 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "cont_plan_cuentas")
-public class PlanDeCuentas extends BaseModel {
+@Table(name = "acc_chart_of_accounts")
+public class ChartOfAccounts extends BaseModel {
 
     private static final long serialVersionUID = 1L;
 
-    @NotBlank(message = "El nombre del plan de cuentas no puede estar vacío.")
-    private String nombre;
+    @NotBlank(message = "The chart of accounts name cannot be empty.")
+    private String name;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Cuenta> cuentas = new ArrayList<>();
+    private List<Account> accounts = new ArrayList<>();
 
-    public PlanDeCuentas() {
+    public ChartOfAccounts() {
     }
 
-    public PlanDeCuentas(String nombre) {
-        Objects.requireNonNull(nombre, "El nombre no puede ser nulo");
-        this.nombre = nombre;
+    public ChartOfAccounts(String nombre) {
+        Objects.requireNonNull(nombre, "The name cannot be null");
+        this.name = nombre;
     }
 
     /**
-     * Obtiene todas las subcuentas del plan de cuentas.
+     * Obtiene todas las subcuentas del plan de accounts.
      *
      * @return Lista de subcuentas.
      */
-    public List<Cuenta> obtenerSubCuentas() {
-        return this.cuentas.stream()
-                .flatMap(cuenta -> cuenta.getSubCuentas().stream())
+    public List<Account> obtenerSubCuentas() {
+        return this.accounts.stream()
+                .flatMap(cuenta -> cuenta.getSubAccounts().stream())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Obtiene todos los controles del plan de cuentas.
+     * Obtiene todos los controles del plan de accounts.
      *
      * @return Lista de controles.
      */
-    public List<Cuenta> obtenerControles() {
+    public List<Account> obtenerControles() {
         return this.obtenerSubCuentas().stream()
-                .flatMap(subCuenta -> subCuenta.getSubCuentas().stream())
+                .flatMap(subCuenta -> subCuenta.getSubAccounts().stream())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Obtiene todos los subcontroles del plan de cuentas.
+     * Obtiene todos los subcontroles del plan de accounts.
      *
      * @return Lista de subcontroles.
      */
-    public List<Cuenta> obtenerSubControles() {
+    public List<Account> obtenerSubControles() {
         return this.obtenerControles().stream()
-                .flatMap(control -> control.getSubCuentas().stream())
+                .flatMap(control -> control.getSubAccounts().stream())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Obtiene todos los análisis del plan de cuentas.
+     * Obtiene todos los análisis del plan de accounts.
      *
      * @return Lista de análisis.
      */
-    public List<Cuenta> obtenerAnalisis() {
+    public List<Account> obtenerAnalisis() {
         return this.obtenerSubControles().stream()
-                .flatMap(subControl -> subControl.getSubCuentas().stream())
+                .flatMap(subControl -> subControl.getSubAccounts().stream())
                 .collect(Collectors.toList());
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<Cuenta> getCuentas() {
-        return cuentas;
+    public List<Account> getAccounts() {
+        return accounts;
     }
 
-    public void setCuentas(List<Cuenta> cuentas) {
-        this.cuentas = cuentas;
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
     }
 
     /**
-     * Obtiene todas las cuentas del plan de cuentas.
+     * Obtiene todas las accounts del plan de accounts.
      *
-     * @return Lista de cuentas.
+     * @return Lista de accounts.
      */
-    public List<Cuenta> obtenerCuentas() {
-        return this.cuentas;
+    public List<Account> obtenerCuentas() {
+        return this.accounts;
     }
 
     /**
-     * Agrega una cuenta al plan de cuentas.
+     * Agrega una cuenta al plan de accounts.
      *
      * @param cuenta La cuenta a agregar.
      */
-    public void agregarCuenta(Cuenta cuenta) {
+    public void agregarCuenta(Account cuenta) {
         if (cuenta == null) {
-            throw new IllegalArgumentException("La cuenta no puede ser nula.");
+            throw new IllegalArgumentException("The account cannot be null.");
         }
-        cuenta.setPlanDeCuenta(this);
-        this.cuentas.add(cuenta);
+        cuenta.setChartOfAccounts(this);
+        this.accounts.add(cuenta);
     }
 
     /**
-     * Elimina una cuenta del plan de cuentas.
+     * Elimina una cuenta del plan de accounts.
      *
      * @param cuenta La cuenta a eliminar.
      */
-    public void eliminarCuenta(Cuenta cuenta) {
+    public void eliminarCuenta(Account cuenta) {
         if (cuenta == null) {
-            throw new IllegalArgumentException("La cuenta no puede ser nula.");
+            throw new IllegalArgumentException("The account cannot be null.");
         }
-        cuenta.setPlanDeCuenta(null);
-        this.cuentas.remove(cuenta);
+        cuenta.setChartOfAccounts(null);
+        this.accounts.remove(cuenta);
     }
 
     /**
@@ -134,22 +134,22 @@ public class PlanDeCuentas extends BaseModel {
      * @param codigo El código de la cuenta a buscar.
      * @return La cuenta encontrada, o null si no existe.
      */
-    public Optional<Cuenta> buscarCuentaPorCodigo(String codigo) {
+    public Optional<Account> buscarCuentaPorCodigo(String codigo) {
         if (codigo == null || codigo.isEmpty()) {
-            throw new IllegalArgumentException("El código no puede ser nulo o vacío.");
+            throw new IllegalArgumentException("The code cannot be null or empty.");
         }
-        return this.cuentas.stream()
-                .filter(cuenta -> cuenta.getCodigo().equals(codigo))
+        return this.accounts.stream()
+                .filter(cuenta -> cuenta.getCode().equals(codigo))
                 .findFirst();
     }
 
     /**
-     * Calcula el saldo total de todas las cuentas en el plan.
+     * Calcula el saldo total de todas las accounts en el plan.
      *
      * @return El saldo total.
      */
     public BigDecimal calcularSaldoTotal() {
-        return this.cuentas.stream()
+        return this.accounts.stream()
                 .map(this::calcularSaldoCuenta).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -160,10 +160,10 @@ public class PlanDeCuentas extends BaseModel {
      * @param cuenta La cuenta cuyo saldo se desea calcular.
      * @return El saldo total de la cuenta.
      */
-    public BigDecimal calcularSaldoCuenta(Cuenta cuenta) {
-        BigDecimal saldo = cuenta.getSaldo();
+    public BigDecimal calcularSaldoCuenta(Account cuenta) {
+        BigDecimal saldo = cuenta.getBalance();
 
-        for (Cuenta hijo : cuenta.getSubCuentas()) {
+        for (Account hijo : cuenta.getSubAccounts()) {
             saldo = saldo.add(calcularSaldoCuenta(hijo));
         }
 
@@ -177,11 +177,11 @@ public class PlanDeCuentas extends BaseModel {
      * @param subCuenta La subcuenta cuyo saldo se desea calcular.
      * @return El saldo total de la subcuenta.
      */
-    private BigDecimal calcularSaldoSubCuenta(Cuenta subCuenta) {
+    private BigDecimal calcularSaldoSubCuenta(Account subCuenta) {
         BigDecimal saldo = BigDecimal.ZERO;
 
         // Sumar saldos de controles
-        for (Cuenta control : subCuenta.getSubCuentas()) {
+        for (Account control : subCuenta.getSubAccounts()) {
             saldo.add(calcularSaldoControl(control));
         }
 
@@ -195,11 +195,11 @@ public class PlanDeCuentas extends BaseModel {
      * @param control El control cuyo saldo se desea calcular.
      * @return El saldo total del control.
      */
-    private BigDecimal calcularSaldoControl(Cuenta control) {
+    private BigDecimal calcularSaldoControl(Account control) {
         BigDecimal saldo = BigDecimal.ZERO;
 
         // Sumar saldos de subcontroles
-        for (Cuenta subControl : control.getSubCuentas()) {
+        for (Account subControl : control.getSubAccounts()) {
             saldo.add(calcularSaldoSubControl(subControl));
         }
 
@@ -212,56 +212,56 @@ public class PlanDeCuentas extends BaseModel {
      * @param subControl El subcontrol cuyo saldo se desea calcular.
      * @return El saldo total del subcontrol.
      */
-    private BigDecimal calcularSaldoSubControl(Cuenta subControl) {
+    private BigDecimal calcularSaldoSubControl(Account subControl) {
         BigDecimal saldo = BigDecimal.ZERO;
 
         // Sumar saldos de análisis
-        for (Cuenta anal : subControl.getSubCuentas()) {
-            saldo.add(anal.getSaldo());
+        for (Account anal : subControl.getSubAccounts()) {
+            saldo.add(anal.getBalance());
         }
 
         return saldo;
     }
 
     public boolean tieneSaldoNegativo() {
-        return this.cuentas.stream().anyMatch(Cuenta::tieneSaldoNegativo);
+        return this.accounts.stream().anyMatch(Account::tieneSaldoNegativo);
     }
 
     public BigDecimal obtenerSaldoNegativoTotal() {
-        return this.cuentas.stream()
-                .filter(Cuenta::tieneSaldoNegativo)
-                .map(Cuenta::obtenerSaldoNegativoTotal)
+        return this.accounts.stream()
+                .filter(Account::tieneSaldoNegativo)
+                .map(Account::obtenerSaldoNegativoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void addApertura(Cuenta cuentaRaiz) {
-        if (cuentaRaiz == null || cuentaRaiz.getSubCuentas().isEmpty()) {
-            throw new IllegalArgumentException("La cuenta raíz debe tener subcuentas.");
+    public void addApertura(Account cuentaRaiz) {
+        if (cuentaRaiz == null || cuentaRaiz.getSubAccounts().isEmpty()) {
+            throw new IllegalArgumentException("The root account must have subaccounts.");
         }
-        cuentaRaiz.setPlanDeCuenta(this);
-        this.cuentas.add(cuentaRaiz);
+        cuentaRaiz.setChartOfAccounts(this);
+        this.accounts.add(cuentaRaiz);
     }
 
-    public boolean contieneCuenta(Cuenta cuenta) {
-        return this.cuentas.contains(cuenta);
+    public boolean contieneCuenta(Account cuenta) {
+        return this.accounts.contains(cuenta);
     }
 
     public int getCantidadTotalCuentas() {
-        return this.cuentas.stream()
+        return this.accounts.stream()
                 .mapToInt(c -> obtenerTodasLasCuentasHijas(c).size())
                 .sum();
     }
 
-    public List<Cuenta> getCuentasPorTipo(TipoCuenta tipo) {
-        return this.cuentas.stream()
+    public List<Account> getCuentasPorTipo(AccountType tipo) {
+        return this.accounts.stream()
                 .flatMap(c -> obtenerTodasLasCuentasHijas(c).stream())
-                .filter(c -> c.getTipoCuenta() == tipo)
+                .filter(c -> c.getAccountType() == tipo)
                 .toList();
     }
 
-    private List<Cuenta> obtenerTodasLasCuentasHijas(Cuenta cuenta) {
-        List<Cuenta> todas = new ArrayList<>(List.of(cuenta));
-        for (Cuenta hijo : cuenta.getSubCuentas()) {
+    private List<Account> obtenerTodasLasCuentasHijas(Account account) {
+        List<Account> todas = new ArrayList<>(List.of(account));
+        for (Account hijo : account.getSubAccounts()) {
             todas.addAll(obtenerTodasLasCuentasHijas(hijo));
         }
         return todas;

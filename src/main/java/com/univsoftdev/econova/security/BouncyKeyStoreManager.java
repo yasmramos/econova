@@ -59,7 +59,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 public class BouncyKeyStoreManager {
 
     /** Algoritmo de firma por defecto para certificados. */
-    private static final String DEFAULT_SIGNATURE_ALGORITHM = "SHA256WithRSA";
+    private static final String DEFAULT_SIGNATURE_ALGORITHM = "SHA512withRSA";
     
     /** Tamaño de clave por defecto en bits. */
     private static final int DEFAULT_KEY_SIZE = 2048;
@@ -95,7 +95,7 @@ public class BouncyKeyStoreManager {
      * 
      * @param keyStoreType Tipo de keystore (ej: "JKS", "PKCS12") (no null)
      * @param password Contraseña maestra del keystore (no null)
-     * @param signatureAlgorithm Algoritmo de firma para certificados (puede ser null, usa SHA256WithRSA por defecto)
+     * @param signatureAlgorithm Algoritmo de firma para certificados (puede ser null, usa SHA512withRSA por defecto)
      * 
      * @throws IllegalArgumentException si keyStoreType o password son null
      * @throws RuntimeException si ocurre un error al crear la instancia de KeyStore
@@ -584,7 +584,7 @@ public class BouncyKeyStoreManager {
     /**
      * Obtiene el algoritmo de firma configurado.
      * 
-     * @return El algoritmo de firma (ej: "SHA256WithRSA")
+     * @return El algoritmo de firma (ej: "SHA512withRSA")
      */
     public String getSignatureAlgorithm() {
         return signatureAlgorithm;

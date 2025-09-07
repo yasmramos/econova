@@ -1,20 +1,20 @@
 package com.univsoftdev.econova.contabilidad.finder;
 
-import com.univsoftdev.econova.config.model.Rol;
+import com.univsoftdev.econova.config.model.Role;
 import io.ebean.Finder;
 import java.util.List;
 
-public class RolFinder extends Finder<Long, Rol> {
+public class RolFinder extends Finder<Long, Role> {
 
     public RolFinder() {
-        super(Rol.class);
+        super(Role.class);
     }
 
-    public Rol findByNombre(String nombre) {
-        return db().find(Rol.class).where().eq("nombre", nombre).findOne();
+    public Role findByNombre(String nombre) {
+        return db().find(Role.class).where().eq("nombre", nombre).findOne();
     }
 
-    public List<Rol> findConUsuarios() {
-        return db().find(Rol.class).where().isNotNull("usuarios").findList();
+    public List<Role> findConUsuarios() {
+        return db().find(Role.class).where().isNotNull("usuarios").findList();
     }
 }

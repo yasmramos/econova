@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.TipoApertura;
+import com.univsoftdev.econova.contabilidad.OpeningTypeAnalysis;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.TypeOfOpening;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
 import java.awt.event.*;
 import javax.swing.*;
@@ -17,33 +17,33 @@ public class FormTipoApertura extends Modal {
     private static final long serialVersionUID = 7001209952064907430L;
     private JTree tree;
     private PlanDeCuentasService planDeCuentas;
-    private Cuenta cuenta;
+    private Account cuenta;
 
     public FormTipoApertura() {
         initComponents();
         init();
     }
 
-    public FormTipoApertura(JTree tree, PlanDeCuentasService planDeCuentas, Cuenta cuenta) {
+    public FormTipoApertura(JTree tree, PlanDeCuentasService planDeCuentas, Account cuenta) {
         initComponents();
         init();
         this.tree = tree;
         this.planDeCuentas = planDeCuentas;
         this.cuenta = cuenta;
-        if (cuenta.getCuentaPadre() != null) {
-            TipoApertura tipoApertura = cuenta.getCuentaPadre().getTipoApertura();
+        if (cuenta.getAccountFather() != null) {
+            TypeOfOpening tipoApertura = cuenta.getAccountFather().getTypeOfOpening();
             if (null != tipoApertura) {
                 switch (tipoApertura) {
                     case SUBCUENTA ->
-                        comboBoxNivel.removeItem(TipoApertura.SUBCUENTA.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.SUBCUENTA.toString());
                     case CONTROL -> {
-                        comboBoxNivel.removeItem(TipoApertura.SUBCUENTA.toString());
-                        comboBoxNivel.removeItem(TipoApertura.CONTROL.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.SUBCUENTA.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.CONTROL.toString());
                     }
                     case ANALISIS -> {
-                        comboBoxNivel.removeItem(TipoApertura.SUBCUENTA.toString());
-                        comboBoxNivel.removeItem(TipoApertura.CONTROL.toString());
-                        comboBoxNivel.removeItem(TipoApertura.ANALISIS.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.SUBCUENTA.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.CONTROL.toString());
+                        comboBoxNivel.removeItem(TypeOfOpening.ANALISIS.toString());
                     }
                     default -> {
                     }
@@ -57,13 +57,13 @@ public class FormTipoApertura extends Modal {
         comboBoxAnalisis.removeAllItems();
         comboBoxNivel.removeAllItems();
 
-        TipoApertura[] values = TipoApertura.values();
-        for (TipoApertura value : values) {
+        TypeOfOpening[] values = TypeOfOpening.values();
+        for (TypeOfOpening value : values) {
             comboBoxNivel.addItem(value.toString());
         }
 
-        AnalisisTipoApertura[] analisiTipoApertura = AnalisisTipoApertura.values();
-        for (AnalisisTipoApertura analisiTipoApertura1 : analisiTipoApertura) {
+        OpeningTypeAnalysis[] analisiTipoApertura = OpeningTypeAnalysis.values();
+        for (OpeningTypeAnalysis analisiTipoApertura1 : analisiTipoApertura) {
             comboBoxAnalisis.addItem(analisiTipoApertura1.toString());
         }
     }
@@ -73,12 +73,12 @@ public class FormTipoApertura extends Modal {
         String nameTipoApertura = String.valueOf(comboBoxNivel.getSelectedItem()).split(" ")[0];
         String nameAnalisisTipoApertura = String.valueOf(comboBoxAnalisis.getSelectedItem()).split(" ")[0];
 
-        TipoApertura tipoApertura = TipoApertura.valueOf(nameTipoApertura);
-        AnalisisTipoApertura analisisTipoApertura = AnalisisTipoApertura.valueOf(nameAnalisisTipoApertura.toUpperCase());
+        TypeOfOpening tipoApertura = TypeOfOpening.valueOf(nameTipoApertura);
+        OpeningTypeAnalysis analisisTipoApertura = OpeningTypeAnalysis.valueOf(nameAnalisisTipoApertura.toUpperCase());
 
-        cuenta.setTipoApertura(tipoApertura);
-        cuenta.setTipoAnalisisApertura(analisisTipoApertura);
-        cuenta.setApertura(true);
+        cuenta.setTypeOfOpening(tipoApertura);
+        cuenta.setOpeningTypeAnalysis(analisisTipoApertura);
+        cuenta.setOpening(true);
         
         DialogUtils.showModalDialog(this, new FormAperturaCuenta(this.tree, this.planDeCuentas, this.cuenta), "Aperturas de la Cuenta");
         ModalDialog.closeModal(this.getId());

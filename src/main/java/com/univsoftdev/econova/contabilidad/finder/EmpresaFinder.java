@@ -1,24 +1,24 @@
 package com.univsoftdev.econova.contabilidad.finder;
 
-import com.univsoftdev.econova.config.model.Empresa;
+import com.univsoftdev.econova.config.model.Company;
 import io.ebean.Finder;
 import java.util.List;
 
-public class EmpresaFinder extends Finder<Long, Empresa> {
+public class EmpresaFinder extends Finder<Long, Company> {
 
     public EmpresaFinder() {
-        super(Empresa.class);
+        super(Company.class);
     }
 
-    public Empresa findByNif(String nif) {
-        return db().find(Empresa.class).where().eq("nif", nif).findOne();
+    public Company findByNif(String nif) {
+        return db().find(Company.class).where().eq("nif", nif).findOne();
     }
 
-    public Empresa findByCif(String cif) {
-        return db().find(Empresa.class).where().eq("cif", cif).findOne();
+    public Company findByCif(String cif) {
+        return db().find(Company.class).where().eq("cif", cif).findOne();
     }
 
-    public List<Empresa> findActivas() {
-        return db().find(Empresa.class).where().eq("activo", true).findList();
+    public List<Company> findActivas() {
+        return db().find(Company.class).where().eq("activo", true).findList();
     }
 }

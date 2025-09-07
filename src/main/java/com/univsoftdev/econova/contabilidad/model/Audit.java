@@ -1,98 +1,81 @@
 package com.univsoftdev.econova.contabilidad.model;
 
-import com.univsoftdev.econova.core.model.BaseModel;
+import com.univsoftdev.econova.core.model.AuditBaseModel;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_auditoria")
-public class Auditoria extends BaseModel {
+@Table(name = "sys_audit")
+public class Audit extends AuditBaseModel {
 
     private static final long serialVersionUID = 1L;
 
     @Column(nullable = false)
-    private String accion;
+    private String action;
 
     @Column(nullable = false)
-    private String entidad;
+    private String entity;
 
     @Column(columnDefinition = "TEXT")
-    private String detalles;
+    private String details;
 
-    @Column(nullable = false)
-    private LocalDate fecha;
+    @Column(name = "audit_date", nullable = false)
+    private LocalDateTime date;
 
-    @Column(nullable = false)
-    private String usuario;
-
-    public Auditoria() {
+    public Audit() {
     }
 
-    public Auditoria(String accion, String entidad, String detalles, LocalDate fecha, String usuario) {
-        this.accion = accion;
-        this.entidad = entidad;
-        this.detalles = detalles;
-        this.fecha = fecha != null ? fecha : LocalDate.now();
-        this.usuario = usuario;
+    public Audit(String accion, String entidad, String detalles, LocalDateTime fecha) {
+        this.action = accion;
+        this.entity = entidad;
+        this.details = detalles;
+        this.date = fecha != null ? fecha : LocalDateTime.now();
     }
 
-    // Getters y Setters
-    public String getAccion() {
-        return accion;
+    public String getAction() {
+        return action;
     }
 
-    public void setAccion(String accion) {
-        this.accion = accion;
+    public void setAction(String action) {
+        this.action = action;
     }
 
-    public String getEntidad() {
-        return entidad;
+    public String getEntity() {
+        return entity;
     }
 
-    public void setEntidad(String entidad) {
-        this.entidad = entidad;
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
-    public String getDetalles() {
-        return detalles;
+    public String getDetails() {
+        return details;
     }
 
-    public void setDetalles(String detalles) {
-        this.detalles = detalles;
+    public void setDetails(String details) {
+        this.details = details;
     }
 
-    public LocalDate getFecha() {
-        return fecha;
+    public LocalDateTime getDate() {
+        return date;
     }
 
-    public void setFecha(LocalDate fecha) {
-        this.fecha = fecha;
-    }
-
-    public String getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
+    public void setDate(LocalDateTime date) {
+        this.date = date;
     }
 
     @PrePersist
     public void prePersist() {
-        if (this.fecha == null) {
-            this.fecha = LocalDate.now();
+        if (this.date == null) {
+            this.date = LocalDateTime.now();
         }
     }
 
     @Override
     public String toString() {
-        return String.format("[%s] %s - %s en %s", fecha, usuario, accion, entidad);
+        return String.format("[%s] %s - %s en %s", date, user, action, entity);
     }
 
-    // Método factory opcional
-    public static Auditoria registrar(String accion, String entidad, String detalles, String usuario) {
-        return new Auditoria(accion, entidad, detalles, LocalDate.now(), usuario);
-    }
 }

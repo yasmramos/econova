@@ -8,7 +8,7 @@ import javax.swing.table.TableColumnModel;
 
 /**
  *
- * @author UnivSoftDev
+ * @author UnivSoftDev Team
  */
 public class TableColumnAdjuster {
 

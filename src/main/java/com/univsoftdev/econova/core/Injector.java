@@ -1,5 +1,7 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
+import com.univsoftdev.econova.MainFormApp;
+import com.univsoftdev.econova.cache.CacheManager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -8,74 +10,93 @@ import java.util.Optional;
 
 import io.avaje.inject.BeanEntry;
 import io.avaje.inject.BeanScope;
+import io.avaje.inject.BeanScopeBuilder;
+import lombok.extern.slf4j.Slf4j;
 
-public class Injector {
+@Slf4j
+public final class Injector {
 
-    private static final BeanScope injector = BeanScope.builder()
-            .shutdownHook(true)
-            .build();
+    private static BeanScope beanScope;
 
     private Injector() {
-        // prevent instantiation
+
+    }
+
+    public static BeanScope init() {
+        log.info("Iniciando contenedor de inyección de dependencias.");
+        try {
+            Injector.beanScope = BeanScope.builder()
+                    .profiles("production", "test")
+                    .shutdownHook(true)
+                    .build();
+        } catch (Exception e) {
+            log.error("No se pudo iniciar el contenedor de inyección de dependencias.", e);
+        }
+        return beanScope;
     }
     
+    public static BeanScopeBuilder.ForTesting forTesting(){
+        return BeanScope.builder().forTesting();
+    }
+
     public static <T> T get(Class<T> type) {
-        return injector.get(type);
+        return beanScope.get(type);
     }
 
     public static <T> T get(Class<T> type, String ns) {
-        return injector.get(type, ns);
+        return beanScope.get(type, ns);
     }
 
     public static <T> T get(Type type, String ns) {
-        return injector.get(type, ns);
+        return beanScope.get(type, ns);
     }
 
     public static <T> Optional<T> getOptional(Class<T> type) {
-        return injector.getOptional(type);
+        return beanScope.getOptional(type);
     }
 
     public static <T> Optional<T> getOptional(Type type, String ns) {
-        return injector.getOptional(type, ns);
+        return beanScope.getOptional(type, ns);
     }
 
     public static List<Object> listByAnnotation(Class<? extends Annotation> type) {
-        return injector.listByAnnotation(type);
+        return beanScope.listByAnnotation(type);
     }
 
     public static <T> List<T> list(Class<T> type) {
-        return injector.list(type);
+        return beanScope.list(type);
     }
 
     public static <T> List<T> list(Type type) {
-        return injector.list(type);
+        return beanScope.list(type);
     }
 
     public static <T> List<T> listByPriority(Class<T> type) {
-        return injector.listByPriority(type);
+        return beanScope.listByPriority(type);
     }
 
     public static <T> List<T> listByPriority(Class<T> type, Class<? extends Annotation> type1) {
-        return injector.listByPriority(type, type1);
+        return beanScope.listByPriority(type, type1);
     }
 
     public static <T> Map<String, T> map(Type type) {
-        return injector.map(type);
+        return beanScope.map(type);
     }
 
     public static List<BeanEntry> all() {
-        return injector.all();
+        return beanScope.all();
     }
 
     public static boolean contains(Type type) {
-        return injector.contains(type);
+        return beanScope.contains(type);
     }
 
     public static boolean contains(String string) {
-        return injector.contains(string);
+        return beanScope.contains(string);
     }
 
     public static void close() {
-        injector.close();
+        beanScope.close();
     }
+
 }

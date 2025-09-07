@@ -7,50 +7,50 @@ import java.util.ArrayList;
 
 public class BalanceGeneral {
 
-    private List<Cuenta> activos;
-    private List<Cuenta> pasivos;
-    private List<Cuenta> patrimonio;
+    private List<Account> activos;
+    private List<Account> pasivos;
+    private List<Account> patrimonio;
     private BigDecimal totalActivos;
     private BigDecimal totalPasivos;
     private BigDecimal totalPatrimonio;
-    private List<Cuenta> cuentas = new ArrayList<>();
+    private List<Account> cuentas = new ArrayList<>();
 
-    public BalanceGeneral(List<Cuenta> activos, List<Cuenta> pasivos, List<Cuenta> patrimonio) {
+    public BalanceGeneral(List<Account> activos, List<Account> pasivos, List<Account> patrimonio) {
         this.activos = activos;
         this.pasivos = pasivos;
         this.patrimonio = patrimonio;
     }
 
 
-    public List<Cuenta> getActivos() {
+    public List<Account> getActivos() {
         return activos;
     }
 
-    public void setActivos(List<Cuenta> activos) {
+    public void setActivos(List<Account> activos) {
         this.activos = activos;
     }
 
-    public List<Cuenta> getPasivos() {
+    public List<Account> getPasivos() {
         return pasivos;
     }
 
-    public void setPasivos(List<Cuenta> pasivos) {
+    public void setPasivos(List<Account> pasivos) {
         this.pasivos = pasivos;
     }
 
-    public List<Cuenta> getPatrimonio() {
+    public List<Account> getPatrimonio() {
         return patrimonio;
     }
 
-    public void setPatrimonio(List<Cuenta> patrimonio) {
+    public void setPatrimonio(List<Account> patrimonio) {
         this.patrimonio = patrimonio;
     }
 
-    public List<Cuenta> getCuentas() {
+    public List<Account> getCuentas() {
         return cuentas;
     }
 
-    public void setCuentas(List<Cuenta> cuentas) {
+    public void setCuentas(List<Account> cuentas) {
         this.cuentas = cuentas;
     }
 

@@ -2,8 +2,8 @@ package com.univsoftdev.econova.core.system;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.univsoftdev.econova.AppSession;
-import com.univsoftdev.econova.Injector;
+import com.univsoftdev.econova.core.AppSession;
+import com.univsoftdev.econova.core.Injector;
 import net.miginfocom.swing.MigLayout;
 import raven.modal.Drawer;
 import com.univsoftdev.econova.core.component.FormSearchButton;
@@ -66,25 +66,28 @@ public class MainForm extends JPanel {
                 + "[dark]background:tint($Panel.background,5%);");
 
         // version
-        JLabel lbVersion = new JLabel("Econova: v" + Injector.get(AppConfig.class).getAppVersion());
+        JLabel lbVersion = new JLabel(AppConfig.getAppName() + ": v" + AppConfig.getAppVersion());
         lbVersion.putClientProperty(FlatClientProperties.STYLE, ""
                 + "foreground:$Label.disabledForeground;");
         lbVersion.setIcon(new SVGIconUIColor("econova/icons/git.svg", 1f, "Label.disabledForeground"));
         panel.add(lbVersion);
 
-        try {
-            JLabel lbUnidad = new JLabel("Unidad: " + Injector.get(AppSession.class).getUnidad().getNombre());
-            panel.add(lbUnidad);
-            panel.add(new JSeparator(JSeparator.VERTICAL));
-            JLabel lbFechaProcesamiento = new JLabel("Fecha de Procesamiento: ");
-            panel.add(lbFechaProcesamiento);
-            panel.add(new JSeparator(JSeparator.VERTICAL));
-            JLabel lbUsuario = new JLabel("Usuario: " + Injector.get(AppSession.class).getUser().getFullName());
-            panel.add(lbUsuario);
-            panel.add(new JSeparator(JSeparator.VERTICAL));
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+//        try {
+//            SwingUtilities.invokeLater(() -> {
+//                AppSession session = Injector.get(AppSession.class);
+//                JLabel lbUnidad = new JLabel("Unidad: " + session.getUnidad().getNombre());
+//                panel.add(lbUnidad);
+//                panel.add(new JSeparator(JSeparator.VERTICAL));
+//                JLabel lbFechaProcesamiento = new JLabel("Fecha de Procesamiento: ");
+//                panel.add(lbFechaProcesamiento);
+//                panel.add(new JSeparator(JSeparator.VERTICAL));
+//                JLabel lbUsuario = new JLabel("Usuario: " + session.getUser().getFullName());
+//                panel.add(lbUsuario);
+//                panel.add(new JSeparator(JSeparator.VERTICAL));
+//            });
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//        }
         // java version
         String javaVendor = System.getProperty("java.vendor");
         if (javaVendor.equals("Oracle Corporation")) {

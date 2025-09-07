@@ -1,18 +1,20 @@
 package com.univsoftdev.econova.contabilidad.service;
 
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.core.Service;
-import io.ebean.Database;
-import jakarta.inject.Singleton;
-import com.univsoftdev.econova.contabilidad.TipoTransaccion;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.model.Unit;
 import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.contabilidad.EstadoAsiento;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
+import com.univsoftdev.econova.contabilidad.repository.AsientoRepository;
+import com.univsoftdev.econova.core.service.BaseService;
 import io.ebean.annotation.Transactional;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,22 +27,22 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Singleton
-public class AsientoService extends Service<Asiento> {
+public class AsientoService extends BaseService<AccountingEntry, AsientoRepository> {
 
     /**
      * Constructor que inicializa el servicio con una instancia de la base de
      * datos.
      *
-     * @param database Instancia de la base de datos Ebean
+     * @param asientoRepository Instancia de la base de datos Ebean
      */
     @Inject
-    public AsientoService(Database database) {
-        super(database, Asiento.class);
+    public AsientoService(AsientoRepository asientoRepository) {
+        super(asientoRepository);
     }
 
     public void asentarAsientos() {
         var asientos = findAll();
-        for (Asiento asiento : asientos) {
+        for (AccountingEntry asiento : asientos) {
             if (asiento.getEstadoAsiento() != EstadoAsiento.CONFIRMADO && asiento.getEstadoAsiento() != EstadoAsiento.ERROR) {
                 asiento.setEstadoAsiento(EstadoAsiento.CONFIRMADO);
             }
@@ -50,28 +52,28 @@ public class AsientoService extends Service<Asiento> {
     /**
      * Valida si las transacciones de un asiento están correctamente cuadradas.
      *
-     * @param asiento Asiento contable a validar
+     * @param asiento AccountingEntry contable a validar
      * @return `true` si las transacciones están cuadradas, `false` en caso
      * contrario
      */
-    public boolean validateAsiento(Asiento asiento) {
-        if (asiento == null || asiento.getTransacciones() == null) {
+    public boolean validateAsiento(AccountingEntry asiento) {
+        if (asiento == null || asiento.getTransactions() == null) {
             return false;
         }
 
         BigDecimal totalDebitos = BigDecimal.ZERO;
         BigDecimal totalCreditos = BigDecimal.ZERO;
 
-        for (Transaccion transaccion : asiento.getTransacciones()) {
-            if (transaccion == null || transaccion.getTipo() == null || transaccion.getMonto() == null) {
+        for (Transaction transaccion : asiento.getTransactions()) {
+            if (transaccion == null || transaccion.getTipo() == null || transaccion.getBalance() == null) {
                 continue;
             }
 
             switch (transaccion.getTipo()) {
                 case DEBITO ->
-                    totalDebitos = totalDebitos.add(transaccion.getMonto());
+                    totalDebitos = totalDebitos.add(transaccion.getBalance());
                 case CREDITO ->
-                    totalCreditos = totalCreditos.add(transaccion.getMonto());
+                    totalCreditos = totalCreditos.add(transaccion.getBalance());
                 default -> {
                 }
             }
@@ -88,19 +90,19 @@ public class AsientoService extends Service<Asiento> {
      * @param nro Número del asiento
      * @return Un Optional con el asiento encontrado, o vacío si no se encuentra
      */
-    public Optional<Asiento> findByNro(int nro) {
-        return findBy("nro", nro);
+    public Optional<AccountingEntry> findByNro(int nro) {
+        return repository.findByNumero(nro);
     }
 
     /**
      * Cambia el estado de un asiento contable y registra información de
      * auditoría.
      *
-     * @param asiento Asiento a modificar
+     * @param asiento AccountingEntry a modificar
      * @param estadoAsiento Nuevo estado del asiento
      * @param usuarioActual User que realizó el cambio
      */
-    public void setEstadoAsiento(Asiento asiento, EstadoAsiento estadoAsiento, User usuarioActual) {
+    public void setEstadoAsiento(AccountingEntry asiento, EstadoAsiento estadoAsiento, User usuarioActual) {
         // Registrar el estado previo
         EstadoAsiento estadoAnterior = asiento.getEstadoAsiento();
 
@@ -108,34 +110,34 @@ public class AsientoService extends Service<Asiento> {
         asiento.setEstadoAsiento(estadoAsiento);
 
         // Registrar información de auditoría
-        asiento.setWhoModified(usuarioActual);
+        asiento.setModifiedBy(usuarioActual);
         asiento.setWhenModified(Instant.now());
 
         // Persistir los cambios en la base de datos
-        database.update(asiento);
+        repository.update(asiento);
 
         // Opción: registrar en un sistema de logs si es necesario
         log.info("Estado del asiento #{} cambiado de {} a {} por {}", asiento.getNro(), estadoAnterior, estadoAsiento, usuarioActual);
     }
 
-    public void setEstadoAsiento(Asiento asiento, EstadoAsiento estadoAsiento) {
+    public void setEstadoAsiento(AccountingEntry asiento, EstadoAsiento estadoAsiento) {
         setEstadoAsiento(asiento, estadoAsiento, null);
     }
 
     @Transactional
-    public Integer obtenerSiguienteCodigo(Periodo periodo) {
+    public Integer obtenerSiguienteCodigo(Period periodo) {
         // Validar que el período no sea nulo
         if (periodo == null) {
             throw new IllegalArgumentException("El periodo no puede ser nulo.");
         }
 
         // Obtener el número consecutivo más alto en el período
-        Integer maxNro = database.find(Asiento.class)
+        Integer maxNro = repository.find(AccountingEntry.class)
                 .where().eq("periodo.id", periodo.getId())
                 .orderBy("nro DESC")
                 .setMaxRows(1)
                 .findOneOrEmpty()
-                .map(Asiento::getNro)
+                .map(AccountingEntry::getNro)
                 .orElse(0);
 
         // Retornar el siguiente número
@@ -145,68 +147,62 @@ public class AsientoService extends Service<Asiento> {
     @Transactional
     public void deleteAsiento(Long asientoId) {
         // Obtener el asiento a eliminar
-        Asiento asiento = findById(asientoId);
-        if (asiento == null) {
-            throw new IllegalArgumentException("El asiento no existe.");
+        Optional<AccountingEntry> optAsiento = repository.findById(asientoId);
+        if (optAsiento.isPresent()) {
+            var asiento = optAsiento.get();
+            if (asiento == null) {
+                throw new IllegalArgumentException("El asiento no existe.");
+            }
+
+            // Obtener el período asociado
+            Period periodo = asiento.getPeriod();
+
+            // Eliminar el asiento
+            repository.delete(asiento);
+
+            // Renumerar los asientos del período
+            List<AccountingEntry> asientos = repository.find(AccountingEntry.class)
+                    .where().eq("periodo.id", periodo.getId())
+                    .orderBy("nro ASC")
+                    .findList();
+
+            int nuevoNumero = 1;
+            for (AccountingEntry a : asientos) {
+                a.setNro(nuevoNumero++);
+                repository.update(a);
+            }
         }
 
-        // Obtener el período asociado
-        Periodo periodo = asiento.getPeriodo();
-
-        // Eliminar el asiento
-        database.delete(asiento);
-
-        // Renumerar los asientos del período
-        List<Asiento> asientos = database.find(Asiento.class)
-                .where().eq("periodo.id", periodo.getId())
-                .orderBy("nro ASC")
-                .findList();
-
-        int nuevoNumero = 1;
-        for (Asiento a : asientos) {
-            a.setNro(nuevoNumero++);
-            database.update(a);
-        }
     }
 
-    public Map<EstadoAsiento, Long> contarAsientosPorEstado(Periodo periodo) {
-        return database.find(Asiento.class)
+    public Map<EstadoAsiento, Long> contarAsientosPorEstado(Period periodo) {
+        return repository.find(AccountingEntry.class)
                 .where()
                 .eq("periodo.id", periodo.getId())
                 .findList()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        Asiento::getEstadoAsiento,
+                .collect(Collectors.groupingBy(AccountingEntry::getEstadoAsiento,
                         Collectors.counting()
                 ));
     }
 
-    public BigDecimal obtenerTotalDebitos(Periodo periodo) {
-        return database.createQuery(Transaccion.class)
+    public BigDecimal obtenerTotalDebitos(Period periodo) {
+        return repository.createQuery(Transaction.class)
                 .where()
                 .eq("asiento.periodo.id", periodo.getId())
                 .eq("tipo", TipoTransaccion.DEBITO)
                 .findList()
                 .stream()
-                .map(Transaccion::getMonto)
+                .map(Transaction::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Transactional
     public void deleteAsiento(Long asientoId, String usuario) {
-        Asiento asiento = findById(asientoId);
-
-        if (!tienePermisoEliminacion(usuario, asiento)) {
-            throw new SecurityException("Usuario no autorizado para eliminar este asiento");
+        Optional<AccountingEntry> optAsiento = repository.findById(asientoId);
+        if (optAsiento.isPresent()) {
+            deleteAsiento(asientoId);
         }
-
-        deleteAsiento(asientoId);
-    }
-
-    private boolean tienePermisoEliminacion(String usuario, Asiento asiento) {
-        // Lógica de verificación de permisos
-        // Puede integrarse con Spring Security o otro sistema de autorización
-        return true; // Implementación temporal
     }
 
     /**
@@ -214,13 +210,13 @@ public class AsientoService extends Service<Asiento> {
      */
     @Transactional
     public void terminarAsientos() {
-        List<Asiento> asientos = database.find(Asiento.class)
+        List<AccountingEntry> asientos = repository.find(AccountingEntry.class)
                 .where().eq("estadoAsiento", EstadoAsiento.EDICION)
                 .findList();
-        for (Asiento asiento : asientos) {
+        for (AccountingEntry asiento : asientos) {
             if (asiento.estaCuadrado()) {
                 asiento.setEstadoAsiento(EstadoAsiento.CONFIRMADO);
-                database.update(asiento);
+                repository.update(asiento);
             }
         }
     }
@@ -233,17 +229,17 @@ public class AsientoService extends Service<Asiento> {
     public void invertirSaldosUnidad() {
         // Ejemplo: invierte todos los asientos del periodo activo
         // (En un sistema real, se filtraría por unidad/periodo actual)
-        List<Asiento> asientos = database.find(Asiento.class)
+        List<AccountingEntry> asientos = repository.find(AccountingEntry.class)
                 .where().eq("estadoAsiento", EstadoAsiento.CONFIRMADO)
                 .findList();
-        for (Asiento asiento : asientos) {
-            for (var trans : asiento.getTransacciones()) {
+        for (AccountingEntry asiento : asientos) {
+            for (var trans : asiento.getTransactions()) {
                 if (trans.getTipo() == TipoTransaccion.DEBITO) {
                     trans.setTipo(TipoTransaccion.CREDITO);
                 } else if (trans.getTipo() == TipoTransaccion.CREDITO) {
                     trans.setTipo(TipoTransaccion.DEBITO);
                 }
-                database.update(trans);
+                repository.update(asiento);
             }
         }
     }
@@ -254,10 +250,10 @@ public class AsientoService extends Service<Asiento> {
      */
     @Transactional
     public void invertirTodosAsentados() {
-        List<Asiento> asientos = database.find(Asiento.class)
+        List<AccountingEntry> asientos = repository.find(AccountingEntry.class)
                 .where().eq("estadoAsiento", EstadoAsiento.CONFIRMADO)
                 .findList();
-        for (Asiento asiento : asientos) {
+        for (AccountingEntry asiento : asientos) {
             invertirAsiento(asiento);
         }
     }
@@ -277,23 +273,23 @@ public class AsientoService extends Service<Asiento> {
      * Invierte un asiento: crea un nuevo asiento con transacciones invertidas.
      */
     @Transactional
-    public void invertirAsiento(Asiento original) {
+    public void invertirAsiento(AccountingEntry original) {
         if (original == null) {
             return;
         }
-        Asiento inverso = new Asiento();
-        inverso.setDescripcion("Inverso de: " + original.getDescripcion());
+        AccountingEntry inverso = new AccountingEntry();
+        inverso.setDescription("Inverso de: " + original.getDescription());
         inverso.setFecha(java.time.LocalDate.now());
         inverso.setEstadoAsiento(EstadoAsiento.EDICION);
-        inverso.setPeriodo(original.getPeriodo());
-        for (var trans : original.getTransacciones()) {
-            var tInv = new com.univsoftdev.econova.contabilidad.model.Transaccion();
-            tInv.setCuenta(trans.getCuenta());
-            tInv.setMonto(trans.getMonto());
+        inverso.setPeriod(original.getPeriod());
+        for (var trans : original.getTransactions()) {
+            var tInv = new com.univsoftdev.econova.contabilidad.model.Transaction();
+            tInv.setAccount(trans.getAccount());
+            tInv.setBalance(trans.getBalance());
             tInv.setTipo(trans.getTipo() == TipoTransaccion.DEBITO ? TipoTransaccion.CREDITO : TipoTransaccion.DEBITO);
             inverso.addTransaccion(tInv);
         }
-        database.save(inverso);
+        repository.save(inverso);
     }
 
     /**
@@ -301,41 +297,43 @@ public class AsientoService extends Service<Asiento> {
      * EDICION.
      */
     @Transactional
-    public void duplicarAsiento(Asiento original) {
+    public void duplicarAsiento(AccountingEntry original) {
         if (original == null) {
             return;
         }
-        Asiento copia = new Asiento();
-        copia.setDescripcion("Copia de: " + original.getDescripcion());
+        AccountingEntry copia = new AccountingEntry();
+        copia.setDescription("Copia de: " + original.getDescription());
         copia.setFecha(java.time.LocalDate.now());
         copia.setEstadoAsiento(EstadoAsiento.EDICION);
-        copia.setPeriodo(original.getPeriodo());
-        for (var trans : original.getTransacciones()) {
-            var tCopia = new com.univsoftdev.econova.contabilidad.model.Transaccion();
-            tCopia.setCuenta(trans.getCuenta());
-            tCopia.setMonto(trans.getMonto());
+        copia.setPeriod(original.getPeriod());
+        for (var trans : original.getTransactions()) {
+            var tCopia = new com.univsoftdev.econova.contabilidad.model.Transaction();
+            tCopia.setAccount(trans.getAccount());
+            tCopia.setBalance(trans.getBalance());
             tCopia.setTipo(trans.getTipo());
             copia.addTransaccion(tCopia);
         }
-        database.save(copia);
+        repository.save(copia);
     }
 
     /**
      * Busca asientos por descripción o número.
+     *
      * @param query
+     * @return 
      */
-    public List<Asiento> buscar(String query) {
+    public List<AccountingEntry> buscar(String query) {
         if (query == null || query.isBlank()) {
             return List.of();
         }
         try {
             int nro = Integer.parseInt(query);
-            return database.find(Asiento.class)
+            return repository.find(AccountingEntry.class)
                     .where().eq("nro", nro)
                     .findList();
         } catch (NumberFormatException ex) {
             // No es número, buscar por descripción
-            return database.find(Asiento.class)
+            return repository.find(AccountingEntry.class)
                     .where().ilike("descripcion", "%" + query + "%")
                     .findList();
         }
@@ -343,10 +341,16 @@ public class AsientoService extends Service<Asiento> {
 
     /**
      * Crea un nuevo asiento a partir de otro (idéntico, en estado EDICION).
+     *
      * @param original
      */
     @Transactional
-    public void nuevoAPartirDe(Asiento original) {
+    public void nuevoAPartirDe(AccountingEntry original) {
         duplicarAsiento(original);
     }
+
+    public AccountingEntry crearAsiento(int nro, String descripcion, LocalDate fecha, Period periodo, Unit unidad, EstadoAsiento estadoAsiento) {
+        return new AccountingEntry(nro, descripcion, fecha, periodo, unidad, estadoAsiento);
+    }
+    
 }

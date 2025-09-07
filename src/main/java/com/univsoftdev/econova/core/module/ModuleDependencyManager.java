@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.core.module;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.core.AppContext;
 import java.util.*;  
 import java.util.concurrent.ConcurrentHashMap;  
 import lombok.extern.slf4j.Slf4j;

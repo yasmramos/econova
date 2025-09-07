@@ -1,12 +1,12 @@
 package com.univsoftdev.econova.contabilidad.views.comprobante;
 
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.model.Account;
 
 public class ItemCombo {
 
-    private final Cuenta cuenta;
+    private final Account cuenta;
 
-    public ItemCombo(Cuenta cuenta) {
+    public ItemCombo(Account cuenta) {
         this.cuenta = cuenta;
     }
 
@@ -15,10 +15,10 @@ public class ItemCombo {
     }
 
     public String getNombre() {
-        return cuenta.getNombre();
+        return cuenta.getName();
     }
 
-    public Cuenta getCuenta() {
+    public Account getCuenta() {
         return cuenta;
     }
 

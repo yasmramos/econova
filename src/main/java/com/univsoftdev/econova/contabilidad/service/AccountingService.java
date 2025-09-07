@@ -1,27 +1,28 @@
 package com.univsoftdev.econova.contabilidad.service;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.TipoTransaccion;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Unidad;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.model.Unit;
 import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.contabilidad.AccountType;
+import com.univsoftdev.econova.contabilidad.ContabilidadException;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
-import com.univsoftdev.econova.contabilidad.SubSistema;
-import com.univsoftdev.econova.contabilidad.TipoApertura;
-import com.univsoftdev.econova.contabilidad.TipoCuenta;
-import com.univsoftdev.econova.contabilidad.model.LibroMayor;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
-import com.univsoftdev.econova.contabilidad.model.PlanDeCuentas;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.contabilidad.NatureOfAccount;
+import com.univsoftdev.econova.contabilidad.SubSystem;
+import com.univsoftdev.econova.contabilidad.TipoTransaccion;
+import com.univsoftdev.econova.contabilidad.TypeOfOpening;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.model.ChartOfAccounts;
+import com.univsoftdev.econova.contabilidad.model.Currency;
+import com.univsoftdev.econova.contabilidad.model.Ledger;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import com.univsoftdev.econova.security.Permissions;
 import io.ebean.Database;
 import io.ebean.Model;
 import io.ebean.annotation.Transactional;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,26 +35,26 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 
 @Slf4j
 @Singleton
-public class ContabilidadService {
-    
+public class AccountingService {
+
     private Database database;
     private CuentaService cuentaService;
     private BalanceGeneralService balanceGeneralService;
     private PlanDeCuentasService planDeCuentasService;
     private AsientoService asientoService;
     private TransaccionService transaccionService;
-    
-    public ContabilidadService() {
-        
+
+    public AccountingService() {
+
     }
-    
+
     @Inject
-    public ContabilidadService(
-            Database database, 
-            CuentaService cuentaService, 
-            BalanceGeneralService balanceGeneralService, 
-            PlanDeCuentasService planDeCuentasService, 
-            AsientoService asientoService, 
+    public AccountingService(
+            Database database,
+            CuentaService cuentaService,
+            BalanceGeneralService balanceGeneralService,
+            PlanDeCuentasService planDeCuentasService,
+            AsientoService asientoService,
             TransaccionService transaccionService
     ) {
         this.database = database;
@@ -63,16 +64,16 @@ public class ContabilidadService {
         this.asientoService = asientoService;
         this.transaccionService = transaccionService;
     }
-    
+
     @Transactional
     @RequiresPermissions(value = {Permissions.SUPER_ADMIN})
     @RequiresRoles(value = {})
-    public Asiento crearAsientoContable(
+    public AccountingEntry crearAsientoContable(
             int numeroAsiento,
             String descripcion,
             LocalDate fecha,
-            SubSistema subSistema,
-            List<Transaccion> transacciones, User usuario, Unidad unidad, Periodo periodo, Ejercicio ejercicio) throws ContabilidadException {
+            SubSystem subSistema,
+            List<Transaction> transacciones, User usuario, Unit unidad, Period periodo, Exercise ejercicio) throws ContabilidadException {
 
         // Validaciones básicas
         Objects.requireNonNull(descripcion, "La descripción no puede ser nula");
@@ -98,12 +99,12 @@ public class ContabilidadService {
             throw new ContabilidadException("El asiento debe contener al menos una transacción");
         }
 
-        // Crear el asiento
-        Asiento asiento = new Asiento(numeroAsiento, descripcion, fecha, periodo);
-        asiento.setSubSistema(subSistema);
+        // Crear el asiento nro, descripcion, fecha, periodo, unidad, estadoAsiento
+        AccountingEntry asiento = asientoService.crearAsiento(numeroAsiento, descripcion, fecha, periodo, unidad, EstadoAsiento.EDICION);
+        asiento.setSubSystem(subSistema);
 
         // Agregar y validar transacciones
-        for (Transaccion transaccion : transacciones) {
+        for (Transaction transaccion : transacciones) {
             validarTransaccion(transaccion);
             asiento.addTransaccion(convertirATransaccion(transaccion, asiento));
         }
@@ -121,52 +122,50 @@ public class ContabilidadService {
         if (asiento.getEstadoAsiento() == EstadoAsiento.CONFIRMADO) {
             aplicarTransaccionesACuentas(asiento);
         }
-        
+
         return asiento;
     }
-    
-    private void validarTransaccion(Transaccion transaccion) throws ContabilidadException {
-        if (transaccion.getCuenta() == null) {
+
+    private void validarTransaccion(Transaction transaccion) throws ContabilidadException {
+        if (transaccion.getAccount() == null) {
             throw new ContabilidadException("La cuenta de la transacción no puede ser nula");
         }
-        if (transaccion.getMonto() == null || transaccion.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+        if (transaccion.getBalance() == null || transaccion.getBalance().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ContabilidadException("El monto debe ser positivo");
         }
         if (transaccion.getTipo() == null) {
             throw new ContabilidadException("El tipo de transacción no puede ser nulo");
         }
     }
-    
-    private Transaccion convertirATransaccion(Transaccion transaccionContable, Asiento asiento) {
-        Transaccion transaccion = new Transaccion();
+
+    private Transaction convertirATransaccion(Transaction transaccionContable, AccountingEntry asiento) {
+        Transaction transaccion = new Transaction();
         transaccion.setTipo(transaccionContable.getTipo());
-        transaccion.setMonto(transaccionContable.getMonto());
-        transaccion.setCuenta(transaccionContable.getCuenta());
-        transaccion.setDescripcion(transaccionContable.getDescripcion());
+        transaccion.setBalance(transaccionContable.getBalance());
+        transaccion.setAccount(transaccionContable.getAccount());
+        transaccion.setDescription(transaccionContable.getDescription());
         transaccion.setAsiento(asiento);
         return transaccion;
     }
-    
-    private void aplicarTransaccionesACuentas(Asiento asiento) throws ContabilidadException {
-        for (Transaccion transaccion : asiento.getTransacciones()) {
-            Cuenta cuenta = transaccion.getCuenta();
+
+    private void aplicarTransaccionesACuentas(AccountingEntry asiento) throws ContabilidadException {
+        for (Transaction transaccion : asiento.getTransactions()) {
+            Account cuenta = transaccion.getAccount();
             if (transaccion.getTipo() == TipoTransaccion.DEBITO) {
-                cuentaService.aplicarDebito(cuenta, transaccion.getMonto());
+                cuentaService.aplicarDebito(cuenta, transaccion.getBalance());
             } else {
-                cuentaService.aplicarCredito(cuenta, transaccion.getMonto());
+                cuentaService.aplicarCredito(cuenta, transaccion.getBalance());
             }
         }
     }
-    
-    public PlanDeCuentas crearPlanDeCuentas(Long id, String nombre) {
-        PlanDeCuentas planDeCuentas = new PlanDeCuentas(nombre);
-        planDeCuentas.setId(id);
-        return planDeCuentasService.createPlanDeCuentas(planDeCuentas);
+
+    public ChartOfAccounts createChartOfAccounts(Long id, String nombre) {
+        return planDeCuentasService.createChartOfAccounts(id, nombre);
     }
-    
+
     @Transactional
-    public void registrarAsiento(Asiento asiento) {
-        if (asiento == null || asiento.getTransacciones() == null || asiento.getTransacciones().isEmpty()) {
+    public void registrarAsiento(AccountingEntry asiento) {
+        if (asiento == null || asiento.getTransactions() == null || asiento.getTransactions().isEmpty()) {
             throw new IllegalArgumentException("El asiento no puede ser nulo ni tener transacciones vacías.");
         }
 
@@ -174,15 +173,15 @@ public class ContabilidadService {
         database.save(asiento);
 
         // Recorrer cada transacción del asiento y actualizar el saldo de la cuenta
-        asiento.getTransacciones().forEach(transaccion -> {
+        asiento.getTransactions().forEach(transaccion -> {
             if (transaccion.getTipo() == TipoTransaccion.DEBITO) {
-                cuentaService.aplicarDebito(transaccion.getCuenta(), transaccion.getMonto());
+                cuentaService.aplicarDebito(transaccion.getAccount(), transaccion.getBalance());
             } else if (transaccion.getTipo() == TipoTransaccion.CREDITO) {
-                cuentaService.aplicarCredito(transaccion.getCuenta(), transaccion.getMonto());
+                cuentaService.aplicarCredito(transaccion.getAccount(), transaccion.getBalance());
             }
         });
     }
-    
+
     @Transactional
     public void cierreEjercicioFiscalAnual(String year) {
         if (year == null || year.trim().isEmpty()) {
@@ -205,12 +204,12 @@ public class ContabilidadService {
 
         // Transferir saldos de cuentas de ingresos y gastos a la cuenta de patrimonio
         transferirSaldosAPatrimonio(year);
-        
+
         log.info("Cierre del ejercicio fiscal anual {} completado exitosamente.", year);
     }
-    
+
     @Transactional
-    public void cierreEjercicioFiscalMensual(Periodo periodo) {
+    public void cierreEjercicioFiscalMensual(Period periodo) {
         if (periodo == null) {
             throw new IllegalArgumentException("El periodo no puede ser nulo.");
         }
@@ -221,143 +220,148 @@ public class ContabilidadService {
         // Lógica para generar el balance general del mes o actualizar estados
         balanceGeneralService.generarBalanceGeneralMensual(periodo);
     }
-    
+
     @Transactional
-    public void addCuenta(Cuenta cuenta) throws ContabilidadException {
+    public void addCuenta(Account cuenta) throws ContabilidadException {
         Objects.requireNonNull(cuenta, "La cuenta no puede ser nula");
 
         // Validación de código único
-        cuentaService.findByCodigo(cuenta.getCodigo())
+        cuentaService.findByCodigo(cuenta.getCode())
                 .ifPresent(existing -> {
                     try {
                         throw new ContabilidadException(
                                 String.format(
                                         "Ya existe una cuenta con el código %s",
-                                        cuenta.getCodigo())
+                                        cuenta.getCode())
                         );
                     } catch (ContabilidadException ex) {
                         log.error(ex.getMessage());
                     }
                 });
-        if (cuenta.getSaldo() == null
-                || cuenta.getSaldo().compareTo(BigDecimal.ZERO) < 0) {
+        if (cuenta.getBalance() == null
+                || cuenta.getBalance().compareTo(BigDecimal.ZERO) < 0) {
             throw new ContabilidadException("El saldo de la cuenta no puede ser negativo");
         }
-        
+
         cuentaService.addCuenta(cuenta);
     }
-    
-    public void addCuentas(Cuenta... cuentas) throws ContabilidadException {
+
+    public void addCuentas(Account... cuentas) throws ContabilidadException {
         cuentaService.addCuentas(cuentas);
     }
-    
+
     private void validarCuentasCuadradas() {
         var cuentas = cuentaService.findAll();
-        for (Cuenta cuenta : cuentas) {
+        for (Account cuenta : cuentas) {
             BigDecimal saldoJerarquico = cuentaService.getSaldoTotalJerarquico(cuenta.getId());
-            if (cuenta.getSaldo().compareTo(saldoJerarquico) != 0) {
+            if (cuenta.getBalance().compareTo(saldoJerarquico) != 0) {
                 log.error("La cuenta {} no está cuadrada. Saldo actual: {}, Saldo esperado: {}",
-                        cuenta.getCodigo(), cuenta.getSaldo(), saldoJerarquico);
-                throw new RuntimeException("La cuenta " + cuenta.getCodigo() + " no está cuadrada.");
+                        cuenta.getCode(), cuenta.getBalance(), saldoJerarquico);
+                throw new RuntimeException("La cuenta " + cuenta.getCode() + " no está cuadrada.");
             }
         }
     }
-    
+
     private void cerrarCuentasTemporales(String year) {
         // Obtener todas las cuentas de ingresos y gastos
-        List<Cuenta> cuentasIngresos = cuentaService.findByTipoCuenta(TipoCuenta.INGRESO);
-        List<Cuenta> cuentasGastos = cuentaService.findByTipoCuenta(TipoCuenta.GASTO);
+        List<Account> cuentasIngresos = cuentaService.findByTipoCuenta(AccountType.INGRESO);
+        List<Account> cuentasGastos = cuentaService.findByTipoCuenta(AccountType.GASTO);
 
         // Crear un asiento para cerrar las cuentas de ingresos
-        Asiento asientoIngresos = new Asiento();
-        asientoIngresos.setDescripcion("Cierre de cuentas de ingresos para el año " + year);
+        AccountingEntry asientoIngresos = new AccountingEntry();
+        asientoIngresos.setDescription("Cierre de cuentas de ingresos para el año " + year);
         asientoIngresos.setFecha(LocalDate.parse(year + "-12-31"));
-        for (Cuenta cuenta : cuentasIngresos) {
-            asientoIngresos.addTransaccion(new Transaccion(TipoTransaccion.CREDITO, cuenta.getSaldo(), cuenta));
+        for (Account cuenta : cuentasIngresos) {
+            asientoIngresos.addTransaccion(new Transaction(TipoTransaccion.CREDITO, cuenta.getBalance(), cuenta));
         }
         registrarAsiento(asientoIngresos);
 
         // Crear un asiento para cerrar las cuentas de gastos
-        Asiento asientoGastos = new Asiento();
-        asientoGastos.setDescripcion("Cierre de cuentas de gastos para el año " + year);
+        AccountingEntry asientoGastos = new AccountingEntry();
+        asientoGastos.setDescription("Cierre de cuentas de gastos para el año " + year);
         asientoGastos.setFecha(LocalDate.parse(year + "-12-31"));
-        for (Cuenta cuenta : cuentasGastos) {
-            asientoGastos.addTransaccion(new Transaccion(TipoTransaccion.DEBITO, cuenta.getSaldo(), cuenta));
+        for (Account cuenta : cuentasGastos) {
+            asientoGastos.addTransaccion(new Transaction(TipoTransaccion.DEBITO, cuenta.getBalance(), cuenta));
         }
         registrarAsiento(asientoGastos);
     }
-    
+
     private void transferirSaldosAPatrimonio(String year) {
         // Obtener la cuenta de patrimonio
-        Cuenta cuentaPatrimonio = cuentaService.findByCodigo("1000").get(); // Ejemplo de código de cuenta de patrimonio
+        Account cuentaPatrimonio = cuentaService.findByCodigo("1000").get(); // Ejemplo de código de cuenta de patrimonio
 
         // Calcular el saldo neto de ingresos y gastos
         BigDecimal saldoNeto = calcularSaldoNeto(year);
 
         // Crear un asiento para transferir el saldo neto a la cuenta de patrimonio
-        Asiento asientoTransferencia = new Asiento();
-        asientoTransferencia.setDescripcion("Transferencia de saldo neto a patrimonio para el año " + year);
+        AccountingEntry asientoTransferencia = new AccountingEntry();
+        asientoTransferencia.setDescription("Transferencia de saldo neto a patrimonio para el año " + year);
         asientoTransferencia.setFecha(LocalDate.parse(year + "-12-31"));
         if (saldoNeto.compareTo(BigDecimal.ZERO) > 0) {
-            asientoTransferencia.addTransaccion(new Transaccion(TipoTransaccion.DEBITO, saldoNeto, cuentaPatrimonio));
+            asientoTransferencia.addTransaccion(new Transaction(TipoTransaccion.DEBITO, saldoNeto, cuentaPatrimonio));
         } else {
-            asientoTransferencia.addTransaccion(new Transaccion(TipoTransaccion.CREDITO, saldoNeto.negate(), cuentaPatrimonio));
+            asientoTransferencia.addTransaccion(new Transaction(TipoTransaccion.CREDITO, saldoNeto.negate(), cuentaPatrimonio));
         }
         registrarAsiento(asientoTransferencia);
     }
-    
+
     private BigDecimal calcularSaldoNeto(String year) {
         // Obtener todas las cuentas de ingresos y gastos
-        List<Cuenta> cuentasIngresos = cuentaService.findByTipoCuenta(TipoCuenta.INGRESO);
-        List<Cuenta> cuentasGastos = cuentaService.findByTipoCuenta(TipoCuenta.GASTO);
+        List<Account> cuentasIngresos = cuentaService.findByTipoCuenta(AccountType.INGRESO);
+        List<Account> cuentasGastos = cuentaService.findByTipoCuenta(AccountType.GASTO);
 
         // Calcular el saldo total de ingresos
         BigDecimal totalIngresos = cuentasIngresos.stream()
-                .map(Cuenta::getSaldo)
+                .map(Account::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Calcular el saldo total de gastos
         BigDecimal totalGastos = cuentasGastos.stream()
-                .map(Cuenta::getSaldo)
+                .map(Account::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Calcular el saldo neto
         return totalIngresos.subtract(totalGastos);
     }
-    
-    public int obtenerSiguienteCodigoDeAsiento(Periodo periodo) {
+
+    public int obtenerSiguienteCodigoDeAsiento(Period periodo) {
         return asientoService.obtenerSiguienteCodigo(periodo);
     }
-    
-    public List<Cuenta> findAllCuentas() {
+
+    public List<Account> findAllCuentas() {
         return cuentaService.findAll();
     }
-    
-    public boolean validateAsiento(Asiento asiento) {
+
+    public boolean validateAsiento(AccountingEntry asiento) {
         return asientoService.validateAsiento(asiento);
     }
-    
+
     public void save(Model model) {
         database.save(model);
     }
-    
-    public Optional<Cuenta> findCuentaByCodigo(String codigoCompleto) {
+
+    public Optional<Account> findCuentaByCodigo(String codigoCompleto) {
         return cuentaService.findByCodigo(codigoCompleto);
     }
-    
-    public Cuenta crearCuenta(String codigo, String nombre, NaturalezaCuenta naturaleza, TipoCuenta tipoCuenta, Moneda moneda, PlanDeCuentas planDeCuentas) {
-        Cuenta cuenta = new Cuenta();
-        cuenta.setCodigo(codigo);
-        cuenta.setNombre(nombre);
-        cuenta.setNaturaleza(naturaleza);
-        cuenta.setTipoCuenta(tipoCuenta);
-        cuenta.setTipoApertura(TipoApertura.SIN_APERTURA);
-        cuenta.setMoneda(moneda);
-        cuenta.setPlanDeCuenta(planDeCuentas);
-        cuenta.setActiva(true);
-        cuenta.setApertura(false);
-        cuenta.setLibroMayor(new LibroMayor(cuenta));
-        database.save(cuenta);
-        return cuenta;
+
+    public Account createAccount(String code, String name, NatureOfAccount natureOfAccount, AccountType accountType, Currency currency, ChartOfAccounts chartOfAccounts) {
+        Account account = new Account();
+        account.setCode(code);
+        account.setName(name);
+        account.setNatureOfAccount(natureOfAccount);
+        account.setAccountType(accountType);
+        account.setTypeOfOpening(TypeOfOpening.SIN_APERTURA);
+        account.setCurrency(currency);
+        account.setChartOfAccounts(chartOfAccounts);
+        account.setActive(true);
+        account.setOpening(false);
+        account.setLedger(new Ledger(account));
+        database.save(account);
+        return account;
+    }
+
+    public void addSubAccount(Account account, Account subAccount) {
+       account.addSubCuenta(subAccount);
+       database.update(account);
     }
 }

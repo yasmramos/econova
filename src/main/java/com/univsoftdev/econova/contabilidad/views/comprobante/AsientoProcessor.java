@@ -2,10 +2,10 @@ package com.univsoftdev.econova.contabilidad.views.comprobante;
 
 import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.contabilidad.service.ContabilidadService;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
+import com.univsoftdev.econova.contabilidad.service.AccountingService;
 import com.univsoftdev.econova.contabilidad.views.comprobante.validation.AsientoRowValidator;
 import com.univsoftdev.econova.contabilidad.views.comprobante.factory.TransaccionFactory;
 import com.univsoftdev.econova.contabilidad.views.comprobante.dto.AsientoRowData;
@@ -21,18 +21,18 @@ import java.util.Optional;
 @Slf4j
 public class AsientoProcessor {
 
-    private final ContabilidadService contabilidadService;
+    private final AccountingService contabilidadService;
     private final AsientoRowValidator validator;
     private final TransaccionFactory transaccionFactory;
     private final CuentaCodeBuilder cuentaCodeBuilder;
-    private final Asiento asiento;
+    private final AccountingEntry asiento;
     private final List<String> errores = new ArrayList<>();
 
-    public AsientoProcessor(ContabilidadService contabilidadService,
+    public AsientoProcessor(AccountingService contabilidadService,
             AsientoRowValidator validator,
             TransaccionFactory transaccionFactory,
             CuentaCodeBuilder cuentaCodeBuilder,
-            Asiento asiento) {
+            AccountingEntry asiento) {
         this.contabilidadService = contabilidadService;
         this.validator = validator;
         this.transaccionFactory = transaccionFactory;
@@ -77,25 +77,25 @@ public class AsientoProcessor {
 
     private void processTransaction(String accountCode, TransaccionData transaccionData, int filaIndex) {
         try {
-            Optional<Cuenta> cuentaOpt = contabilidadService.findCuentaByCodigo(accountCode);
+            Optional<Account> cuentaOpt = contabilidadService.findCuentaByCodigo(accountCode);
 
             if (cuentaOpt.isEmpty()) {
                 throw new IllegalArgumentException("Cuenta no encontrada: " + accountCode);
             }
 
-            Cuenta cuenta = cuentaOpt.get();
+            Account cuenta = cuentaOpt.get();
             validateCuentaActiva(cuenta, accountCode);
 
-            Transaccion transaccion = transaccionFactory.createTransaccion(transaccionData, cuenta, asiento);
-            asiento.getTransacciones().add(transaccion);
+            Transaction transaccion = transaccionFactory.createTransaccion(transaccionData, cuenta, asiento);
+            asiento.getTransactions().add(transaccion);
 
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Error en transacción fila " + (filaIndex + 1) + ": " + e.getMessage(), e);
         }
     }
 
-    private void validateCuentaActiva(Cuenta cuenta, String codigo) {
-        if (!cuenta.isActiva()) {
+    private void validateCuentaActiva(Account cuenta, String codigo) {
+        if (!cuenta.isActive()) {
             throw new IllegalArgumentException("La cuenta " + codigo + " no está activa");
         }
     }

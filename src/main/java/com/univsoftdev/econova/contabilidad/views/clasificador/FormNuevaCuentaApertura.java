@@ -1,15 +1,14 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
-import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
-import com.univsoftdev.econova.contabilidad.TipoApertura;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
+import com.univsoftdev.econova.contabilidad.NatureOfAccount;
+import com.univsoftdev.econova.contabilidad.OpeningTypeAnalysis;
+import com.univsoftdev.econova.contabilidad.TypeOfOpening;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.Currency;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
+import com.univsoftdev.econova.core.Injector;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Currency;
 import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -22,14 +21,14 @@ import raven.modal.component.Modal;
 public class FormNuevaCuentaApertura extends Modal {
 
     private JTable table;
-    private Cuenta cuenta;
+    private Account cuenta;
 
     public FormNuevaCuentaApertura() {
         initComponents();
         init();
     }
 
-    public FormNuevaCuentaApertura(JTable table, Cuenta cuenta) {
+    public FormNuevaCuentaApertura(JTable table, Account cuenta) {
         initComponents();
         init();
         this.cuenta = cuenta;
@@ -44,13 +43,13 @@ public class FormNuevaCuentaApertura extends Modal {
         try {
             String codigo = txtCodigo.getText().trim();
             String descripcion = txtDescripcion.getText().trim();
-            NaturalezaCuenta naturaleza = NaturalezaCuenta.valueOf(String.valueOf(cboxNaturaleza.getSelectedItem()));
+            NatureOfAccount naturaleza = NatureOfAccount.valueOf(String.valueOf(cboxNaturaleza.getSelectedItem()));
 
             var planDeCuentasService = Injector.get(PlanDeCuentasService.class);
-            var monedaC = new Moneda("CUP", "Moneda Nacional");
-            var subCuenta = new Cuenta(codigo, descripcion, naturaleza, null, monedaC);
-            subCuenta.setTipoApertura(TipoApertura.SIN_APERTURA);
-            subCuenta.setTipoAnalisisApertura(AnalisisTipoApertura.NINGUNO);
+            var monedaC = new Currency("CUP", "Moneda Nacional");
+            var subCuenta = new Account(codigo, descripcion, naturaleza, null, monedaC);
+            subCuenta.setTypeOfOpening(TypeOfOpening.SIN_APERTURA);
+            subCuenta.setOpeningTypeAnalysis(OpeningTypeAnalysis.NINGUNO);
             cuenta.addSubCuenta(subCuenta);
 
             planDeCuentasService.addCuenta(cuenta);
@@ -72,12 +71,12 @@ public class FormNuevaCuentaApertura extends Modal {
         };
 
         for (Locale locale : locales) {
-            Currency currency = Currency.getInstance(locale);
+            java.util.Currency currency = java.util.Currency.getInstance(locale);
             cboxMoneda.addItem(locale.getDisplayCountry() + ": " + currency.getDisplayName() + " (" + currency.getCurrencyCode() + ")");
         }
 
-        NaturalezaCuenta[] naturalezaCuenta = NaturalezaCuenta.values();
-        for (NaturalezaCuenta naturaleza : naturalezaCuenta) {
+        NatureOfAccount[] naturalezaCuenta = NatureOfAccount.values();
+        for (NatureOfAccount naturaleza : naturalezaCuenta) {
             cboxNaturaleza.addItem(naturaleza.name());
         }
     }

@@ -6,6 +6,9 @@ public class MyTenantSchemaProvider implements TenantSchemaProvider {
 
     @Override
     public String schema(Object tenantId) {
-        return "tenant_" + tenantId;
+        if (tenantId == null) {
+            return "accounting";
+        }
+        return tenantId.toString();
     }
 }

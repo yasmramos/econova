@@ -12,7 +12,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.model.Account;
 
 public class ComprobanteComboBoxCellEditor extends DefaultCellEditor {
 
@@ -48,8 +48,8 @@ public class ComprobanteComboBoxCellEditor extends DefaultCellEditor {
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
                     if (comboBox.getSelectedItem() instanceof ItemCombo selectedItem) {
-                        Cuenta cuenta = (selectedItem != null) ? selectedItem.getCuenta() : null;
-                        List<Cuenta> subCuentas = (cuenta != null) ? cuenta.getSubCuentas() : null;
+                        Account cuenta = (selectedItem != null) ? selectedItem.getCuenta() : null;
+                        List<Account> subCuentas = (cuenta != null) ? cuenta.getSubAccounts() : null;
 
                         // Si no hay subcuentas, salta automáticamente a la columna 5
                         if (subCuentas == null || subCuentas.isEmpty()) {
@@ -121,8 +121,8 @@ public class ComprobanteComboBoxCellEditor extends DefaultCellEditor {
             return;
         }
 
-        Cuenta cuenta = itemSeleccionado.getCuenta();
-        List<Cuenta> subCuentas = (cuenta != null) ? cuenta.getSubCuentas() : null;
+        Account cuenta = itemSeleccionado.getCuenta();
+        List<Account> subCuentas = (cuenta != null) ? cuenta.getSubAccounts() : null;
 
         if (subCuentas == null || subCuentas.isEmpty()) {
             // Si no hay subcuentas, bloquear columnas 1-4 y saltar a la 5
@@ -137,14 +137,13 @@ public class ComprobanteComboBoxCellEditor extends DefaultCellEditor {
     private void limpiarColumnasIntermedias(int desdeColumna, int hastaColumna) {
         for (int col = desdeColumna; col <= hastaColumna; col++) {
             tabla.getModel().setValueAt("", fila, col);
-            tabla.getColumnModel().getColumn(col).setCellEditor(
-                    new ComprobanteComboBoxCellEditor(new ItemCombo[]{new ItemCombo(new Cuenta("", ""))}, editorOriginalColumnas5y6));
+            tabla.getColumnModel().getColumn(col).setCellEditor(new ComprobanteComboBoxCellEditor(new ItemCombo[]{new ItemCombo(new Account("", ""))}, editorOriginalColumnas5y6));
         }
     }
 
-    private void configurarColumnaCombo(int columnaDestino, List<Cuenta> subCuentas) {
+    private void configurarColumnaCombo(int columnaDestino, List<Account> subCuentas) {
         ItemCombo[] items = new ItemCombo[subCuentas.size() + 1];
-        items[0] = new ItemCombo(new Cuenta("", ""));
+        items[0] = new ItemCombo(new Account("", ""));
         for (int i = 1; i < subCuentas.size(); i++) {
             items[i + 1] = new ItemCombo(subCuentas.get(i));
         }

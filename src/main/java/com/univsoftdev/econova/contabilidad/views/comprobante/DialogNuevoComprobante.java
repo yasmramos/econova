@@ -5,28 +5,27 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.AppSession;
-import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.SubSistema;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.service.ContabilidadService;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
+import com.univsoftdev.econova.contabilidad.SubSystem;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.service.AccountingService;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.AppSession;
+import com.univsoftdev.econova.core.Injector;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
-import io.avaje.inject.BeanScope;
 import jakarta.validation.constraints.NotNull;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.table.*;
 import lombok.extern.slf4j.Slf4j;
 import net.miginfocom.swing.*;
 
@@ -36,9 +35,9 @@ public class DialogNuevoComprobante extends JDialog {
     private static final long serialVersionUID = 3697096490193996608L;
     private boolean guardado = false;
     private boolean validado = false;
-    private Asiento asiento;
+    private AccountingEntry asiento;
     private final JTable tableComprobantes;
-    private final ContabilidadService contabilidadService;
+    private final AccountingService contabilidadService;
     private final AppContext appContext;
     private final DefaultTableModel modelo;
     private NumberFormat formatoMoneda;
@@ -57,7 +56,7 @@ public class DialogNuevoComprobante extends JDialog {
         this.session = appContext.getSession();
 
         // Inyección de dependencias
-        this.contabilidadService = Injector.get(ContabilidadService.class);
+        this.contabilidadService = Injector.get(AccountingService.class);
 
         String[] columnas = {"CTA", "SBCTA", "SCTRO", "ANAL", "EPIG", "Débito", "Crédito"};
 
@@ -128,10 +127,14 @@ public class DialogNuevoComprobante extends JDialog {
 
     private void initAsiento() {
         if (this.asiento == null) {
-            this.asiento = new Asiento();
+            this.asiento = new AccountingEntry();
         }
 
-        nro = contabilidadService.obtenerSiguienteCodigoDeAsiento(appContext.getSession().getPeriodo());
+        try {
+            nro = contabilidadService.obtenerSiguienteCodigoDeAsiento(appContext.getSession().getPeriodo());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
         if (nro == 0) {
             nro = 1;
         }
@@ -154,12 +157,12 @@ public class DialogNuevoComprobante extends JDialog {
     }
 
     private ItemCombo[] crearItemsCuentasConOpcionVacia() {
-        java.util.List<Cuenta> cuentasRaiz = contabilidadService.findAllCuentas().stream()
-                .filter(c -> c.getCuentaPadre() == null)
+        java.util.List<Account> cuentasRaiz = contabilidadService.findAllCuentas().stream()
+                .filter(c -> c.getAccountFather() == null)
                 .collect(Collectors.toList());
 
         ItemCombo[] items = new ItemCombo[cuentasRaiz.size() + 1];
-        items[0] = new ItemCombo(new Cuenta("", "")); // Opción vacía
+        items[0] = new ItemCombo(new Account("", "")); // Opción vacía
 
         for (int i = 0; i < cuentasRaiz.size(); i++) {
             items[i + 1] = new ItemCombo(cuentasRaiz.get(i));
@@ -306,12 +309,12 @@ public class DialogNuevoComprobante extends JDialog {
                         var model = (DefaultTableModel) this.tableComprobantes.getModel();
                         model.addRow(new Object[]{
                             asiento.getNro(),
-                            asiento.getDescripcion(),
+                            asiento.getDescription(),
                             asiento.getEstadoAsiento(),
                             asiento.getFecha(),
-                            SubSistema.CONTABILIDAD.getDescripcion(),
-                            asiento.getWhoModified().getFullName(),
-                            asiento.getUnidad().getCodigo()
+                            SubSystem.CONTABILIDAD.getDescription(),
+                            asiento.getModifiedBy().getFullName(),
+                            asiento.getUnidad().getCode()
                         });
                     }
                 }
@@ -632,17 +635,17 @@ public class DialogNuevoComprobante extends JDialog {
         try {
             // Configurar el asiento con todos los campos obligatorios
             asiento.setNro(nro);
-            asiento.setSubSistema(SubSistema.CONTABILIDAD);
-            asiento.setDescripcion(txtDescripcion.getText());
+            asiento.setSubSystem(SubSystem.CONTABILIDAD);
+            asiento.setDescription(txtDescripcion.getText());
             asiento.setFecha(datePickerSwing1.getSelectedDate());
             asiento.setEstadoAsiento(estadoAsiento);
 
             // Campos de auditoría y relaciones
             asiento.setUnidad(Objects.requireNonNull(session.getUnidad(),
                     "No se ha configurado la unidad organizativa en la sesión"));
-            asiento.setPeriodo(Objects.requireNonNull(session.getPeriodo(),
+            asiento.setPeriod(Objects.requireNonNull(session.getPeriodo(),
                     "No se ha configurado el período contable en la sesión"));
-            asiento.setUsuario(Objects.requireNonNull(session.getUser(),
+            asiento.setUser(Objects.requireNonNull(session.getUser(),
                     "No hay usuario autenticado en la sesión"));
 
             // Procesar transacciones

@@ -1,22 +1,22 @@
 package com.univsoftdev.econova.contabilidad.finder;
 
-import com.univsoftdev.econova.contabilidad.EstadoCuenta;
-import com.univsoftdev.econova.contabilidad.TipoCuenta;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.AccountStatus;
+import com.univsoftdev.econova.contabilidad.AccountType;
+import com.univsoftdev.econova.contabilidad.model.Account;
 import io.ebean.Finder;
 import java.util.List;
 
-public class CuentaFinder extends Finder<Long, Cuenta> {
+public class AccountFinder extends Finder<Long, Account> {
 
-    public CuentaFinder() {
-        super(Cuenta.class);
+    public AccountFinder() {
+        super(Account.class);
     }
 
-    public List<Cuenta> findByTipo(TipoCuenta tipo) {
-        return db().find(Cuenta.class).where().eq("tipoCuenta", tipo).findList();
+    public List<Account> findByTipo(AccountType tipo) {
+        return db().find(Account.class).where().eq("tipoCuenta", tipo).findList();
     }
 
-    public List<Cuenta> findActivas() {
-        return db().find(Cuenta.class).where().eq("estadoCuenta", EstadoCuenta.ACTIVA).findList();
+    public List<Account> findActivas() {
+        return db().find(Account.class).where().eq("estadoCuenta", AccountStatus.ACTIVE).findList();
     }
 }

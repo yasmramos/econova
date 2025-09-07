@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import javafx.embed.swing.JFXPanel;
 import lombok.extern.slf4j.Slf4j;

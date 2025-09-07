@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.finanzas;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Unmarshaller;

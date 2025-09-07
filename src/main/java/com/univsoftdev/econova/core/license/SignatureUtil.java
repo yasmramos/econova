@@ -5,7 +5,7 @@ import java.util.Base64;
 
 public class SignatureUtil {
 
-    private static final String ALGORITHM = "SHA256withRSA";
+    private static final String ALGORITHM = "SHA512withRSA";
 
     public static String sign(String data, PrivateKey privateKey) throws Exception {
         Signature signature = Signature.getInstance(ALGORITHM);

@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import java.io.InputStream;
 import java.net.URL;

@@ -1,5 +1,6 @@
 package com.univsoftdev.econova.security;
 
+import com.univsoftdev.econova.security.argon2.PasswordHasher;
 import lombok.extern.slf4j.Slf4j;
 import javax.sql.DataSource;
 import java.sql.Connection;

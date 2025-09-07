@@ -2,6 +2,9 @@ package com.univsoftdev.econova.security;
 
 public class Permissions {
 
+    private Permissions() {
+    }
+    
     // Permissions generales del sistema
     public static final String CREATE_USER = "user:create";
     public static final String EDIT_USER = "user:edit";
@@ -93,4 +96,6 @@ public class Permissions {
     public static final String INTEGRATION_ACCOUNTING = "integration:accounting";
     public static final String INTEGRATION_BANKING = "integration:banking";
     public static final String INTEGRATION_ERP = "integration:erp";
+    public static final String VIEW_USER = "user:view";
+    public static final String ADMIN_ACCESS = "admin:access";
 }

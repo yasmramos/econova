@@ -3,7 +3,7 @@ package com.univsoftdev.econova.config.model;
 import jakarta.validation.constraints.NotNull;
 
 public enum RolPredefinido {
-    
+
     ADMIN_SISTEMA("ADMIN_SISTEMA"),
     ADMIN_ECONOMICO("ADMIN_ECONOMICO"),
     CONTADOR("CONTADOR"),
@@ -19,8 +19,8 @@ public enum RolPredefinido {
         return nombre;
     }
 
-    public static Rol toEntity(@NotNull RolPredefinido rolEnum) {
-        Rol rol = new Rol(rolEnum.nombre);
+    public static Role toEntity(@NotNull RolPredefinido rolEnum) {
+        Role rol = new Role(rolEnum.nombre);
         return rol;
     }
 }

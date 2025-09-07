@@ -1,16 +1,11 @@
 package com.univsoftdev.econova.contabilidad.views.comprobante;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
 import com.univsoftdev.econova.contabilidad.service.AsientoService;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
@@ -18,10 +13,15 @@ import com.univsoftdev.econova.core.utils.table.TableHeaderAlignment;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.table.*;
 import lombok.extern.slf4j.Slf4j;
 import net.miginfocom.swing.*;
 
@@ -120,7 +120,7 @@ public class FormComprobantes extends Form {
     /**
      * Obtiene el asiento seleccionado en la tabla.
      */
-    private Asiento getSelectedAsiento() {
+    private AccountingEntry getSelectedAsiento() {
         int selectedRow = tableComprobantes.getSelectedRow();
         if (selectedRow < 0) return null;
         int valueAt = (int) tableComprobantes.getValueAt(selectedRow, 0);
@@ -200,7 +200,7 @@ public class FormComprobantes extends Form {
      */
     private void exportar(ActionEvent e) {
         try {
-            JAXBContext context = JAXBContext.newInstance(Asiento.class);
+            JAXBContext context = JAXBContext.newInstance(AccountingEntry.class);
             Marshaller marshaller = context.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             var fch = new JFileChooser();
@@ -270,7 +270,7 @@ public class FormComprobantes extends Form {
     private void mostrarComprobantesPeriodo() {
         final var periodo = Injector.get(AppContext.class).getSession().getPeriodo();
         final var listaDeAsientos = asientoService.findAll().stream()
-                .filter(a -> estaEntreFechas(a.getFecha(), periodo.getFechaInicio(), periodo.getFechaFin()))
+                .filter(a -> estaEntreFechas(a.getFecha(), periodo.getStartDate(), periodo.getEndDate()))
                 .toList();
         updateTableView(listaDeAsientos);
     }
@@ -278,18 +278,18 @@ public class FormComprobantes extends Form {
     /**
      * Actualiza la tabla con la lista de asientos.
      */
-    void updateTableView(java.util.List<Asiento> listaDeAsientos) {
+    void updateTableView(java.util.List<AccountingEntry> listaDeAsientos) {
         var model = (DefaultTableModel) this.tableComprobantes.getModel();
         model.setRowCount(0); // Limpia la tabla antes de agregar
-        for (Asiento asiento : listaDeAsientos) {
+        for (AccountingEntry asiento : listaDeAsientos) {
             model.addRow(new Object[]{
                 asiento.getNro(),
-                asiento.getDescripcion(),
+                asiento.getDescription(),
                 asiento.getEstadoAsiento().getDescripcion(),
                 asiento.getFecha(),
-                asiento.getSubSistema().getDescripcion(),
-                asiento.getWhoModified(),
-                asiento.getUnidad().getCodigo()
+                asiento.getSubSystem().getDescription(),
+                asiento.getModifiedBy(),
+                asiento.getUnidad().getCode()
             });
         }
         updateLabelCount();
@@ -299,7 +299,7 @@ public class FormComprobantes extends Form {
      * Muestra todos los comprobantes.
      */
     private void btnMostrarTodos(ActionEvent e) {
-        java.util.List<Asiento> listaDeAsientos = asientoService.findAll();
+        java.util.List<AccountingEntry> listaDeAsientos = asientoService.findAll();
         updateTableView(listaDeAsientos);
     }
 

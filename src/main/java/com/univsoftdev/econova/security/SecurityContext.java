@@ -1,11 +1,34 @@
 package com.univsoftdev.econova.security;
 
+import com.google.crypto.tink.KeysetHandle;
+import com.licify.Licify;
 import com.univsoftdev.econova.config.model.User;
+import java.security.PublicKey;
 import java.util.Optional;
 
 public class SecurityContext {
 
     private static final ThreadLocal<AuthenticatedUser> currentUser = new ThreadLocal<>();
+    private static KeysetHandle privateKeysetHandle;
+    private static KeysetHandle publicKeysetHandle;
+    private static PublicKey publicKey;
+    private static Licify.License license;
+
+    public static PublicKey getPublicKey() {
+        return publicKey;
+    }
+
+    public static void setPublicKey(PublicKey publicKey) {
+        SecurityContext.publicKey = publicKey;
+    }
+
+    public static void setLicense(Licify.License license) {
+        SecurityContext.license = license;
+    }
+
+    public static Licify.License getLicense() {
+        return license;
+    }
 
     public static class AuthenticatedUser {
 
@@ -28,6 +51,7 @@ public class SecurityContext {
 
     /**
      * Establece el usuario autenticado en el contexto actual
+     *
      * @param user
      * @param tenantId
      */
@@ -44,7 +68,8 @@ public class SecurityContext {
 
     /**
      * Obtiene el usuario actualmente autenticado
-     * @return 
+     *
+     * @return
      */
     public static Optional<User> getCurrentUser() {
         return Optional.ofNullable(currentUser.get())
@@ -53,7 +78,8 @@ public class SecurityContext {
 
     /**
      * Obtiene el tenant ID del usuario actual
-     * @return 
+     *
+     * @return
      */
     public static Optional<String> getCurrentTenantId() {
         return Optional.ofNullable(currentUser.get())
@@ -62,9 +88,29 @@ public class SecurityContext {
 
     /**
      * Verifica si hay un usuario autenticado
-     * @return 
+     *
+     * @return
      */
     public static boolean isAuthenticated() {
         return currentUser.get() != null;
     }
+
+    public static KeysetHandle getPrivateKeysetHandle() {
+        return privateKeysetHandle;
+    }
+
+    public static void setPrivateKeysetHandle(KeysetHandle privateKeysetHandle) {
+        SecurityContext.privateKeysetHandle = privateKeysetHandle;
+    }
+
+    public static KeysetHandle getPublicKeysetHandle() {
+        return publicKeysetHandle;
+    }
+
+    public static void setPublicKeysetHandle(KeysetHandle publicKeysetHandle) {
+        SecurityContext.publicKeysetHandle = publicKeysetHandle;
+    }
+    
+    
+
 }

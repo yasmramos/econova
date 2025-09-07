@@ -1,9 +1,10 @@
 package com.univsoftdev.econova.core;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.univsoftdev.econova.AppContext;
 import com.univsoftdev.econova.MainFormApp;
 import com.univsoftdev.econova.Splash;
+import com.univsoftdev.econova.ebean.config.EbeanMigrator;
+import jakarta.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +12,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Application {
 
-    private AppContext context;
+    @Inject
+    AppContext context;
+
     private UpdateManager updateManager;
+
+    @Inject
+    EbeanMigrator ebeanMigrator;
 
     public Application() {
         initializeUpdateManager();
@@ -20,7 +26,7 @@ public class Application {
     }
 
     private void initializeUpdateManager() {
-        String updateServerUri = System.getProperty("update.server.uri", "http://tu-servidor.com/version.txt");
+        String updateServerUri = System.getProperty("econova.update.server.uri", "http://tu-servidor.com/version.txt");
         try {
             URI updateUri = new URI(updateServerUri);
             updateManager = new UpdateManager(updateUri.toString(), context.getVersion());
@@ -32,14 +38,22 @@ public class Application {
     }
 
     public void run(String[] args) {
+
         context.setRunning(true);
         context = getContext();
+
         try {
             FlatLightLaf.setup();
+
+            ebeanMigrator.migrate("accounting");
+
             new Splash(null, true).setVisible(true);
+
             MainFormApp.main(args);
+
         } catch (RuntimeException e) {
             log.error("Error initializing ebean orm: {}", e.getMessage(), e);
+            context.setRunning(false);
         }
     }
 

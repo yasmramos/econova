@@ -1,4 +1,4 @@
-package com.univsoftdev.econova.security;
+package com.univsoftdev.econova.db.postgres;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,11 +31,60 @@ public class PostgresSql {
      * reutiliza para mejorar el rendimiento.
      */
     private static volatile String pgBinPath;
+    /**
+     * Nombre de la base de datos actualmente en uso.
+     */
+    private String currentDatabase;
+
+    /**
+     * Servidor PostgreSQL (hostname o IP).
+     */
+    private final String server;
+
+    /**
+     * Puerto de conexión PostgreSQL.
+     */
+    private final int port;
+
+    /**
+     * Nombre de usuario para la conexión.
+     */
+    private final String userName;
+
+    /**
+     * Contraseña para la conexión.
+     */
+    private final String password;
 
     /**
      * Objeto de bloqueo para sincronización thread-safe.
      */
     private static final Object LOCK = new Object();
+
+    public PostgresSql(String server, int port, String userName, String password, String defaultDatabase) {
+        validateConnectionParams(server, port, userName, defaultDatabase);
+        this.server = server;
+        this.port = port;
+        this.userName = userName;
+        this.password = password;
+        this.currentDatabase = defaultDatabase;
+    }
+
+    private void validateConnectionParams(String server, int port,
+            String username, String database) {
+        if (server == null || server.trim().isEmpty()) {
+            throw new IllegalArgumentException("Server cannot be null or empty");
+        }
+        if (port == 0 || port < 1000) {
+            throw new IllegalArgumentException("Port must be a valid number");
+        }
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        if (database == null || database.trim().isEmpty()) {
+            throw new IllegalArgumentException("Database name cannot be null or empty");
+        }
+    }
 
     /**
      * Obtiene la ruta al directorio bin de PostgreSQL.

@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.ebean.config;
 
-import com.univsoftdev.econova.UserContext;
+import com.univsoftdev.econova.core.UserContext;
 import io.ebean.config.CurrentTenantProvider;
 
 public class MyCurrentTenantProvider implements CurrentTenantProvider {

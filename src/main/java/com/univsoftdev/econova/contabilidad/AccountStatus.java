@@ -1,18 +1,18 @@
 package com.univsoftdev.econova.contabilidad;
 
-public enum EstadoCuenta {
+public enum AccountStatus {
     
-    ACTIVA("Activa"),
-    INACTIVA("Inactiva");
+    ACTIVE("Active"),
+    INACTIVE("Inactive");
 
-    private final String descripcion;
+    private final String description;
 
-    private EstadoCuenta(String descripcion) {
-        this.descripcion = descripcion;
+    private AccountStatus(String description) {
+        this.description = description;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
 }

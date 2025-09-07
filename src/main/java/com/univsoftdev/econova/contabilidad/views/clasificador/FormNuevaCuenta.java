@@ -1,23 +1,19 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Econova;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
-import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.TipoApertura;
-import com.univsoftdev.econova.contabilidad.TipoCuenta;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
+import com.univsoftdev.econova.contabilidad.AccountType;
+import com.univsoftdev.econova.contabilidad.NatureOfAccount;
+import com.univsoftdev.econova.contabilidad.OpeningTypeAnalysis;
+import com.univsoftdev.econova.contabilidad.TypeOfOpening;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.Currency;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
+import com.univsoftdev.econova.core.Injector;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Currency;
 import java.util.Locale;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import raven.modal.ModalDialog;
@@ -28,7 +24,7 @@ public class FormNuevaCuenta extends Modal {
     private static final long serialVersionUID = 4148928387045554238L;
     private static final Logger LOGGER = LoggerFactory.getLogger(FormNuevaCuenta.class);
     private JTable table;
-    private Cuenta cuenta;
+    private Account cuenta;
 
     public FormNuevaCuenta() {
         initComponents();
@@ -45,15 +41,15 @@ public class FormNuevaCuenta extends Modal {
         try {
             String codigo = txtCodigo.getText().trim();
             String descripcion = txtDescripcion.getText().trim();
-            NaturalezaCuenta naturaleza = NaturalezaCuenta.valueOf(String.valueOf(cboxNaturaleza.getSelectedItem()));
-            TipoCuenta categoria = TipoCuenta.valueOf(String.valueOf(comboBoxTipoCuenta.getSelectedItem()));
-            Moneda monedaC = new Moneda("CUP", "Moneda Cubana");
+            NatureOfAccount naturaleza = NatureOfAccount.valueOf(String.valueOf(cboxNaturaleza.getSelectedItem()));
+            AccountType categoria = AccountType.valueOf(String.valueOf(comboBoxTipoCuenta.getSelectedItem()));
+            Currency monedaC = new Currency("CUP", "Moneda Cubana");
 
             var planDeCuentasService = Injector.get(PlanDeCuentasService.class);
             
-            cuenta = new Cuenta(codigo, descripcion, naturaleza, categoria, monedaC);
-            cuenta.setTipoApertura(TipoApertura.SIN_APERTURA);
-            cuenta.setTipoAnalisisApertura(AnalisisTipoApertura.NINGUNO);
+            cuenta = new Account(codigo, descripcion, naturaleza, categoria, monedaC);
+            cuenta.setTypeOfOpening(TypeOfOpening.SIN_APERTURA);
+            cuenta.setOpeningTypeAnalysis(OpeningTypeAnalysis.NINGUNO);
             
             planDeCuentasService.addCuenta(cuenta);
             
@@ -208,25 +204,25 @@ public class FormNuevaCuenta extends Modal {
     private void init() {
         Locale[] locales = {Locale.forLanguageTag("es-CU"), Locale.US};
         for (Locale locale : locales) {
-            Currency currency = Currency.getInstance(locale);
+            java.util.Currency currency = java.util.Currency.getInstance(locale);
             cboxMoneda.addItem(locale.getDisplayCountry() + ": " + currency.getDisplayName() + " (" + currency.getCurrencyCode() + ")");
         }
-        TipoCuenta[] tiposDeCuenta = TipoCuenta.values();
-        for (TipoCuenta tipoCuenta : tiposDeCuenta) {
+        AccountType[] tiposDeCuenta = AccountType.values();
+        for (AccountType tipoCuenta : tiposDeCuenta) {
             comboBoxTipoCuenta.addItem(tipoCuenta.name());
         }
 
-        NaturalezaCuenta[] naturalezaCuenta = NaturalezaCuenta.values();
-        for (NaturalezaCuenta naturaleza : naturalezaCuenta) {
+        NatureOfAccount[] naturalezaCuenta = NatureOfAccount.values();
+        for (NatureOfAccount naturaleza : naturalezaCuenta) {
             cboxNaturaleza.addItem(naturaleza.name());
         }
     }
 
-    public Cuenta getCuenta() {
+    public Account getCuenta() {
         return cuenta;
     }
 
-    public void setCuenta(Cuenta cuenta) {
+    public void setCuenta(Account cuenta) {
         this.cuenta = cuenta;
     }
 

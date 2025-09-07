@@ -1,6 +1,7 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import com.univsoftdev.econova.config.model.User;
+import io.ebean.DB;
 
 public final class UserContext {
 
@@ -41,16 +42,29 @@ public final class UserContext {
         context.remove();
     }
 
-    public static void set(String userId, String tenantId) {
-        set(userId, tenantId, "tenant_" + tenantId.toLowerCase());
+    public static void set(String tenantId) {
+        String schema = tenantId.toLowerCase();
+        // Verificar que el esquema existe
+        if (!schemaExists(schema)) {
+            throw new IllegalStateException("Schema " + schema + " does not exist");
+        }
+        set("System", tenantId, schema);
     }
 
-    public static void set(String tenantId) {
-        set("System", tenantId, "tenant_" + tenantId.toLowerCase());
+    private static boolean schemaExists(String schema) {
+        return DB.getDefault()
+                .sqlQuery("SELECT 1 FROM information_schema.schemata WHERE schema_name = :schema")
+                .setParameter("schema", schema)
+                .findOne() != null;
+    }
+
+    public static void set(String userId, String tenantId) {
+        set(userId, tenantId, tenantId.toLowerCase());
     }
 
     public static void set(String userId, String tenantId, String tenantSchema) {
         context.set(new UserContext(userId, tenantId, tenantSchema));
+        DB.getDefault().sqlUpdate("SET search_path TO " + tenantSchema).execute();
     }
 
     public String getTenantSchema() {

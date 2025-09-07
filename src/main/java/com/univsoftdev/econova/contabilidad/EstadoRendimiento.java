@@ -1,17 +1,17 @@
 package com.univsoftdev.econova.contabilidad;
 
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import java.util.List;
 
 public class EstadoRendimiento {
 
-    private List<Transaccion> ingresos;
-    private List<Transaccion> gastos;
+    private List<Transaction> ingresos;
+    private List<Transaction> gastos;
     private double totalIngresos;
     private double totalGastos;
     private double utilidadNeta;
 
-    public EstadoRendimiento(List<Transaccion> ingresos, List<Transaccion> gastos) {
+    public EstadoRendimiento(List<Transaction> ingresos, List<Transaction> gastos) {
         this.ingresos = ingresos;
         this.gastos = gastos;
         calcularTotales();
@@ -21,19 +21,19 @@ public class EstadoRendimiento {
 
     }
 
-    public List<Transaccion> getIngresos() {
+    public List<Transaction> getIngresos() {
         return ingresos;
     }
 
-    public void setIngresos(List<Transaccion> ingresos) {
+    public void setIngresos(List<Transaction> ingresos) {
         this.ingresos = ingresos;
     }
 
-    public List<Transaccion> getGastos() {
+    public List<Transaction> getGastos() {
         return gastos;
     }
 
-    public void setGastos(List<Transaccion> gastos) {
+    public void setGastos(List<Transaction> gastos) {
         this.gastos = gastos;
     }
 

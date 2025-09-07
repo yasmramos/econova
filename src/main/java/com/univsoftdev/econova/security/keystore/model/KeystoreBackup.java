@@ -1,19 +1,12 @@
 package com.univsoftdev.econova.security.keystore.model;
 
-import com.univsoftdev.econova.UserContext;
+import com.univsoftdev.econova.core.UserContext;
 import com.univsoftdev.econova.core.model.BaseModel;
 import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
 import io.ebean.DB;
 import io.ebean.Model;
-import io.ebean.annotation.TenantId;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
-import io.ebean.bean.EntityBean;
-import io.ebean.bean.EntityBeanIntercept;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -105,7 +98,8 @@ public class KeystoreBackup extends BaseModel {
         backup.setId(1L);
         backup.setKeystoreData(data);
         backup.setLastUpdated(new Timestamp(System.currentTimeMillis()));
-        backup.save();
+        
+        DB.save(backup);
     }
 
     /**

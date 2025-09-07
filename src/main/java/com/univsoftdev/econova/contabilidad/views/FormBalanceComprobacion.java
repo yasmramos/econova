@@ -1,9 +1,9 @@
 package com.univsoftdev.econova.contabilidad.views;
 
-import com.univsoftdev.econova.Injector;
+import com.univsoftdev.econova.core.Injector;
 import java.awt.event.*;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
 import com.univsoftdev.econova.config.service.EjercicioService;
 import com.univsoftdev.econova.contabilidad.LineaBalance;
 import com.univsoftdev.econova.contabilidad.service.BalanceGeneralService;
@@ -44,10 +44,10 @@ public class FormBalanceComprobacion extends Form {
 
         try {
             // Buscar el ejercicio por nombre
-            Optional<Ejercicio> ejercicio = ejercService.findByNombre(selected);
+            Optional<Exercise> ejercicio = ejercService.findByNombre(selected);
             if (ejercicio.isPresent()) {
                 // Obtener los periodos del ejercicio
-                java.util.List<Periodo> periodos = ejercicio.get().getPeriodos();
+                java.util.List<Period> periodos = ejercicio.get().getPeriodos();
 
                 // Limpiar la lista actual
                 listPeriodos.removeAll();
@@ -55,7 +55,7 @@ public class FormBalanceComprobacion extends Form {
                 // Crear un nuevo modelo de lista y llenarlo con los nombres de los periodos
                 DefaultListModel<String> model = new DefaultListModel<>();
                 periodos.stream()
-                        .map(Periodo::getNombre)
+                        .map(Period::getName)
                         .forEach(model::addElement);
 
                 // Asignar el nuevo modelo a la lista
@@ -299,15 +299,15 @@ public class FormBalanceComprobacion extends Form {
             balanceService = Injector.get(BalanceGeneralService.class);
 
             // Obtener todos los ejercicios
-            java.util.List<Ejercicio> ejercicios = ejercService.findAll();
+            java.util.List<Exercise> ejercicios = ejercService.findAll();
 
             // Limpiar el comboBox de ejercicios
             comboBoxEjercicios.removeAllItems();
 
             // Encontrar el ejercicio actual y llenar el comboBox
-            Ejercicio currentEjercicio = null;
-            for (Ejercicio ejercicio : ejercicios) {
-                comboBoxEjercicios.addItem(ejercicio.getNombre());
+            Exercise currentEjercicio = null;
+            for (Exercise ejercicio : ejercicios) {
+                comboBoxEjercicios.addItem(ejercicio.getName());
                 if (ejercicio.isCurrent()) {
                     currentEjercicio = ejercicio;
                 }
@@ -321,11 +321,11 @@ public class FormBalanceComprobacion extends Form {
             }
 
             // Obtener los periodos del ejercicio actual
-            java.util.List<Periodo> periodos = currentEjercicio.getPeriodos();
+            java.util.List<Period> periodos = currentEjercicio.getPeriodos();
 
             // Encontrar el periodo actual
-            Periodo currentPeriodo = null;
-            for (Periodo periodo : periodos) {
+            Period currentPeriodo = null;
+            for (Period periodo : periodos) {
                 if (periodo.isCurrent()) {
                     currentPeriodo = periodo;
                 }
@@ -333,13 +333,13 @@ public class FormBalanceComprobacion extends Form {
 
             // Validar que haya un periodo actual
             if (currentPeriodo == null) {
-                log.error("No se encontró ningún periodo actual para el ejercicio: {}", currentEjercicio.getNombre());
-                JOptionPane.showMessageDialog(null, "No se encontró ningún periodo actual para el ejercicio: " + currentEjercicio.getNombre(), "Error", JOptionPane.ERROR_MESSAGE);
+                log.error("No se encontró ningún periodo actual para el ejercicio: {}", currentEjercicio.getName());
+                JOptionPane.showMessageDialog(null, "No se encontró ningún periodo actual para el ejercicio: " + currentEjercicio.getName(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             // Generar el balance general para el periodo actual
-            java.util.List<LineaBalance> lineas = balanceService.generarBalanceGeneral(currentPeriodo.getFechaInicio(), currentPeriodo.getFechaFin());
+            java.util.List<LineaBalance> lineas = balanceService.generarBalanceGeneral(currentPeriodo.getStartDate(), currentPeriodo.getEndDate());
 
             // Obtener el modelo de la tabla de balance
             DefaultTableModel model = (DefaultTableModel) tableBalance.getModel();

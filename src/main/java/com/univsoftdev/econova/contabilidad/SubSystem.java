@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad;
 
-public enum SubSistema {
+public enum SubSystem {
 
     CONTABILIDAD("Contabilidad"),
     FINANZAS("Finanzas"),
@@ -9,14 +9,14 @@ public enum SubSistema {
     INVENTARIOS("Inventarios"),
     FACTURACION("Facturación");
 
-    private final String descripcion;
+    private final String description;
 
-    private SubSistema(String descripcion) {
-        this.descripcion = descripcion;
+    private SubSystem(String descripcion) {
+        this.description = descripcion;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
 }

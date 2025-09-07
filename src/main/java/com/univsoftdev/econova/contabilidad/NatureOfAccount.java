@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.contabilidad;
 
-public enum NaturalezaCuenta {
-    DEUDORA,
-    ACREEDORA,
-    MIXTA
+public enum NatureOfAccount {
+    DEBTOR,
+    CREDITOR,
+    MIXED
 }

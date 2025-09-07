@@ -1,10 +1,10 @@
 package com.univsoftdev.econova.contabilidad.views.comprobante.factory;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.Currency;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
 import com.univsoftdev.econova.contabilidad.views.comprobante.dto.TransaccionData;
 import com.univsoftdev.econova.core.config.AppConfig;
 import jakarta.inject.Inject;
@@ -13,19 +13,17 @@ import jakarta.inject.Singleton;
 @Singleton
 public class TransaccionFactory {
 
-    private final AppConfig appConfig;
     private final AppContext appContext;
 
     @Inject
-    public TransaccionFactory(AppConfig appConfig, AppContext appContext) {
-        this.appConfig = appConfig;
+    public TransaccionFactory(AppContext appContext) {
         this.appContext = appContext;
     }
 
-    public Transaccion createTransaccion(TransaccionData data, Cuenta cuenta, Asiento asiento) {
-        Moneda moneda = getDefaultMoneda();
+    public Transaction createTransaccion(TransaccionData data, Account cuenta, AccountingEntry asiento) {
+        Currency moneda = getDefaultMoneda();
 
-        Transaccion transaccion = new Transaccion(
+        Transaction transaccion = new Transaction(
                 data.tipo(),
                 data.monto(),
                 asiento.getFecha(),
@@ -35,14 +33,14 @@ public class TransaccionFactory {
         );
 
         transaccion.setAsiento(asiento);
-        transaccion.setLibroMayor(cuenta.getLibroMayor());
+        transaccion.setLedger(cuenta.getLedger());
 
         return transaccion;
     }
 
-    private Moneda getDefaultMoneda() {
-        String codigoMoneda = appConfig.getDefaultCurrency();
-        String nombreMoneda = appConfig.getDefaultCurrencyName();
-        return new Moneda(codigoMoneda, nombreMoneda);
+    private Currency getDefaultMoneda() {
+        String codigoMoneda = AppConfig.getDefaultCurrency();
+        String nombreMoneda = AppConfig.getDefaultCurrencyName();
+        return new Currency(codigoMoneda, nombreMoneda);
     }
 }

@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;

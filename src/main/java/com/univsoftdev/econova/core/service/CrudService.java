@@ -1,6 +1,7 @@
-package com.univsoftdev.econova.contabilidad.service;
+package com.univsoftdev.econova.core.service;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CrudService<T> {
 
@@ -10,7 +11,9 @@ public interface CrudService<T> {
 
     boolean delete(T entity);
 
-    T findById(Object id);
+    Optional<T> findById(Long id);
 
     List<T> findAll();
+
+    List<T> findAll(int page, int pageSize);
 }

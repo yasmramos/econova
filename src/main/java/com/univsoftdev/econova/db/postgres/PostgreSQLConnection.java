@@ -1,7 +1,8 @@
-package com.univsoftdev.econova.security;
+package com.univsoftdev.econova.db.postgres;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.avaje.inject.Component;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;

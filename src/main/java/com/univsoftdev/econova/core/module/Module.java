@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.core.module;
 
-import com.univsoftdev.econova.AppContext;
+import com.univsoftdev.econova.core.AppContext;
 import com.univsoftdev.econova.core.Version;
 import java.util.Set;
 

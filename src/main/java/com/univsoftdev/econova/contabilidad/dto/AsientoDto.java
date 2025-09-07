@@ -1,10 +1,10 @@
 package com.univsoftdev.econova.contabilidad.dto;
 
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +15,17 @@ public class AsientoDto {
     private String descripcion;
     private LocalDate fecha;
     private EstadoAsiento estadoAsiento;
-    private List<Transaccion> transacciones = new ArrayList<>();
-    private Unidad unidad;
-    private Periodo periodo;
-    private List<Asiento> asientos = new ArrayList<>();
+    private List<Transaction> transacciones = new ArrayList<>();
+    private Unit unidad;
+    private Period periodo;
+    private List<AccountingEntry> asientos = new ArrayList<>();
 
     private boolean confirmado;
     private boolean validado;
     private boolean guardado;
     private boolean terminado;
 
-    public AsientoDto(int nro, String descripcion, LocalDate fecha, EstadoAsiento estadoAsiento, Unidad unidad, Periodo periodo, boolean confirmado, boolean validado, boolean guardado, boolean terminado) {
+    public AsientoDto(int nro, String descripcion, LocalDate fecha, EstadoAsiento estadoAsiento, Unit unidad, Period periodo, boolean confirmado, boolean validado, boolean guardado, boolean terminado) {
         this.nro = nro;
         this.descripcion = descripcion;
         this.fecha = fecha;
@@ -70,35 +70,35 @@ public class AsientoDto {
         this.estadoAsiento = estadoAsiento;
     }
 
-    public List<Transaccion> getTransacciones() {
+    public List<Transaction> getTransacciones() {
         return transacciones;
     }
 
-    public void setTransacciones(List<Transaccion> transacciones) {
+    public void setTransacciones(List<Transaction> transacciones) {
         this.transacciones = transacciones;
     }
 
-    public Unidad getUnidad() {
+    public Unit getUnidad() {
         return unidad;
     }
 
-    public void setUnidad(Unidad unidad) {
+    public void setUnidad(Unit unidad) {
         this.unidad = unidad;
     }
 
-    public Periodo getPeriodo() {
+    public Period getPeriodo() {
         return periodo;
     }
 
-    public void setPeriodo(Periodo periodo) {
+    public void setPeriodo(Period periodo) {
         this.periodo = periodo;
     }
 
-    public List<Asiento> getAsientos() {
+    public List<AccountingEntry> getAsientos() {
         return asientos;
     }
 
-    public void setAsientos(List<Asiento> asientos) {
+    public void setAsientos(List<AccountingEntry> asientos) {
         this.asientos = asientos;
     }
 

@@ -1,17 +1,16 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.model.Account;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.core.component.*;
+import com.univsoftdev.econova.core.utils.DialogUtils;
+import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
-import com.univsoftdev.econova.core.component.*;
-import com.univsoftdev.econova.core.utils.DialogUtils;
-import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import raven.modal.ModalDialog;
@@ -20,7 +19,7 @@ import raven.modal.component.Modal;
 public class FormAperturaCuenta extends Modal {
 
     private static final long serialVersionUID = 9099945688940617884L;
-    private Cuenta cuenta;
+    private Account cuenta;
     private final PlanDeCuentasService planDeCuentasService;
     private static final Logger LOGGER = LoggerFactory.getLogger(FormAperturaCuenta.class);
 
@@ -29,13 +28,13 @@ public class FormAperturaCuenta extends Modal {
         this.planDeCuentasService = Injector.get(PlanDeCuentasService.class);
     }
 
-    public FormAperturaCuenta(JTree tree, PlanDeCuentasService planDeCuentasService, Cuenta cuenta) {
+    public FormAperturaCuenta(JTree tree, PlanDeCuentasService planDeCuentasService, Account cuenta) {
         initComponents();
         this.planDeCuentasService = planDeCuentasService;
         this.cuenta = cuenta;
 
-        textFieldCuenta.setText(cuenta.getCodigo());
-        textFieldAperturaPor.setText(cuenta.getTipoApertura().name());
+        textFieldCuenta.setText(cuenta.getCode());
+        textFieldAperturaPor.setText(cuenta.getTypeOfOpening().name());
 
         updateTable();
     }
@@ -50,15 +49,15 @@ public class FormAperturaCuenta extends Modal {
     }
 
     private void updateTable() {
-        java.util.List<Cuenta> subCuentas = cuenta.getSubCuentas();
+        java.util.List<Account> subCuentas = cuenta.getSubAccounts();
         var model = (DefaultTableModel) tableCuentasApertura.getModel();
         subCuentas.forEach(c -> {
             model.addRow(new Object[]{
-                cuenta.getCodigo(),
-                cuenta.getNombre(),
-                cuenta.getNaturaleza(),
-                cuenta.getEstadoCuenta().getDescripcion(),
-                cuenta.getMoneda().getSymbol()
+                cuenta.getCode(),
+                cuenta.getName(),
+                cuenta.getNatureOfAccount(),
+                cuenta.getAccountStatus().getDescription(),
+                cuenta.getCurrency().getSymbol()
             });
         });
         new TableColumnAdjuster(tableCuentasApertura).adjustColumns();

@@ -1,9 +1,9 @@
 package com.univsoftdev.econova.contabilidad.views.clasificador;
 
-import com.univsoftdev.econova.Injector;
+import com.univsoftdev.econova.core.Injector;
 import javax.swing.border.*;
 import javax.swing.table.*;
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
+import com.univsoftdev.econova.contabilidad.model.Account;
 import com.univsoftdev.econova.contabilidad.service.PlanDeCuentasService;
 import java.awt.event.*;
 import javax.swing.event.*;
@@ -15,8 +15,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import net.miginfocom.swing.*;
@@ -25,7 +23,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import smile.io.CSV;
 
 public class FormClasificador extends Form {
 
@@ -53,17 +50,17 @@ public class FormClasificador extends Form {
                 DefaultMutableTreeNode rootPrincipal = (DefaultMutableTreeNode) treeModel.getRoot();
 
                 if (selectedNode != rootPrincipal) {
-                    var cuenta = (Cuenta) selectedNode.getUserObject();
-                    textFieldClave.setText(cuenta.getCodigo());
-                    textFieldDescripcion.setText(cuenta.getNombre());
-                    textFieldNaturaleza.setText(cuenta.getNaturaleza().name());
-                    textFieldTipo.setText(cuenta.getTipoCuenta().name());
-                    if (cuenta.getSubCuentas().isEmpty()) {
+                    var cuenta = (Account) selectedNode.getUserObject();
+                    textFieldClave.setText(cuenta.getCode());
+                    textFieldDescripcion.setText(cuenta.getName());
+                    textFieldNaturaleza.setText(cuenta.getNatureOfAccount().name());
+                    textFieldTipo.setText(cuenta.getAccountType().name());
+                    if (cuenta.getSubAccounts().isEmpty()) {
                         textFieldApertura.setText("");
                     } else {
-                        textFieldApertura.setText(cuenta.getTipoApertura().getDescripcion());
+                        textFieldApertura.setText(cuenta.getTypeOfOpening().getDescription());
                     }
-                    textFieldMoneda.setText(cuenta.getMoneda().getSymbol());
+                    textFieldMoneda.setText(cuenta.getCurrency().getSymbol());
                 } else {
                     textFieldClave.setText("");
                     textFieldDescripcion.setText("");
@@ -92,9 +89,9 @@ public class FormClasificador extends Form {
             if (selectedNode == rootPrincipal) {
                 DialogUtils.showModalDialog(this, new FormApertura(tree1), "Cuentas de la Apertura");
             } else {
-                Cuenta cuenta = (Cuenta) selectedNode.getUserObject();
+                Account cuenta = (Account) selectedNode.getUserObject();
                 //Si la cuenta tiene apertura , muestro dialogo para añadir mas subcuentas
-                if (cuenta.isApertura()) {
+                if (cuenta.isOpening()) {
                     DialogUtils.showModalDialog(this, new FormAperturaCuenta(tree1, planDeCuentasService, cuenta), "Aperturas de la Cuenta");
                 } else {
                     //Si la cuenta no tiene apertura muestro el dialogo para seleccionar el tipo de apertura

@@ -1,4 +1,4 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
 import jakarta.validation.constraints.NotNull;
@@ -24,12 +24,13 @@ public class Validations {
         }
         return true;
     }
-    
-    public static void validatePasswordStrength(String password) {
-        if (password == null || password.length() < 8) {
+
+    public static void validatePasswordStrength(char[] password) {
+        String passwordNew = new String(password);
+        if (passwordNew == null || passwordNew.length() < 8) {
             throw new BusinessLogicException("La contraseña debe tener al menos 8 caracteres");
         }
-        
+
     }
 
     public static boolean isValidPassword(@NotNull String password) {

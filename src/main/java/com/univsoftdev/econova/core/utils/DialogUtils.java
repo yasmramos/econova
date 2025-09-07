@@ -87,10 +87,10 @@ public class DialogUtils {
         if (modal.getId() == null) {
             modal.setId(UUID.randomUUID().toString());
         }
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, ModalBorder.DEFAULT_OPTION.getValue(), null), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, SimpleModalBorder.DEFAULT_OPTION, null), option);
     }
 
-    public static void showConfirmDialog(Component component, String message, String title, SimpleMessageModal.Type type, ModalBorder border) {
+    public static void showConfirmDialog(Component component, String message, String title, SimpleMessageModal.Type type, int border) {
         showMessage(component, message, title, type, border);
     }
 
@@ -99,34 +99,34 @@ public class DialogUtils {
         ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, ModalBorder.DEFAULT_OPTION.getValue(), callback), option);
     }
 
-    public static void showMessage(Component parent, String message, String title, SimpleMessageModal.Type type, ModalBorder border, ModalCallback callback) {
+    public static void showMessage(Component parent, String message, String title, SimpleMessageModal.Type type, int border, ModalCallback callback) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, border.getValue(), callback), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, border, callback), option);
     }
 
-    public static void showMessage(Component parent, String message, String title, SimpleMessageModal.Type type, ModalBorder border) {
+    public static void showMessage(Component parent, String message, String title, SimpleMessageModal.Type type, int modalBorder) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, border.getValue(), null), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, modalBorder, null), option);
     }
 
     public static void showMessageDialog(Component parent, String message, String title, SimpleMessageModal.Type type, ModalCallback callback) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, ModalBorder.DEFAULT_OPTION.getValue(), callback), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, SimpleModalBorder.DEFAULT_OPTION, callback), option);
     }
 
     public static void showMessageDialog(Component parent, String message, String title, SimpleMessageModal.Type type) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, ModalBorder.DEFAULT_OPTION.getValue(), null), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, SimpleModalBorder.DEFAULT_OPTION, null), option);
     }
 
-    public static void showMessageDialog(Component parent, String message, String title, SimpleMessageModal.Type type, ModalBorder border, ModalCallback callback) {
+    public static void showMessageDialog(Component parent, String message, String title, SimpleMessageModal.Type type, int border, ModalCallback callback) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, border.getValue(), callback), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(type, message, title, border, callback), option);
     }
 
     public static void showMessageDialog(Component parent, String message, String title) {
         Option option = ModalDialog.getDefaultOption();
-        ModalDialog.showModal(parent, new SimpleMessageModal(SimpleMessageModal.Type.INFO, message, title, ModalBorder.OK_OPTION.getValue(), null), option);
+        ModalDialog.showModal(parent, new SimpleMessageModal(SimpleMessageModal.Type.INFO, message, title, SimpleModalBorder.OK_OPTION, null), option);
     }
 
     public static void showInfoDialog(Component parent, String message, String title, ModalCallback callback) {
@@ -157,23 +157,23 @@ public class DialogUtils {
         showMessage(parent, message, title, SimpleMessageModal.Type.SUCCESS, callback);
     }
 
-    public static void showInfoDialog(Component parent, String message, String title, ModalBorder border, ModalCallback callback) {
+    public static void showInfoDialog(Component parent, String message, String title, int border, ModalCallback callback) {
         showMessage(parent, message, title, SimpleMessageModal.Type.INFO, border, callback);
     }
 
-    public static void showDefaultDialog(Component parent, String message, String title, ModalBorder border, ModalCallback callback) {
+    public static void showDefaultDialog(Component parent, String message, String title, int border, ModalCallback callback) {
         showMessage(parent, message, title, SimpleMessageModal.Type.DEFAULT, border, callback);
     }
 
-    public static void showErrorDialog(Component parent, String message, String title, ModalBorder border, ModalCallback callback) {
+    public static void showErrorDialog(Component parent, String message, String title, int border, ModalCallback callback) {
         showMessage(parent, message, title, SimpleMessageModal.Type.ERROR, border, callback);
     }
 
-    public static void showWarningDialog(Component parent, String message, String title, ModalBorder border, ModalCallback callback) {
+    public static void showWarningDialog(Component parent, String message, String title, int border, ModalCallback callback) {
         showMessage(parent, message, title, SimpleMessageModal.Type.WARNING, border, callback);
     }
 
-    public static void showSuccesDialog(Component parent, String message, String title, ModalBorder border, ModalCallback callback) {
+    public static void showSuccesDialog(Component parent, String message, String title, int border, ModalCallback callback) {
         showMessage(parent, message, title, SimpleMessageModal.Type.SUCCESS, border, callback);
     }
 
@@ -193,23 +193,23 @@ public class DialogUtils {
         showMessage(parent, modal, message, title, SimpleMessageModal.Type.SUCCESS);
     }
 
-    public static void showInfoDialog(Component parent, String message, String title, ModalBorder border) {
-        showMessage(parent, message, title, SimpleMessageModal.Type.INFO, border);
+    public static void showInfoDialog(Component parent, String message, String title, int modalBorder) {
+        showMessage(parent, message, title, SimpleMessageModal.Type.INFO, modalBorder);
     }
 
-    public static void showDefaultDialog(Component parent, String message, String title, ModalBorder border) {
+    public static void showDefaultDialog(Component parent, String message, String title, int border) {
         showMessage(parent, message, title, SimpleMessageModal.Type.DEFAULT, border);
     }
 
-    public static void showErrorDialog(Component parent, String message, String title, ModalBorder border) {
+    public static void showErrorDialog(Component parent, String message, String title, int border) {
         showMessage(parent, message, title, SimpleMessageModal.Type.ERROR, border);
     }
 
-    public static void showWarningDialog(Component parent, String message, String title, ModalBorder border) {
+    public static void showWarningDialog(Component parent, String message, String title, int border) {
         showMessage(parent, message, title, SimpleMessageModal.Type.WARNING, border);
     }
 
-    public static void showSuccessDialog(Component parent, String message, String title, ModalBorder border) {
+    public static void showSuccessDialog(Component parent, String message, String title, int border) {
         showMessage(parent, message, title, SimpleMessageModal.Type.SUCCESS, border);
     }
 

@@ -3,50 +3,49 @@ package com.univsoftdev.econova.contabilidad.model;
 import com.univsoftdev.econova.contabilidad.TipoTransaccion;
 import com.univsoftdev.econova.core.model.BaseModel;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.math.BigDecimal;
 import lombok.EqualsAndHashCode;
-import com.univsoftdev.econova.*;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "cont_libros_mayor")
-public class LibroMayor extends BaseModel {
+@Table(name = "cont_ledgers")
+public class Ledger extends BaseModel {
 
     private static final long serialVersionUID = 1L;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cuenta_id", nullable = false)
-    private Cuenta cuenta;
+    private Account cuenta;
 
-    @OneToMany(mappedBy = "libroMayor", cascade = CascadeType.ALL)
-    private List<Transaccion> transacciones = new ArrayList<>();
+    @OneToMany(mappedBy = "ledger", cascade = CascadeType.ALL)
+    private List<Transaction> transactions = new ArrayList<>();
 
-    public LibroMayor() {
+    public Ledger() {
     }
 
-    public LibroMayor(Cuenta cuenta) {
+    public Ledger(Account cuenta) {
         if (cuenta == null) {
             throw new IllegalArgumentException("La cuenta no puede ser nula.");
         }
         this.cuenta = cuenta;
     }
 
-    public Cuenta getCuenta() {
+    public Account getCuenta() {
         return cuenta;
     }
 
-    public void setCuenta(Cuenta cuenta) {
+    public void setCuenta(Account cuenta) {
         this.cuenta = cuenta;
     }
 
-    public List<Transaccion> getTransacciones() {
-        return transacciones;
+    public List<Transaction> getTransactions() {
+        return transactions;
     }
 
-    public void setTransacciones(List<Transaccion> transacciones) {
-        this.transacciones = transacciones != null ? transacciones : new ArrayList<>();
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions != null ? transactions : new ArrayList<>();
     }
 
     // --- Métodos de negocio ---
@@ -57,14 +56,14 @@ public class LibroMayor extends BaseModel {
      * @return
      */
     public BigDecimal calcularSaldo() {
-        return transacciones.stream()
-                .filter(t -> t.getMonto() != null && t.getTipo() != null)
+        return transactions.stream()
+                .filter(t -> t.getBalance() != null && t.getTipo() != null)
                 .map(t -> {
                     return switch (t.getTipo()) {
                         case DEBITO ->
-                            t.getMonto();
+                            t.getBalance();
                         case CREDITO ->
-                            t.getMonto().negate();
+                            t.getBalance().negate();
                         default ->
                             BigDecimal.ZERO;
                     };
@@ -73,25 +72,25 @@ public class LibroMayor extends BaseModel {
     }
 
     public BigDecimal getTotalDebitos() {
-        return transacciones.stream()
+        return transactions.stream()
                 .filter(t -> t.getTipo() == TipoTransaccion.DEBITO)
-                .map(Transaccion::getMonto)
+                .map(Transaction::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getTotalCreditos() {
-        return transacciones.stream()
+        return transactions.stream()
                 .filter(t -> t.getTipo() == TipoTransaccion.CREDITO)
-                .map(Transaccion::getMonto)
+                .map(Transaction::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public int getCantidadTransacciones() {
-        return transacciones.size();
+        return transactions.size();
     }
 
     public boolean tieneTransacciones() {
-        return transacciones != null && !transacciones.isEmpty();
+        return transactions != null && !transactions.isEmpty();
     }
 
     public boolean estaBalanceado() {
@@ -103,13 +102,13 @@ public class LibroMayor extends BaseModel {
      *
      * @param transaccion
      */
-    public void agregarTransaccion(Transaccion transaccion) {
+    public void agregarTransaccion(Transaction transaccion) {
         if (transaccion == null) {
             throw new IllegalArgumentException("La transacción no puede ser nula.");
         }
 
-        transaccion.setLibroMayor(this);
-        this.transacciones.add(transaccion);
+        transaccion.setLedger(this);
+        this.transactions.add(transaccion);
     }
 
     /**
@@ -117,13 +116,13 @@ public class LibroMayor extends BaseModel {
      *
      * @param transaccion
      */
-    public void eliminarTransaccion(Transaccion transaccion) {
+    public void eliminarTransaccion(Transaction transaccion) {
         if (transaccion == null) {
             throw new IllegalArgumentException("La transacción no puede ser nula.");
         }
 
-        transaccion.setLibroMayor(null);
-        this.transacciones.remove(transaccion);
+        transaccion.setLedger(null);
+        this.transactions.remove(transaccion);
     }
 
 }

@@ -1,21 +1,21 @@
 package com.univsoftdev.econova.contabilidad;
 
-public enum AnalisisTipoApertura {
+public enum OpeningTypeAnalysis {
 
     NINGUNO("Ninguno", 0),
     ENTIDADES("Entidades", 11),
     TRABAJADORES("Trabajadores", 6);
 
-    private final String descripccion;
+    private final String descripction;
     private final int size;
 
-    private AnalisisTipoApertura(String descripccion, int size) {
-        this.descripccion = descripccion;
+    private OpeningTypeAnalysis(String descripccion, int size) {
+        this.descripction = descripccion;
         this.size = size;
     }
 
-    public String getDescripccion() {
-        return descripccion;
+    public String getDescripction() {
+        return descripction;
     }
 
     public int getSize() {
@@ -24,7 +24,7 @@ public enum AnalisisTipoApertura {
 
     @Override
     public String toString() {
-        return descripccion + " (" + size + ")";
+        return descripction + " (" + size + ")";
     }
 
 }

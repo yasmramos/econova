@@ -1,18 +1,13 @@
 package com.univsoftdev.econova.contabilidad.model;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Currency;
-import java.util.List;
-
-import com.univsoftdev.econova.contabilidad.EstadoCuenta;
-import com.univsoftdev.econova.contabilidad.NaturalezaCuenta;
-import com.univsoftdev.econova.contabilidad.finder.CuentaFinder;
+import com.univsoftdev.econova.contabilidad.AccountStatus;
+import com.univsoftdev.econova.contabilidad.AccountType;
+import com.univsoftdev.econova.contabilidad.NatureOfAccount;
+import com.univsoftdev.econova.contabilidad.OpeningTypeAnalysis;
+import com.univsoftdev.econova.contabilidad.TypeOfOpening;
+import com.univsoftdev.econova.contabilidad.finder.AccountFinder;
 import com.univsoftdev.econova.core.model.BaseModel;
-import com.univsoftdev.econova.contabilidad.TipoCuenta;
-import com.univsoftdev.econova.contabilidad.TipoApertura;
-import com.univsoftdev.econova.contabilidad.AnalisisTipoApertura;
-
+import io.ebean.annotation.Index;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,284 +16,291 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "cont_cuentas")
-public class Cuenta extends BaseModel implements Serializable {
+@Table(name = "acc_accounts")
+public class Account extends BaseModel implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
-    public static CuentaFinder finder = new CuentaFinder();
+    public static AccountFinder finder = new AccountFinder();
 
     @Column(nullable = false, unique = true)
-    @Size(min = 3, max = 3)
-    private String codigo; // Código único de la cuenta
+    @Size(min = 3)
+    @Index(
+            name = "idx_account_code",
+            unique = true,
+            columnNames = "code"
+    )
+    private String code; // Código único de la cuenta
 
     @Column(nullable = false)
-    private String nombre; // Nombre de la cuenta
+    private String name; // Nombre de la cuenta
 
     @Enumerated(EnumType.STRING)
-    private EstadoCuenta estadoCuenta;
+    private AccountStatus accountStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoApertura tipoApertura; // Tipo de apertura (SIN APERTURA, SUBCUENTA, etc.)
+    private TypeOfOpening typeOfOpening; // Tipo de opening (SIN APERTURA, SUBCUENTA, etc.)
 
     @Enumerated(EnumType.STRING)
-    private AnalisisTipoApertura tipoAnalisisApertura; // Tipo de apertura (SIN APERTURA, SUBCUENTA, etc.)
+    private OpeningTypeAnalysis openingTypeAnalysis; // Tipo de opening (SIN APERTURA, SUBCUENTA, etc.)
 
     @Enumerated(EnumType.STRING)
-    private TipoCuenta tipoCuenta; // Tipo de cuenta (INGRESO, GASTO, ACTIVO, PASIVO, PATRIMONIO)
+    private AccountType accountType; // Tipo de cuenta (INGRESO, GASTO, ACTIVO, PASIVO, PATRIMONIO)
 
     @ManyToOne
-    private Cuenta cuentaPadre; // Relación jerárquica: cuenta padre
+    private Account accountFather; // Relación jerárquica: cuenta padre
 
-    @OneToMany(mappedBy = "cuentaPadre", cascade = CascadeType.ALL)
-    private List<Cuenta> subCuentas = new ArrayList<>(); // Lista de subCuentas
-
-    @OneToOne
-    @JoinColumn(name = "moneda_id")
-    private Moneda moneda;
-    
-    private BigDecimal saldo = BigDecimal.ZERO;
-
-    private boolean apertura = false;
-
-    private boolean activa = false;
+    @OneToMany(mappedBy = "accountFather", cascade = CascadeType.ALL)
+    private List<Account> subAccounts = new ArrayList<>(); // Lista de subAccounts
 
     @ManyToOne
-    @JoinColumn(name = "libro_mayor_id")
-    private LibroMayor libroMayor;
+    @JoinColumn(name = "currency_id")
+    private Currency currency;
+
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    private boolean opening = false;
+
+    private boolean active = false;
 
     @ManyToOne
-    @JoinColumn(name = "plan_de_cuenta_id")
-    private PlanDeCuentas planDeCuenta;
+    @JoinColumn(name = "ledger_id")
+    private Ledger ledger;
+
+    @ManyToOne
+    @JoinColumn(name = "chart_of_accounts_id")
+    private ChartOfAccounts chartOfAccounts;
 
     @Enumerated(EnumType.STRING)
-    private NaturalezaCuenta naturaleza;
+    private NatureOfAccount natureOfAccount;
 
-    public Cuenta() {
+    public Account() {
     }
 
-    public Cuenta(String codigo, String nombre) {
-        this.codigo = codigo;
-        this.nombre = nombre;
+    public Account(String code, String name) {
+        this.code = code;
+        this.name = name;
     }
 
-    public Cuenta(String codigo, String nombre, BigDecimal saldo, Moneda moneda) {
-        this.codigo = codigo;
-        this.nombre = nombre;
-        this.moneda = moneda;
-        this.saldo = saldo;
+    public Account(String codigo, String nombre, BigDecimal saldo, Currency currency) {
+        this.code = codigo;
+        this.name = nombre;
+        this.currency = currency;
+        this.balance = saldo;
     }
 
-    public Cuenta(String codigo, String nombre, NaturalezaCuenta naturaleza, TipoCuenta tipoCuenta, Moneda moneda) {
-        this.codigo = codigo;
-        this.nombre = nombre;
-        this.moneda = moneda;
-        this.tipoCuenta = tipoCuenta;
-        this.naturaleza = naturaleza;
+    public Account(String code, String nombre, NatureOfAccount natureOfAccount, AccountType accountType, Currency moneda) {
+        this.code = code;
+        this.name = nombre;
+        this.currency = moneda;
+        this.accountType = accountType;
+        this.natureOfAccount = natureOfAccount;
     }
 
-    public void addSubCuentas(List<Cuenta> nuevas) {
-        for (Cuenta c : nuevas) {
-            c.setCuentaPadre(this);
-            c.setEstadoCuenta(EstadoCuenta.ACTIVA);
-            subCuentas.add(c);
+    public void addSubCuentas(List<Account> newAccounts) {
+        for (Account c : newAccounts) {
+            c.setAccountFather(this);
+            c.setAccountStatus(AccountStatus.ACTIVE);
+            subAccounts.add(c);
         }
     }
 
-    public boolean esHija() {
-        return subCuentas.isEmpty();
+    public boolean isDaughter() {
+        return subAccounts.isEmpty();
     }
 
     public boolean esActivo() {
-        return tipoCuenta == TipoCuenta.ACTIVO;
+        return accountType == AccountType.ACTIVO;
     }
 
     public boolean esGasto() {
-        return tipoCuenta == TipoCuenta.GASTO;
+        return accountType == AccountType.GASTO;
     }
 
     public boolean esIngreso() {
-        return tipoCuenta == TipoCuenta.INGRESO;
+        return accountType == AccountType.INGRESO;
     }
 
     public boolean esBalanceable() {
-        return esActivo() || tipoCuenta == TipoCuenta.PASIVO || tipoCuenta == TipoCuenta.PATRIMONIO;
+        return esActivo() || accountType == AccountType.PASIVO || accountType == AccountType.PATRIMONIO;
     }
 
     public boolean tieneSaldoNegativo() {
-        return this.subCuentas.stream().anyMatch(Cuenta::tieneSaldoNegativo);
+        return this.subAccounts.stream().anyMatch(Account::tieneSaldoNegativo);
     }
 
     public BigDecimal obtenerSaldoNegativoTotal() {
-        return this.subCuentas.stream()
-                .filter(Cuenta::tieneSaldoNegativo)
-                .map(Cuenta::obtenerSaldoNegativoTotal)
+        return this.subAccounts.stream()
+                .filter(Account::tieneSaldoNegativo)
+                .map(Account::obtenerSaldoNegativoTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void addSubCuenta(Cuenta subCuenta) {
-        subCuenta.setCuentaPadre(this);
-        subCuenta.setEstadoCuenta(EstadoCuenta.ACTIVA);
-        subCuentas.add(subCuenta);
+    public void addSubCuenta(Account subCuenta) {
+        subCuenta.setAccountFather(this);
+        subCuenta.setAccountStatus(AccountStatus.ACTIVE);
+        subAccounts.add(subCuenta);
     }
 
-    public LibroMayor getLibroMayor() {
-        return libroMayor;
+    public Ledger getLedger() {
+        return ledger;
     }
 
-    public void setLibroMayor(LibroMayor libroMayor) {
-        this.libroMayor = libroMayor;
+    public void setLedger(Ledger ledger) {
+        this.ledger = ledger;
     }
 
     public boolean esActivoOPasivo() {
-        return tipoCuenta == TipoCuenta.ACTIVO || tipoCuenta == TipoCuenta.PASIVO;
+        return accountType == AccountType.ACTIVO || accountType == AccountType.PASIVO;
     }
 
     public boolean requiereSubcuentas() {
-        return tipoApertura == TipoApertura.SUBCUENTA;
+        return typeOfOpening == TypeOfOpening.SUBCUENTA;
     }
 
-    public static CuentaFinder getFinder() {
+    public static AccountFinder getFinder() {
         return finder;
     }
 
-    public AnalisisTipoApertura getTipoAnalisisApertura() {
-        return tipoAnalisisApertura;
+    public OpeningTypeAnalysis getOpeningTypeAnalysis() {
+        return openingTypeAnalysis;
     }
 
-    public void setTipoAnalisisApertura(AnalisisTipoApertura tipoAnalisisApertura) {
-        this.tipoAnalisisApertura = tipoAnalisisApertura;
+    public void setOpeningTypeAnalysis(OpeningTypeAnalysis openingTypeAnalysis) {
+        this.openingTypeAnalysis = openingTypeAnalysis;
     }
 
-    public Moneda getMoneda() {
-        return moneda;
+    public Currency getCurrency() {
+        return currency;
     }
 
-    public void setMoneda(Moneda moneda) {
-        this.moneda = moneda;
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
     }
 
-    public EstadoCuenta getEstadoCuenta() {
-        return estadoCuenta;
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
     }
 
-    public void setEstadoCuenta(EstadoCuenta estadoCuenta) {
-        this.estadoCuenta = estadoCuenta;
+    public void setAccountStatus(AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
     }
 
-    public boolean isApertura() {
-        return apertura;
+    public boolean isOpening() {
+        return opening;
     }
 
-    public void setApertura(boolean apertura) {
-        this.apertura = apertura;
+    public void setOpening(boolean opening) {
+        this.opening = opening;
     }
 
-    public boolean isActiva() {
-        return activa;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setActiva(boolean activa) {
-        this.activa = activa;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
-    public NaturalezaCuenta getNaturaleza() {
-        return naturaleza;
+    public NatureOfAccount getNatureOfAccount() {
+        return natureOfAccount;
     }
 
-    public void setNaturaleza(NaturalezaCuenta naturaleza) {
-        this.naturaleza = naturaleza;
+    public void setNatureOfAccount(NatureOfAccount natureOfAccount) {
+        this.natureOfAccount = natureOfAccount;
     }
 
-    public PlanDeCuentas getPlanDeCuenta() {
-        return planDeCuenta;
+    public ChartOfAccounts getChartOfAccounts() {
+        return chartOfAccounts;
     }
 
-    public void setPlanDeCuenta(PlanDeCuentas planDeCuenta) {
-        this.planDeCuenta = planDeCuenta;
+    public void setChartOfAccounts(ChartOfAccounts chartOfAccounts) {
+        this.chartOfAccounts = chartOfAccounts;
     }
 
-    public BigDecimal getSaldo() {
-        return saldo;
+    public BigDecimal getBalance() {
+        return balance;
     }
 
-    public void setSaldo(BigDecimal saldo) {
-        this.saldo = saldo;
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
     }
 
-    public String getCodigo() {
-        return codigo;
+    public String getCode() {
+        return code;
     }
 
     public String getCodigoSinCuentaPadre() {
-        String[] partes = codigo.split("\\.");
-        return partes.length > 0 ? partes[partes.length - 1] : codigo;
+        String[] partes = code.split("\\.");
+        return partes.length > 0 ? partes[partes.length - 1] : code;
     }
 
-    public void setCodigo(String codigo) {
-        if (cuentaPadre == null) {
-            this.codigo = codigo;
+    public void setCode(String code) {
+        if (accountFather == null) {
+            this.code = code;
         } else {
-            this.codigo = cuentaPadre.getCodigo() + "." + codigo;
+            this.code = accountFather.getCode() + "." + code;
         }
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public TipoApertura getTipoApertura() {
-        return tipoApertura;
+    public TypeOfOpening getTypeOfOpening() {
+        return typeOfOpening;
     }
 
-    public void setTipoApertura(TipoApertura tipoApertura) {
-        this.tipoApertura = tipoApertura;
+    public void setTypeOfOpening(TypeOfOpening typeOfOpening) {
+        this.typeOfOpening = typeOfOpening;
     }
 
-    public TipoCuenta getTipoCuenta() {
-        return tipoCuenta;
+    public AccountType getAccountType() {
+        return accountType;
     }
 
-    public void setTipoCuenta(TipoCuenta tipoCuenta) {
-        this.tipoCuenta = tipoCuenta;
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 
-    public Cuenta getCuentaPadre() {
-        return cuentaPadre;
+    public Account getAccountFather() {
+        return accountFather;
     }
 
-    public void setCuentaPadre(Cuenta cuentaPadre) {
-        this.cuentaPadre = cuentaPadre;
+    public void setAccountFather(Account accountFather) {
+        this.accountFather = accountFather;
     }
 
-    public List<Cuenta> getSubCuentas() {
-        return subCuentas;
+    public List<Account> getSubAccounts() {
+        return subAccounts;
     }
 
-    public void setSubCuentas(List<Cuenta> subCuentas) {
-        this.subCuentas = subCuentas;
+    public void setSubAccounts(List<Account> subAccounts) {
+        this.subAccounts = subAccounts;
     }
 
     @Override
     public String toString() {
-        if (cuentaPadre != null) {
-            return getCodigoSinCuentaPadre() + " - " + nombre;
+        if (accountFather != null) {
+            return getCodigoSinCuentaPadre() + " - " + name;
         }
-        return codigo + " - " + nombre;
+        return code + " - " + name;
     }
 
 }

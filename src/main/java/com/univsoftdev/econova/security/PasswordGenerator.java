@@ -2,6 +2,7 @@ package com.univsoftdev.econova.security;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Generador de contraseñas seguras con características criptográficamente fuertes.
@@ -78,7 +79,7 @@ public class PasswordGenerator {
      * @see #clearPassword(char[])
      * @see SecureRandom
      */
-    public static char[] generateStrongPassword(int length) {
+    public static @NotNull char [] generateStrongPassword(int length) {
         if (length < 12) {
             throw new IllegalArgumentException("La longitud mínima debe ser 12 caracteres");
         }
@@ -124,7 +125,7 @@ public class PasswordGenerator {
      * 
      * @see Arrays#fill(char[], char)
      */
-    public static void clearPassword(char[] password) {
+    public static void clearPassword(@NotNull char[] password) {
         if (password != null) {
             Arrays.fill(password, '\0');
         }
@@ -138,7 +139,7 @@ public class PasswordGenerator {
      * 
      * @param array Array a mezclar
      */
-    private static void shuffleArray(char[] array) {
+    private static void shuffleArray(@NotNull char[] array) {
         for (int i = array.length - 1; i > 0; i--) {
             int j = RANDOM.nextInt(i + 1);
             char temp = array[i];

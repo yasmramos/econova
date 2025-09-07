@@ -1,19 +1,20 @@
 package com.univsoftdev.econova.contabilidad.service;
 
-import jakarta.inject.Singleton;
-import com.univsoftdev.econova.contabilidad.model.Auditoria;
-import com.univsoftdev.econova.core.Service;
-import io.ebean.Database;
+import com.univsoftdev.econova.contabilidad.model.Audit;
+import com.univsoftdev.econova.contabilidad.repository.AuditoriaRepository;
+import com.univsoftdev.econova.core.service.BaseService;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
-public class AuditoriaService extends Service<Auditoria>{
+public class AuditoriaService extends BaseService<Audit, AuditoriaRepository>{
 
     @Inject
-    public AuditoriaService(Database database) {
-        super(database, Auditoria.class);
+    public AuditoriaService(AuditoriaRepository database) {
+        super(database);
     }
     
     /**
@@ -23,8 +24,8 @@ public class AuditoriaService extends Service<Auditoria>{
      * @param detalles Detalles adicionales (ej: "Cierre del periodo 2025-01")
      * @param usuario Usuario que realiza la acción
      */
-    public void registrarAccion(String accion, String entidad, String detalles, String usuario) {
-        Auditoria registro = Auditoria.registrar(accion, entidad, detalles, usuario);
+    public void registrarAccion(String accion, String entidad, String detalles, LocalDateTime date) {
+        Audit registro = new Audit(accion, entidad, detalles, date);
         save(registro);
         log.info("Auditoría registrada: {}", registro);
     }
@@ -35,14 +36,14 @@ public class AuditoriaService extends Service<Auditoria>{
      * @param detalles Detalles del cierre
      * @param usuario Usuario que realiza el cierre
      */
-    public void registrarCierre(String entidad, String detalles, String usuario) {
-        registrarAccion("CIERRE", entidad, detalles, usuario);
+    public void registrarCierre(String entidad, String detalles,LocalDateTime date) {
+        registrarAccion("CIERRE", entidad, detalles, date);
     }
 
     /**
      * Ejemplo: registra un cierre genérico (sin detalles específicos).
      */
     public void registrarCierre() {
-        registrarAccion("CIERRE", "GENERAL", "Cierre contable genérico", "sistema");
+        registrarAccion("CIERRE", "GENERAL", "Cierre contable genérico", LocalDateTime.now());
     }
 }

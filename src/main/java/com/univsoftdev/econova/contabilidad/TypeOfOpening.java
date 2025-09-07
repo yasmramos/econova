@@ -1,6 +1,6 @@
 package com.univsoftdev.econova.contabilidad;
 
-public enum TipoApertura {
+public enum TypeOfOpening {
 
     SIN_APERTURA("SIN_APERTURA", 0),
     SUBCUENTA("SUBCUENTA", 4),
@@ -10,25 +10,25 @@ public enum TipoApertura {
     SUBANALISIS("SUB_ANÁLISIS", 4),
     EPIGRAFE("EPIGRAFE", 6);
 
-    private final String descripcion;
-    private final int longitud;
+    private final String description;
+    private final int length;
 
-    private TipoApertura(String descripcion, int longitud) {
-        this.descripcion = descripcion;
-        this.longitud = longitud;
+    private TypeOfOpening(String description, int length) {
+        this.description = description;
+        this.length = length;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public int getLongitud() {
-        return longitud;
+    public int getLength() {
+        return length;
     }
 
     @Override
     public String toString() {
-        return descripcion + " (" + longitud + ")";
+        return description + " (" + length + ")";
     }
 
 }

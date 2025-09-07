@@ -1,28 +1,29 @@
 package com.univsoftdev.econova.contabilidad.service;
 
-import com.univsoftdev.econova.contabilidad.model.Cuenta;
-import com.univsoftdev.econova.contabilidad.model.PlanDeCuentas;
-import com.univsoftdev.econova.core.Service;
-import io.ebean.Database;
+import com.univsoftdev.econova.contabilidad.model.Account;
+import com.univsoftdev.econova.contabilidad.model.ChartOfAccounts;
+import com.univsoftdev.econova.contabilidad.model.Ledger;
+import com.univsoftdev.econova.contabilidad.repository.PlanDeCuentasRepository;
+import com.univsoftdev.econova.core.service.BaseService;
 import io.ebean.annotation.Transactional;
-import jakarta.inject.Singleton;
-import com.univsoftdev.econova.contabilidad.model.LibroMayor;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
-public class PlanDeCuentasService extends Service<PlanDeCuentas> {
+public class PlanDeCuentasService extends BaseService<ChartOfAccounts, PlanDeCuentasRepository> {
 
     private final CuentaService cuentaService;
-      
+
     @Inject
-    public PlanDeCuentasService(Database database, CuentaService cuentaService) {
-        super(database, PlanDeCuentas.class);
+    public PlanDeCuentasService(PlanDeCuentasRepository database, CuentaService cuentaService) {
+        super(database);
         this.cuentaService = cuentaService;
     }
 
@@ -31,13 +32,10 @@ public class PlanDeCuentasService extends Service<PlanDeCuentas> {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Plan de Cuentas");
 
         // Obtener todas las cuentas principales (sin cuenta padre)
-        List<Cuenta> cuentasPrincipales = database.find(Cuenta.class)
-                .where()
-                .isNull("cuentaPadre")
-                .findList();
+        List<Account> cuentasPrincipales = cuentaService.findCuentasPadres();
 
         // Construir el árbol recursivamente
-        for (Cuenta cuenta : cuentasPrincipales) {
+        for (Account cuenta : cuentasPrincipales) {
             agregarCuentaAlArbol(rootNode, cuenta);
         }
 
@@ -48,7 +46,7 @@ public class PlanDeCuentasService extends Service<PlanDeCuentas> {
         return treeModel;
     }
 
-    private void agregarCuentaAlArbol(DefaultMutableTreeNode parentNode, Cuenta cuenta) {
+    private void agregarCuentaAlArbol(DefaultMutableTreeNode parentNode, Account cuenta) {
         // Crear un nodo para la cuenta actual
         DefaultMutableTreeNode cuentaNode = new DefaultMutableTreeNode(cuenta);
 
@@ -56,78 +54,78 @@ public class PlanDeCuentasService extends Service<PlanDeCuentas> {
         parentNode.add(cuentaNode);
 
         // Recursivamente agregar las subcuentas
-        if (cuenta.getSubCuentas() != null && !cuenta.getSubCuentas().isEmpty()) {
-            for (Cuenta subcuenta : cuenta.getSubCuentas()) {
+        if (cuenta.getSubAccounts() != null && !cuenta.getSubAccounts().isEmpty()) {
+            for (Account subcuenta : cuenta.getSubAccounts()) {
                 agregarCuentaAlArbol(cuentaNode, subcuenta);
             }
         }
     }
 
     @Transactional
-    public void addCuenta(@NotNull Cuenta cuenta) {
-        if (findCuentaByCodigo(cuenta.getCodigo()) != null) {
-            throw new IllegalArgumentException("Ya existe una cuenta con el código " + cuenta.getCodigo());
+    public void addCuenta(@NotNull Account cuenta) {
+        if (findCuentaByCodigo(cuenta.getCode()) != null) {
+            throw new IllegalArgumentException("Ya existe una cuenta con el código " + cuenta.getCode());
         }
-        PlanDeCuentas planDeCuentas = getPlanDeCuentas();
-        cuenta.setPlanDeCuenta(planDeCuentas);
-        LibroMayor libroMayor  = new LibroMayor(cuenta);
-        cuenta.setLibroMayor(libroMayor);
+        ChartOfAccounts planDeCuentas = getChartOfAccounts();
+        cuenta.setChartOfAccounts(planDeCuentas);
+        Ledger libroMayor = new Ledger(cuenta);
+        cuenta.setLedger(libroMayor);
         planDeCuentas.agregarCuenta(cuenta);
         this.update(planDeCuentas);
     }
 
-    public List<Cuenta> getCuentas() {
-        return getPlanDeCuentas().getCuentas();
+    public List<Account> getAccounts() {
+        return getChartOfAccounts().getAccounts();
     }
 
     @Transactional
-    public void deletePlanDeCuentas(Long id) {
-        database.delete(id);
+    public ChartOfAccounts createChartOfAccounts(Long id, String name) {
+        ChartOfAccounts chartOfAccounts = getChartOfAccounts();
+        if (chartOfAccounts == null) {
+            chartOfAccounts = new ChartOfAccounts(name);
+            chartOfAccounts.setId(id);
+            repository.save(chartOfAccounts);
+        }
+        return chartOfAccounts;
     }
 
     @Transactional
-    public PlanDeCuentas createPlanDeCuentas(PlanDeCuentas planDeCuentas) {
-        database.save(planDeCuentas);
-        return planDeCuentas;
-    }
-
-    @Transactional
-    public PlanDeCuentas getPlanDeCuentas() {
-        return database.find(PlanDeCuentas.class).findOne();
+    public ChartOfAccounts getChartOfAccounts() {
+        return repository.find(ChartOfAccounts.class).findOne();
     }
 
     @Transactional
     @Override
-    public void update(PlanDeCuentas planDeCuentas) {
-        database.update(planDeCuentas);
+    public void update(ChartOfAccounts planDeCuentas) {
+        repository.update(planDeCuentas);
     }
 
-    public Cuenta findCuentaByCodigo(String codigo) {
-        return Cuenta.finder.query().where().eq("codigo", codigo).findOne();
-    }
-
-    @Transactional
-    public List<Cuenta> getCuentasActivas() {
-        return Cuenta.finder.query().where().eq("activa", true).findList();
+    public Optional<Account> findCuentaByCodigo(String codigo) {
+        return cuentaService.findByCodigo(codigo);
     }
 
     @Transactional
-    public List<Cuenta> getCuentasInactivas() {
-        return Cuenta.finder.query().where().eq("activa", false).findList();
+    public List<Account> getCuentasActivas() {
+        return Account.finder.query().where().eq("active", true).findList();
     }
 
-    public List<Cuenta> getCuentasPaginadas(int page, int pageSize) {
-        return database.find(Cuenta.class)
+    @Transactional
+    public List<Account> getCuentasInactivas() {
+        return Account.finder.query().where().eq("active", false).findList();
+    }
+
+    public List<Account> getCuentasPaginadas(int page, int pageSize) {
+        return repository.find(Account.class)
                 .setFirstRow(page * pageSize)
                 .setMaxRows(pageSize)
                 .findList();
     }
 
-    public void updateCuenta(Cuenta cuenta) {
-       cuentaService.update(cuenta);
+    public void updateCuenta(Account cuenta) {
+        cuentaService.update(cuenta);
     }
 
-    public List<Cuenta> findAllCuentas() {
+    public List<Account> findAllCuentas() {
         return cuentaService.findAll();
     }
 

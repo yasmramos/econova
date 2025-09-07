@@ -1,27 +1,27 @@
 package com.univsoftdev.econova.contabilidad.finder;
 
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.config.model.Period;
 import com.univsoftdev.econova.contabilidad.EstadoAsiento;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
 import io.ebean.Finder;
 import java.time.LocalDate;
 import java.util.List;
 
-public class AsientoFinder extends Finder<Long, Asiento> {
+public class AsientoFinder extends Finder<Long, AccountingEntry> {
 
     public AsientoFinder() {
-        super(Asiento.class);
+        super(AccountingEntry.class);
     }
 
-    public List<Asiento> findByPeriodo(Periodo periodo) {
-        return db().find(Asiento.class)
+    public List<AccountingEntry> findByPeriodo(Period periodo) {
+        return db().find(AccountingEntry.class)
                 .where()
                 .eq("periodo.id", periodo.getId())
                 .findList();
     }
 
-    public List<Asiento> findConfirmadosByFecha(LocalDate desde, LocalDate hasta) {
-        return db().find(Asiento.class)
+    public List<AccountingEntry> findConfirmadosByFecha(LocalDate desde, LocalDate hasta) {
+        return db().find(AccountingEntry.class)
                 .where()
                 .eq("estadoAsiento", EstadoAsiento.CONFIRMADO)
                 .ge("fecha", desde)

@@ -1,10 +1,10 @@
-package com.univsoftdev.econova;
+package com.univsoftdev.econova.core;
 
 import com.univsoftdev.econova.cache.CacheManager;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Empresa;
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.config.model.Unidad;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.model.Unit;
 import com.univsoftdev.econova.config.model.User;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -22,10 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AppSession implements AutoCloseable {
 
     private final CacheManager cacheManager;
-    private Ejercicio ejercicio;
-    private Empresa empresa;
-    private Unidad unidad;
-    private Periodo periodo;
+    private Exercise ejercicio;
+    private Company empresa;
+    private Unit unidad;
+    private Period periodo;
     private String license;
     private final Map<String, Object> sessionCache = new HashMap<>();
 
@@ -87,27 +87,27 @@ public class AppSession implements AutoCloseable {
         UserContext.get().setUser(user);
     }
 
-    public Unidad getUnidad() {
+    public Unit getUnidad() {
         return unidad;
     }
 
-    public void setUnidad(@NotNull Unidad unidad) {
+    public void setUnidad(@NotNull Unit unidad) {
         this.unidad = unidad;
     }
 
-    public Periodo getPeriodo() {
+    public Period getPeriodo() {
         return periodo;
     }
 
-    public void setPeriodo(@NotNull Periodo periodo) {
+    public void setPeriodo(@NotNull Period periodo) {
         this.periodo = periodo;
     }
 
-    public void setEjercicio(@NotNull Ejercicio ejercicio) {
+    public void setEjercicio(@NotNull Exercise ejercicio) {
         this.ejercicio = ejercicio;
     }
 
-    public Ejercicio getEjercicio() {
+    public Exercise getEjercicio() {
         return ejercicio;
     }
 
@@ -119,11 +119,11 @@ public class AppSession implements AutoCloseable {
         this.license = license;
     }
 
-    public Empresa getEmpresa() {
+    public Company getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Empresa empresa) {
+    public void setEmpresa(Company empresa) {
         this.empresa = empresa;
     }
 

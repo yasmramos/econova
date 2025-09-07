@@ -142,6 +142,7 @@ public class CryptoUtils {
      * @param encryptedData Datos cifrados con IV concatenado (no null)
      * @param password Contraseña utilizada originalmente para cifrar (no null)
      * @return Array de bytes con los datos descifrados
+     * @throws java.lang.Exception
      * @throws IllegalArgumentException si encryptedData o password son null
      * @throws RuntimeException si la autenticación falla o hay error criptográfico
      * 

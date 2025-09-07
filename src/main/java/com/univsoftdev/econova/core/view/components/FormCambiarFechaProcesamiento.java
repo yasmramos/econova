@@ -1,10 +1,9 @@
 package com.univsoftdev.econova.core.view.components;
 
-import com.univsoftdev.econova.contabilidad.SubSistema;
+import com.univsoftdev.econova.contabilidad.SubSystem;
 import java.awt.event.*;
 import javax.swing.*;
 import com.univsoftdev.econova.core.component.*;
-import com.univsoftdev.econova.core.config.AppConfig;
 import io.avaje.config.Config;
 import java.time.LocalDate;
 import raven.modal.ModalDialog;
@@ -25,9 +24,8 @@ public class FormCambiarFechaProcesamiento extends Modal {
 
     private void btnAceptar(ActionEvent e) {
         var fecha = datePickerFechaProcesamiento.getSelectedDate();
-        SubSistema subsistema = Config.getEnum(SubSistema.class, "econova.current.subsistema");
-        AppConfig app;
-        if (subsistema == SubSistema.CONTABILIDAD) {
+        SubSystem subsistema = Config.getEnum(SubSystem.class, "econova.current.subsistema");
+        if (subsistema == SubSystem.CONTABILIDAD) {
             Config.setProperty("econova.accounting.current.date", fecha.toString());
         }
     }

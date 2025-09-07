@@ -1,22 +1,20 @@
-package com.univsoftdev.econova.security;
+package com.univsoftdev.econova.security.shiro;
 
-import com.univsoftdev.econova.UserContext;
-import com.univsoftdev.econova.config.model.Rol;
+import com.univsoftdev.econova.config.model.Role;
 import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.core.UserContext;
 import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
-import com.univsoftdev.econova.security.shiro.ShiroUserPrincipal;
+import com.univsoftdev.econova.security.argon2.Argon2CredentialsMatcher;
 import io.ebean.Database;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
-import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.subject.PrincipalCollection;
 
 /**
@@ -45,7 +43,7 @@ import org.apache.shiro.subject.PrincipalCollection;
  * @see ShiroUserPrincipal
  * @see MyTenantSchemaProvider
  * @see User
- * @see Rol
+ * @see Role
  */
 @Slf4j
 @Singleton
@@ -55,24 +53,24 @@ public class CustomRealm extends AuthorizingRealm {
      * Base de datos Ebean para acceso a datos.
      */
     private final Database database;
+    private final Argon2CredentialsMatcher argon2CredentialsMatcher;
 
     /**
      * Constructor que inyecta las dependencias necesarias.
      *
      * @param database Instancia de base de datos Ebean (no null)
+     * @param argon2CredentialsMatcher
      *
      * @throws IllegalArgumentException si alguna dependencia es null
      */
     @Inject
-    public CustomRealm(Database database) {
-        if (database == null) {
-            throw new IllegalArgumentException("Database cannot be null");
-        }
-
-        this.database = database;
+    public CustomRealm(Database database, Argon2CredentialsMatcher argon2CredentialsMatcher) {
+        this.database = Objects.requireNonNull(database);
+        this.argon2CredentialsMatcher = Objects.requireNonNull(argon2CredentialsMatcher);
+        setAuthorizationCachingEnabled(true);
+        setAuthorizationCacheName("authorizationCache");
         setAuthenticationTokenClass(UsernamePasswordToken.class);
-
-        log.info("CustomRealm initialized with database and tenant provider");
+        setCredentialsMatcher(this.argon2CredentialsMatcher);
     }
 
     /**
@@ -89,7 +87,7 @@ public class CustomRealm extends AuthorizingRealm {
      * </ol>
      * </p>
      *
-     * @param principals Colección de principals del usuario autenticado
+     * @param token
      * @return Información de autorización con roles y permisos del usuario
      *
      * @see ShiroUserPrincipal
@@ -97,10 +95,57 @@ public class CustomRealm extends AuthorizingRealm {
      * @see MyTenantSchemaProvider#setCurrentTenant(String)
      */
     @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        UsernamePasswordToken upToken = (UsernamePasswordToken) token;
+        String username = upToken.getUsername();
+
+        if (StringUtils.isBlank(username)) {
+            log.error("Token con username null o vacío recibido");
+            throw new AuthenticationException("Username cannot be null or empty");
+        }
+
+        // Verificar intentos fallidos
+        if (LoginAttemptCache.isAccountLocked(username)) {
+            throw new ExcessiveAttemptsException("Cuenta bloqueada temporalmente por muchos intentos fallidos");
+        }
+
+        try {
+            User user = database.find(User.class)
+                    .where()
+                    .eq("userName", username)
+                    .setMaxRows(1)
+                    .findOne();
+
+            if (user == null) {
+                com.univsoftdev.econova.security.SecurityUtils.delayRandom(500, 1500);
+                LoginAttemptCache.recordFailedAttempt(username);
+                throw new UnknownAccountException("Usuario no encontrado");
+            }
+
+            if (!user.isActive()) {
+                throw new DisabledAccountException("Cuenta deshabilitada");
+            }
+
+            // Verificar que el hash almacenado es válido
+            if (StringUtils.isBlank(user.getPassword())) {
+                throw new CredentialsException("Credenciales no configuradas correctamente");
+            }
+
+            return new SimpleAuthenticationInfo(
+                    new ShiroUserPrincipal(user),
+                    user.getPassword(),
+                    getName()
+            );
+        } catch (AuthenticationException e) {
+            LoginAttemptCache.recordFailedAttempt(username);
+            throw e;
+        }
+    }
+
+    @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-        // Validar que existan principals
         if (principals == null || principals.isEmpty()) {
-            log.warn("Authorization attempt with null or empty principals");
+            log.warn("Attempted authorization with null or empty principals");
             return null;
         }
 
@@ -116,119 +161,96 @@ public class CustomRealm extends AuthorizingRealm {
             return null;
         }
 
-        log.debug("Getting authorization info for user: {} in tenant: {}",
+        log.debug("Building authorization info for user: {} in tenant: {}",
                 user.getUserName(), user.getTenantId());
 
-        // Establecer el tenant antes de realizar cualquier operación
+        UserContext.get().setUser(user);
         UserContext.set(user.getUserName(), user.getTenantId());
 
-        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+        try {
+            SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
 
-        Set<Rol> roles = user.getRoles();
-        if (roles != null && !roles.isEmpty()) {
-            for (Rol role : roles) {
-                if (role != null && role.getName() != null) {
-                    info.addRole(role.getName());
+            User freshUser = database.find(User.class)
+                    .setId(user.getId())
+                    .fetch("roles") // Primero fetch de roles
+                    .fetch("roles.permissions", "name") // Luego fetch de permisos
+                    .setMaxRows(1)
+                    .findOne();
 
-                    // Obtener permisos del rol
-                    if (role.getPermissions() != null) {
-                        List<String> permissions = role.getPermissions().stream()
-                                .map(permission -> permission != null ? permission.getName() : null)
-                                .filter(permissionName -> permissionName != null)
-                                .collect(Collectors.toList());
+            if (freshUser != null && freshUser.getRoles() != null) {
+                freshUser.getRoles().stream()
+                        .filter(role -> role != null && role.getName() != null)
+                        .forEach(role -> {
+                            authorizationInfo.addRole(role.getName());
 
-                        Collection<String> permisos = permissions;
-                        info.addStringPermissions(permisos);
+                            if (role.getPermissions() != null) {
+                                role.getPermissions().stream()
+                                        .filter(permission -> permission != null && permission.getName() != null)
+                                        .map(permission -> permission.getName())
+                                        .forEach(authorizationInfo::addStringPermission);
+                            }
+                        });
+            }
+
+            log.debug("Authorization info built successfully for user: {}. Roles: {}, Permissions: {}",
+                    user.getUserName(),
+                    authorizationInfo.getRoles().size(),
+                    authorizationInfo.getStringPermissions().size());
+
+            return authorizationInfo;
+        } finally {
+            UserContext.reset();
+        }
+    }
+
+    @Override
+    protected void assertCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) throws AuthenticationException {
+        String username = null;
+        try {
+            // Obtenemos el username del token
+            UsernamePasswordToken upToken = (UsernamePasswordToken) token;
+            username = upToken.getUsername();
+
+            // Verificamos que tengamos credenciales válidas
+            if (username == null || upToken.getPassword() == null) {
+                throw new AuthenticationException("Credenciales inválidas");
+            }
+
+            // Llamamos al método original para verificar credenciales
+            super.assertCredentialsMatch(token, info);
+
+            // Si llegamos aquí, la autenticación fue exitosa
+            if (username != null) {
+                LoginAttemptCache.clearFailedAttempts(username);
+            }
+
+        } catch (AuthenticationException e) {
+            // Autenticación fallida - registramos el intento
+            if (username != null) {
+                log.error("Falló autenticación para: {}", username, e);
+
+                int attempts = LoginAttemptCache.recordFailedAttempt(username);
+
+                // Bloqueamos la cuenta si se supera el límite
+                if (attempts >= LoginAttemptCache.MAX_ATTEMPTS) {
+                    log.warn("Bloqueo de cuenta por intentos fallidos: {}", username);
+
+                    try {
+                        database.update(User.class)
+                                .set("active", false)
+                                .where()
+                                .eq("userName", username)
+                                .update();
+                    } catch (Exception dbException) {
+                        log.error("Error al bloquear cuenta del usuario: {}", username, dbException);
                     }
                 }
+            } else {
+                log.error("Falló autenticación con username null", e);
             }
+
+            // Relanzamos la excepción para que Shiro maneje el fallo de autenticación
+            throw e;
         }
-
-        log.debug("Authorization info retrieved for user: {}. Roles: {}, Permissions: {}",
-                user.getUserName(), info.getRoles().size(), info.getStringPermissions().size());
-
-        return info;
-
     }
-
-    /**
-     * Realiza la autenticación de un usuario mediante credenciales.
-     *
-     * <p>
-     * Este método:
-     * <ol>
-     * <li>Valida el token de autenticación</li>
-     * <li>Busca el usuario en la base de datos (schema público)</li>
-     * <li>Verifica que la cuenta esté activa</li>
-     * <li>Crea la información de autenticación</li>
-     * </ol>
-     * </p>
-     *
-     * @param token Token de autenticación con credenciales del usuario
-     * @return Información de autenticación con credenciales verificadas
-     * @throws AuthenticationException si la autenticación falla
-     * @throws UnknownAccountException si el usuario no existe
-     * @throws DisabledAccountException si la cuenta está deshabilitada
-     * @throws IncorrectCredentialsException si las credenciales son incorrectas
-     *
-     * @see UsernamePasswordToken
-     * @see SimpleAuthenticationInfo
-     * @see User
-     */
-    @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-        // Validar token
-        if (token == null) {
-            throw new AuthenticationException("Authentication token cannot be null");
-        }
-
-        UsernamePasswordToken upToken = (UsernamePasswordToken) token;
-        String username = upToken.getUsername();
-
-        // Validar nombre de usuario
-        if (username == null || username.trim().isEmpty()) {
-            throw new AuthenticationException("Username cannot be null or empty");
-        }
-
-        log.debug("Attempting authentication for user: {}", username);
-
-        // Buscar usuario sin tenant específico (schema público)
-        User user = database.find(User.class)
-                .where()
-                .eq("userName", username)
-                .findOne();
-
-        if (user == null) {
-            log.warn("Authentication failed: user not found - {}", username);
-            throw new UnknownAccountException("No existe usuario con nombre: " + username);
-        }
-
-        // Verificar si el usuario está activo
-        if (!user.isActive()) {
-            log.warn("Authentication failed: user account disabled - {}", username);
-            throw new DisabledAccountException("Cuenta deshabilitada para el usuario: " + username);
-        }
-
-        log.debug("Authentication successful for user: {} in tenant: {}",
-                user.getUserName(), user.getTenantId());
-
-        // Crear principal con información del tenant
-        ShiroUserPrincipal principal = new ShiroUserPrincipal(user);
-
-        return new SimpleAuthenticationInfo(
-                principal,
-                user.getPassword(), // El hash de contraseña almacenado
-                getName() // Nombre del realm
-        );
-    }
-
-    /**
-     * Obtiene la base de datos Ebean configurada.
-     *
-     * @return La instancia de base de datos
-     */
-    protected Database getDatabase() {
-        return database;
-    }
-
 }
