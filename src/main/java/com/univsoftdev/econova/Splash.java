@@ -1,22 +1,20 @@
 package com.univsoftdev.econova;
 
+import com.univsoftdev.econova.core.LookAndFeelUtils;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-
-import com.formdev.flatlaf.FlatLightLaf;
-
 import java.io.Serial;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +31,9 @@ public class Splash extends javax.swing.JDialog {
     public Splash(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         setUndecorated(true);
-        setBackground(new Color(0,0,0,0)); // Fondo transparente para bordes redondeados
         logoIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource(LOGO_PATH))); // Si no tienes logo, ignora la excepción
         initComponents();
-        getContentPane().setBackground(new Color(0,0,0,0));
+        getContentPane().setBackground(Color.WHITE);
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         executor = Executors.newSingleThreadScheduledExecutor();
     }
@@ -45,16 +42,24 @@ public class Splash extends javax.swing.JDialog {
     public void paint(@NotNull Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        // Degradado vertical azul oscuro a azul claro
+
+        // Fondo con degradado profesional - BORDES RECTOS
         LinearGradientPaint paint = new LinearGradientPaint(0, 0, 0, getHeight(),
-                new float[]{0f, 1f},
+                new float[]{0f, 0.5f, 1f},
                 new Color[]{
-                        new Color(5, 38, 89), 
-                        new Color(44, 130, 201)
+                    new Color(5, 38, 89),
+                    new Color(24, 84, 145),
+                    new Color(44, 130, 201)
                 }
         );
         g2.setPaint(paint);
-        g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
+        // Rectángulo con bordes rectos
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        // Línea decorativa en la parte inferior
+        g2.setColor(new Color(255, 255, 255, 100));
+        g2.fillRect(0, getHeight() - 4, getWidth(), 2);
+
         g2.dispose();
         super.paint(g);
     }
@@ -137,8 +142,6 @@ public class Splash extends javax.swing.JDialog {
                         .addComponent(curvesPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        setShape(new RoundRectangle2D.Double(0, 0, 600, 320, 30, 30));
-
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
@@ -155,7 +158,7 @@ public class Splash extends javax.swing.JDialog {
     }
 
     private void startLoading() {
-        
+
         executor.schedule(() -> {
             try {
                 doTask("Conectando a la base de datos...", 10);
@@ -166,7 +169,7 @@ public class Splash extends javax.swing.JDialog {
 
                 doTask("Cargando plan de cuentas...", 60);
                 Thread.sleep(1000);
-          
+
                 doTask("Finalizando inicio...", 100);
                 Thread.sleep(1000);
 
@@ -194,7 +197,7 @@ public class Splash extends javax.swing.JDialog {
 
     public static void main(String args[]) {
 
-        FlatLightLaf.setup();
+        LookAndFeelUtils.setupLookAndFeel();
 
         java.awt.EventQueue.invokeLater(() -> {
             new Splash(null, true).setVisible(true);
