@@ -9,8 +9,8 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_empresas")
-public class Empresa extends BaseModel {
+@Table(name = "sys_companys")
+public class Company extends BaseModel {
 
     private static final long serialVersionUID = 1L;
 
@@ -51,20 +51,20 @@ public class Empresa extends BaseModel {
 
     @Size(max = 20, message = "El CIF no puede tener más de 20 caracteres.")
     @Column(name = "cif", unique = true)
-    private String cif; // Código de Identificación Fiscal (opcional según tu país)
+    private String cif; 
     private String nae;
 
     private String dpa;
 
     private String reuup;
     
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private final List<Unidad> unidades = new ArrayList<>();
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private final List<Unit> units = new ArrayList<>();
 
-    public Empresa() {
+    public Company() {
     }
 
-    public Empresa(String nombre, String razonSocial, String nif) {
+    public Company(String nombre, String razonSocial, String nif) {
         this.name = nombre;
         this.razonSocial = razonSocial;
         this.nif = nif;
@@ -75,8 +75,8 @@ public class Empresa extends BaseModel {
         return String.format("Empresa [%s] - %s (%s)", getId(), name, nif);
     }
 
-    public void addUnidad(@NotNull Unidad unidad) {
-        this.unidades.add(unidad);
+    public void addUnidad(@NotNull Unit unidad) {
+        this.units.add(unidad);
     }
 
     public String getCode() {
@@ -199,8 +199,8 @@ public class Empresa extends BaseModel {
         this.reuup = reuup;
     }
 
-    public List<Unidad> getUnidades() {
-        return unidades;
+    public List<Unit> getUnits() {
+        return units;
     }
     
     

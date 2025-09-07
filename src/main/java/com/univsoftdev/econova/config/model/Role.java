@@ -9,54 +9,92 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, of = {"id", "name"})
 @Entity
-@Table(name = "sys_roles" , schema = "accounting")
-public class Rol extends BaseModel {
+@Table(name = "sys_roles")
+public class Role extends BaseModel {
 
     private static final long serialVersionUID = 1L;
 
     @NotBlank
-    @Column(unique = true)
+    @Column(unique = true, length = 50)
+    private String code;
+
+    @NotBlank
+    @Column(length = 100)
     private String name;
 
     private String description;
 
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<User> users = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "rol_permission",
-            joinColumns = @JoinColumn(name = "rol_id"),
+            name = "conf_role_permissions",
+            joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<Permission> permissions = new HashSet<>();
 
-    public Rol() {
+    public Role() {
     }
 
-    public Rol(String name) {
+    public Role(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del rol no puede ser nulo o vacío.");
         }
         this.name = name.trim();
     }
 
+    public Role(String name, String description) {
+        this(name);
+        this.description = description;
+    }
+
+    public Role(String name, String description, Set<Permission> permissions) {
+        this(name);
+        this.description = description;
+        this.permissions = permissions;
+    }
+
     public boolean tienePermiso(String codigoPermiso) {
         return permissions.stream().anyMatch(p -> p.getCode().equals(codigoPermiso));
     }
 
-    public void agregarPermiso(@NotNull Permission permiso) {
-        permissions.add(permiso);
-        permiso.getRoles().add(this);
+    public void addPermission(Permission permission) {
+        if (permission != null && this.permissions.add(permission)) {
+            if (!permission.getRoles().contains(this)) {
+                permission.addRole(this);
+            }
+        }
     }
 
-    public void removerPermiso(@NotNull Permission permiso) {
-        permissions.remove(permiso);
-        permiso.getRoles().remove(this);
+    public void removePermission(Permission permission) {
+        if (permission != null && this.permissions.remove(permission)) {
+            if (permission.getRoles().contains(this)) {
+                permission.removeRole(this);
+            }
+        }
     }
 
+    public boolean hasPermission(String permissionCode) {
+        return permissionCode != null
+                && permissions.stream()
+                        .anyMatch(p -> p.hasCode(permissionCode));
+    }
+
+    /**
+     * Clear all permissions from this role (bidirectional)
+     */
+    public void clearPermissions() {
+        // Break bidirectional relationships first
+        for (Permission permission : new HashSet<>(this.permissions)) {
+            removePermission(permission);
+        }
+    }
+    
     public String getName() {
         return name;
     }
@@ -85,7 +123,4 @@ public class Rol extends BaseModel {
         return permissions;
     }
 
-    public void setPermisos(@NotNull Set<Permission> permissions) {
-        this.permissions = permissions;
-    }
 }

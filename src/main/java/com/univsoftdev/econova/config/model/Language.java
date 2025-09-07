@@ -8,15 +8,15 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_idiomas")
-public class Idioma extends BaseModel {
+@Table(name = "sys_language")
+public class Language extends BaseModel {
 
     public static IdiomaFinder finder = new IdiomaFinder();
     private String symbol;
     private String nombre;
     private String pais;
 
-    public Idioma() {
+    public Language() {
     }
 
     public String getSymbol() {

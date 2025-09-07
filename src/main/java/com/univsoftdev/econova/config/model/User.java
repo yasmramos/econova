@@ -1,31 +1,33 @@
 package com.univsoftdev.econova.config.model;
 
-import com.univsoftdev.econova.security.Argon2PasswordHasher;
-import com.univsoftdev.econova.security.PasswordHasher;
-import com.univsoftdev.econova.Validations;
-import com.univsoftdev.econova.contabilidad.model.PasswordRegistry;
+import com.univsoftdev.econova.contabilidad.model.PasswordHistory;
+import com.univsoftdev.econova.core.Validations;
 import com.univsoftdev.econova.core.model.BaseModel;
+import com.univsoftdev.econova.security.Roles;
+import com.univsoftdev.econova.security.argon2.Argon2PasswordHasher;
+import com.univsoftdev.econova.security.argon2.PasswordHasher;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, of = {"userName"})
 @Entity
-@Table(name = "sys_users", schema = "accounting")
+@Table(name = "sys_users")
 public class User extends BaseModel {
 
     private static final long serialVersionUID = 1L;
@@ -47,52 +49,99 @@ public class User extends BaseModel {
     @Column(unique = true)
     private String email;
 
-    @OneToOne
-    private PasswordRegistry passwordRegistry;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private PasswordHistory passwordHistory = new PasswordHistory(new LinkedList<>());
     private boolean active;
     private boolean adminSistema;
     private boolean adminEconomico;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "user_rol",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "rol_id")
     )
-    private Set<Rol> roles = new HashSet<>();
+    private Set<Role> roles;
 
     public User() {
+        this.roles = new HashSet<>();
     }
 
-    public User(String identificador) {
-        this.userName = identificador;
+    public User(String userName) {
+        this();
+        this.userName = userName;
     }
 
-    public User(String identificador, String contrasenna) {
-        this.userName = identificador;
+    public User(String userName, String contrasenna) {
+        this(userName);
         this.password = hasher.hash(contrasenna); // Hashea la contraseña antes de almacenarla
     }
-    
-    public Set<Rol> getRoles(){
-        return roles;
+
+    public void agregarRol(@NotNull Role rol) {
+        if (rol == null) {
+            return;
+        }
+
+        if (!this.roles.contains(rol)) {
+            this.roles.add(rol);
+            actualizarFlagsAdministrador(rol);
+            if (!rol.getUsers().contains(this)) {
+                rol.getUsers().add(this);
+            }
+        }
+    }
+
+    public void removerRol(@NotNull Role rol) {
+        if (rol == null) {
+            return;
+        }
+
+        if (this.roles.remove(rol)) {
+            actualizarFlagsAdministrador();
+            if (rol.getUsers().contains(this)) {
+                rol.getUsers().remove(this);
+            }
+        }
+    }
+
+    public Set<Role> getRoles() {
+        return Collections.unmodifiableSet(roles);
+    }
+
+    public void setRoles(@NotNull Set<Role> roles) {
+        if (roles == null) {
+            this.roles.clear();
+            return;
+        }
+
+        // Primero removemos los roles que ya no están
+        this.roles.stream()
+                .filter(r -> !roles.contains(r))
+                .forEach(this::removerRol);
+
+        // Luego agregamos los nuevos
+        roles.forEach(this::agregarRol);
+
+        actualizarFlagsAdministrador();
     }
 
     public boolean esContrasennaRepetida(String rawPassword) {
-        if (passwordRegistry == null) {
+        if (passwordHistory == null) {
             return false;
         }
 
-        return passwordRegistry.esContrasennaUsada(rawPassword, new Argon2PasswordHasher());
+        return passwordHistory.isPasswordUsed(rawPassword, new Argon2PasswordHasher());
     }
 
     public void actualizarRegistroDeContrasenna(String nuevaContrasenna) {
-        if (passwordRegistry == null) {
-            passwordRegistry = new PasswordRegistry();
+        if (passwordHistory == null) {
+            passwordHistory = new PasswordHistory();
         }
-        passwordRegistry.agregarContrasenna(nuevaContrasenna);
+        passwordHistory.agregarContrasenna(nuevaContrasenna);
     }
 
-    public boolean tieneRol(String nombreRol) {
+    public boolean hasRol(String nombreRol) {
         return roles.stream().anyMatch(r -> r.getName().equals(nombreRol));
     }
 
@@ -104,12 +153,13 @@ public class User extends BaseModel {
         return password;
     }
 
-    public PasswordRegistry getPasswordRegistry() {
-        return passwordRegistry;
+    @NotNull
+    public PasswordHistory getPasswordHistory() {
+        return passwordHistory;
     }
 
-    public void setPasswordRegistry(@NotNull PasswordRegistry passwordRegistry) {
-        this.passwordRegistry = passwordRegistry;
+    public void setPasswordHistory(@NotNull PasswordHistory passwordHistory) {
+        this.passwordHistory = passwordHistory;
     }
 
     public boolean isActive() {
@@ -136,33 +186,8 @@ public class User extends BaseModel {
         this.adminEconomico = adminEconomico;
     }
 
-    public void setPasswordWithHasher(String password) {
-        this.password = hasher.hash(password);
-    }
-
-    public boolean matchesPasswordWithHasher(String rawPassword) {
-        return hasher.verify(password, rawPassword);
-    }
-
     public void setPassword(String password) {
-        setPassword(password, hasher);
-    }
-
-    public void setPassword(String newPassword, @NotNull PasswordHasher hasher) {
-        if (passwordRegistry == null) {
-            passwordRegistry = new PasswordRegistry(new LinkedList<>());
-        }
-
-        if (passwordRegistry.esContrasennaUsada(newPassword, hasher)) {
-            throw new IllegalArgumentException("Esta contraseña ya fue usada anteriormente.");
-        }
-
-        passwordRegistry.addPassword(hasher.hash(newPassword));
-        this.password = hasher.hash(newPassword);
-    }
-
-    public boolean matchesPassword(String rawPassword) {
-        return hasher.verify(password, rawPassword);
+        this.password = password;
     }
 
     public String getEmail() {
@@ -190,10 +215,16 @@ public class User extends BaseModel {
         this.userName = userName;
     }
 
-    public void setRoles(@NotNull Set<Rol> roles) {
-        this.roles = roles;
-        this.adminSistema = roles.stream().anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN_SISTEMA"));
-        this.adminEconomico = roles.stream().anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN_ECONOMICO"));
+    public void setRole(@NotNull Role role) {
+        addRole(role);
+    }
+
+    public void addRole(@NotNull Role role) {
+        if (!this.hasRol(role.getName())) {
+            this.roles.add(role);
+            this.adminSistema = role.getName().equalsIgnoreCase(Roles.SYSTEM_ADMIN);
+            this.adminEconomico = role.getName().equalsIgnoreCase(Roles.ECONOMIC_ADMIN);
+        }
     }
 
     public boolean esAdministrador() {
@@ -201,15 +232,30 @@ public class User extends BaseModel {
     }
 
     public boolean puedeAccederAContabilidad() {
-        return adminSistema || adminEconomico || tieneRol("CONTABILIDAD");
+        return adminSistema || adminEconomico || hasRol("CONTABILIDAD");
+    }
+
+    private void actualizarFlagsAdministrador() {
+        this.adminSistema = roles.stream()
+                .anyMatch(r -> "ADMIN_SISTEMA".equalsIgnoreCase(r.getName()));
+        this.adminEconomico = roles.stream()
+                .anyMatch(r -> "ADMIN_ECONOMICO".equalsIgnoreCase(r.getName()));
+    }
+
+    private void actualizarFlagsAdministrador(Role rol) {
+        if ("ADMIN_SISTEMA".equalsIgnoreCase(rol.getName())) {
+            this.adminSistema = true;
+        } else if ("ADMIN_ECONOMICO".equalsIgnoreCase(rol.getName())) {
+            this.adminEconomico = true;
+        }
     }
 
     @Override
     public String toString() {
-        return "Usuario{"
+        return "User{"
                 + "id=" + getId()
-                + ", nombre='" + fullName + '\''
-                + ", identificador='" + userName + '\''
+                + ", name='" + fullName + '\''
+                + ", userName='" + userName + '\''
                 + ", email='" + email + '\''
                 + '}';
     }

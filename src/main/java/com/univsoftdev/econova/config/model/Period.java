@@ -1,63 +1,50 @@
 package com.univsoftdev.econova.config.model;
 
 import com.univsoftdev.econova.config.finder.PeriodoFinder;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.core.model.BaseModel;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
+import com.univsoftdev.econova.core.model.AuditBaseModel;
 import io.ebean.annotation.Cache;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @Cache
 @Entity
-@Table(name = "sys_periodos")
-public class Periodo extends BaseModel implements Serializable {
+@Table(name = "sys_periods")
+public class Period extends AuditBaseModel implements Serializable {
 
     public static PeriodoFinder finder = new PeriodoFinder();
     private static final long serialVersionUID = 1L;
 
     @NotNull(message = "El nombre no puede ser nulo.")
-    private String nombre;
+    private String name;
 
     @NotNull(message = "La fecha de inicio no puede ser nula.")
-    private LocalDate fechaInicio;
+    private LocalDate startDate;
 
     @NotNull(message = "La fecha de fin no puede ser nula.")
-    private LocalDate fechaFin;
+    private LocalDate endDate;
 
-    @ManyToOne
-    @JoinColumn(name = "ejercicio_id")
-    private Ejercicio ejercicio;
     private boolean current;
     private boolean active;
 
-    @OneToMany(mappedBy = "periodo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Transaccion> transacciones = new ArrayList<>();
-
-    public Periodo() {
+    public Period() {
     }
 
-    public Periodo(String nombre, @NotNull LocalDate inicio, @NotNull LocalDate fin) {
+    public Period(String nombre, @NotNull LocalDate inicio, @NotNull LocalDate fin) {
         this(nombre, inicio, fin, null);
     }
 
-    public Periodo(String nombre, @NotNull LocalDate inicio, @NotNull LocalDate fin, @NotNull Ejercicio ejercicio) {
-        this.nombre = nombre;
-        this.fechaInicio = inicio;
-        this.fechaFin = fin;
-        this.ejercicio = ejercicio;
+    public Period(String nombre, @NotNull LocalDate inicio, @NotNull LocalDate fin, @NotNull Exercise ejercicio) {
+        this.name = nombre;
+        this.startDate = inicio;
+        this.endDate = fin;
+        this.exercise = ejercicio;
         validateDates();
     }
 
@@ -78,91 +65,88 @@ public class Periodo extends BaseModel implements Serializable {
     }
 
     private void validateDates() {
-        if (fechaInicio.isAfter(fechaFin)) {
+        if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
         }
     }
 
-    public void addTransaccion(Transaccion transaccion) {
-        if (!isDateWithinPeriod(transaccion.getFecha())) {
+    public void addTransaccion(Transaction transaccion) {
+        if (!isDateWithinPeriod(transaccion.getDate())) {
             throw new IllegalArgumentException("La transacción no corresponde al período.");
         }
-        transacciones.add(transaccion);
+        transactions.add(transaccion);
     }
 
-    public List<Transaccion> getTransacciones() {
-        return transacciones;
+    public List<Transaction> getTransacciones() {
+        return transactions;
     }
 
-    public void setTransacciones(List<Transaccion> transacciones) {
-        this.transacciones = transacciones;
+    public void setTransacciones(List<Transaction> transacciones) {
+        this.transactions = transacciones;
     }
 
-    public Ejercicio getEjercicio() {
-        return ejercicio;
-    }
-
-    public void setEjercicio(@NotNull Ejercicio ejercicio) {
-        if (ejercicio == null) {
+    @Override
+    public void setExercise(@NotNull Exercise exercise) {
+        if (exercise == null) {
             throw new IllegalArgumentException("El ejercicio no puede ser nulo.");
         }
 
-        if (this.ejercicio != null && this.ejercicio.getPeriodos().contains(this)) {
-            this.ejercicio.getPeriodos().remove(this); // Limpiar referencia anterior
+        if (this.exercise != null && this.exercise.getPeriodos().contains(this)) {
+            this.exercise.getPeriodos().remove(this); // Limpiar referencia anterior
         }
 
-        this.ejercicio = ejercicio;
-        ejercicio.getPeriodos().add(this); // Asegurar vinculación inversa
+        this.exercise = exercise;
+        exercise.getPeriodos().add(this); // Asegurar vinculación inversa
     }
 
-    public void addTransacciones(@NotNull List<Transaccion> nuevas) {
-        for (Transaccion t : nuevas) {
-            if (!isDateWithinPeriod(t.getFecha())) {
+    public void addTransacciones(@NotNull List<Transaction> nuevas) {
+        for (Transaction t : nuevas) {
+            if (!isDateWithinPeriod(t.getDate())) {
                 throw new IllegalArgumentException("Una transacción no corresponde al período.");
             }
         }
-        transacciones.addAll(nuevas);
+        transactions.addAll(nuevas);
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getName() {
+        return name;
     }
 
     public boolean isActivo() {
-        return !fechaInicio.isAfter(LocalDate.now()) && !fechaFin.isBefore(LocalDate.now());
+        return !startDate.isAfter(LocalDate.now()) && !endDate.isBefore(LocalDate.now());
     }
 
     public int getYear() {
-        return fechaInicio.getYear();
+        return startDate.getYear();
     }
 
     public String getNombreConFechas() {
-        return String.format("%s (%s - %s)", nombre, fechaInicio, fechaFin);
+        return String.format("%s (%s - %s)", name, startDate, endDate);
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public LocalDate getFechaInicio() {
-        return fechaInicio;
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    public void setFechaInicio(LocalDate fechaInicio) {
-        this.fechaInicio = fechaInicio;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
-    public LocalDate getFechaFin() {
-        return fechaFin;
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
-    public void setFechaFin(@NotNull LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
+    public void setEndDate(@NotNull LocalDate endDate) {
+        this.endDate = endDate;
         validateDates();
     }
 
     public boolean isDateWithinPeriod(@org.jetbrains.annotations.NotNull LocalDate date) {
-        return !date.isBefore(fechaInicio) && !date.isAfter(fechaFin);
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
 }
