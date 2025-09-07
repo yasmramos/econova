@@ -1,12 +1,13 @@
 package com.univsoftdev.econova;
 
+import com.univsoftdev.econova.core.AppContext;
 import com.univsoftdev.econova.core.Version;
 import com.univsoftdev.econova.core.module.ModuleInitializationException;
 import com.univsoftdev.econova.core.module.ModuleShutdownException;
 import com.univsoftdev.econova.core.module.ModuleState;
-import java.util.Set;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 public class ContabilidadModule implements com.univsoftdev.econova.core.module.Module {
 
@@ -26,7 +27,6 @@ public class ContabilidadModule implements com.univsoftdev.econova.core.module.M
 
     @Override
     public Version getVersion() {
-        // Ajusta según tu versión actual
         return new Version(1, 0, 0);
     }
 
@@ -55,12 +55,11 @@ public class ContabilidadModule implements com.univsoftdev.econova.core.module.M
 
     @Override
     public int getInitializationPriority() {
-        // Prioridad de inicialización (0 = más alta, mayor número = menor prioridad)
-        return 100;
+        return 0;
     }
 
     @Override
-    public void initialize(AppContext context) throws ModuleInitializationException {
+    public void initialize(final AppContext context) throws ModuleInitializationException {
         if (initialized) {
             return;
         }
