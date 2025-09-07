@@ -1,240 +1,277 @@
 package com.univsoftdev.econova.config.service;
 
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.config.model.Empresa;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.core.Service;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.config.repository.UnitRepository;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
-import io.ebean.Database;
+import com.univsoftdev.econova.core.service.BaseService;
+import io.ebean.annotation.Transactional;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * Servicio avanzado para gestión de unidades organizativas. Incluye operaciones
- * para manejo de unidades, transacciones y asientos contables.
- */
 @Slf4j
 @Singleton
-public class UnidadService extends Service<Unidad> {
+public class UnitService extends BaseService<Unit, UnitRepository> {
 
     @Inject
-    public UnidadService(Database database) {
-        super(database, Unidad.class);
+    public UnitService(UnitRepository repository) {
+        super(repository);
     }
 
-    /**
-     * Busca una entidad {@link Unidad} por su código único.
-     *
-     * @param codigo Código identificador de la unidad
-     * @return La entidad encontrada, o {@code null} si no existe
-     */
-    public Optional<Unidad> findByCodigo(String codigo) {
-        return findBy("codigo", codigo);
+    @Transactional
+    public Optional<Unit> findByCodigo(String codigo) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        return repository.findByCodigo(codigo);
     }
 
-    /**
-     * Crea una nueva unidad organizativa con validaciones básicas
-     */
-    public Unidad crearUnidad(String codigo, String nombre, String direccion, String correo,
-            String nae, String dpa, String reup, Empresa empresa) {
+    @Transactional
+    public Unit crearUnidad(String codigo, String nombre, String direccion, String correo,
+            String nae, String dpa, String reup, Company company) {
+
+        validarParametrosCreacion(codigo, nombre);
         validarCodigoUnico(codigo);
         validarEmail(correo);
 
-        Unidad nuevaUnidad = new Unidad(codigo, nombre, direccion, correo, nae, dpa, reup);
-        nuevaUnidad.setEmpresa(empresa);
-        database.save(nuevaUnidad);
+        Unit nuevaUnidad = new Unit(codigo, nombre, direccion, correo, nae, dpa, reup, company);
+        save(nuevaUnidad);
 
         log.info("Nueva unidad creada: {} - {}", codigo, nombre);
         return nuevaUnidad;
     }
 
-    public Unidad crearUnidad(String codigo, String nombre, Empresa empresa, String schema) {
+    @Transactional
+    public Unit crearUnidad(String codigo, String nombre, Company company) {
+        validarParametrosCreacion(codigo, nombre);
         validarCodigoUnico(codigo);
 
-        Unidad nuevaUnidad = new Unidad(codigo, nombre);
-        nuevaUnidad.setEmpresa(empresa);
-        database.save(nuevaUnidad);
+        Unit nuevaUnidad = new Unit(codigo, nombre, company);
+        save(nuevaUnidad);
 
         log.info("Nueva unidad creada: {} - {}", codigo, nombre);
         return nuevaUnidad;
     }
 
-    /**
-     * Asocia una unidad a una empresa
-     * @param unidadId
-     * @param empresaId
-     * @return 
-     */
-    public Unidad asignarEmpresa(Long unidadId, Long empresaId) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+    @Transactional
+    public Unit asignarEmpresa(Long unidadId, Long empresaId) {
+        validarIds(unidadId, empresaId);
 
-        Empresa empresa = database.find(Empresa.class, empresaId);
+        Unit unidad = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
 
-        unidad.setEmpresa(empresa);
-        database.update(unidad);
+        Company empresa = repository.find(Company.class, empresaId);
+        if (empresa == null) {
+            throw new BusinessLogicException("Empresa no encontrada con ID: " + empresaId);
+        }
 
-        log.info("Unidad {} asociada a empresa {}", unidad.getCodigo(), empresa.getName());
+        unidad.setCompany(empresa);
+        save(unidad); // En Ebean se usa save() para actualizar
+
+        log.info("Unidad {} asociada a empresa {}", unidad.getCode(), empresa.getName());
         return unidad;
     }
 
-    /**
-     * Agrega una transacción a la unidad
-     * @param unidadId
-     * @param transaccion
-     * @return 
-     */
-    public Unidad agregarTransaccion(Long unidadId, Transaccion transaccion) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+    @Transactional
+    public Unit agregarTransaccion(Long unidadId, Transaction transaccion) {
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
+        if (transaccion == null) {
+            throw new BusinessLogicException("La transacción no puede ser nula");
+        }
+
+        Unit unidad = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
 
         unidad.addTransaccion(transaccion);
-        database.update(unidad);
+        save(unidad);
 
-        log.debug("Transacción agregada a unidad {}", unidad.getCodigo());
+        log.debug("Transacción agregada a unidad {}", unidad.getCode());
         return unidad;
     }
 
-    /**
-     * Agrega un asiento contable a la unidad
-     * @param unidadId
-     * @param asiento
-     * @return 
-     */
-    public Unidad agregarAsiento(Long unidadId, Asiento asiento) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+    @Transactional
+    public Unit agregarAsiento(Long unidadId, AccountingEntry asiento) {
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
+        if (asiento == null) {
+            throw new BusinessLogicException("El asiento no puede ser nulo");
+        }
+
+        Unit unidad = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
 
         unidad.addAsiento(asiento);
-        database.update(unidad);
+        save(unidad);
 
-        log.info("Asiento {} agregado a unidad {}", asiento.getNro(), unidad.getCodigo());
+        log.info("Asiento {} agregado a unidad {}", asiento.getNro(), unidad.getCode());
         return unidad;
     }
 
-    /**
-     * Obtiene el saldo total de la unidad (débitos - créditos)
-     * @param unidadId
-     * @return 
-     */
+    @Transactional
     public BigDecimal obtenerSaldoTotal(Long unidadId) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
 
-        return unidad.getTransacciones().stream()
-                .map(t -> t.esDebito() ? t.getMonto() : t.getMonto().negate())
+        Unit unidad = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
+
+        return unidad.getTransactions().stream()
+                .map(t -> t.esDebito() ? t.getBalance() : t.getBalance().negate())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * Obtiene todas las transacciones de la unidad ordenadas por fecha
-     */
-    public List<Transaccion> obtenerTransacciones(Long unidadId) {
-        return database.createQuery(Transaccion.class)
+    @Transactional
+    public List<Transaction> obtenerTransacciones(Long unidadId) {
+        if (unidadId == null) {
+            return List.of();
+        }
+
+        return repository.createQuery(Transaction.class)
                 .where()
-                .eq("unidad.id", unidadId)
+                .eq("unit.id", unidadId)
                 .orderBy("fecha asc")
                 .findList();
     }
 
-    /**
-     * Obtiene todos los asientos de la unidad ordenados por fecha
-     */
-    public List<Asiento> obtenerAsientos(Long unidadId) {
-        return database.createQuery(Asiento.class)
+    @Transactional
+    public List<AccountingEntry> obtenerAsientos(Long unidadId) {
+        if (unidadId == null) {
+            return List.of();
+        }
+
+        return repository.createQuery(AccountingEntry.class)
                 .where()
-                .eq("unidad.id", unidadId)
+                .eq("unit.id", unidadId)
                 .orderBy("fecha asc")
                 .findList();
     }
 
-    /**
-     * Obtiene una unidad por su código único
-     */
-    public Optional<Unidad> obtenerPorCodigo(String codigo) {
-        return database.createQuery(Unidad.class)
+    @Transactional
+    public Optional<Unit> obtenerPorCode(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return repository.createQuery(Unit.class)
                 .where()
-                .eq("codigo", codigo)
+                .eq("code", code)
                 .findOneOrEmpty();
     }
 
-    /**
-     * Obtiene todas las unidades de una empresa específica
-     */
-    public List<Unidad> obtenerUnidadesPorEmpresa(Long empresaId) {
-        return database.createQuery(Unidad.class)
+    @Transactional
+    public List<Unit> obtenerUnidadesPorEmpresa(Long empresaId) {
+        if (empresaId == null) {
+            return List.of();
+        }
+
+        return repository.createQuery(Unit.class)
                 .where()
                 .eq("empresa.id", empresaId)
                 .orderBy("nombre asc")
                 .findList();
     }
 
-    /**
-     * Valida que el código de unidad sea único
-     */
-    private void validarCodigoUnico(String codigo) {
-        if (obtenerPorCodigo(codigo).isPresent()) {
-            throw new BusinessLogicException("Ya existe una unidad con el código: " + codigo);
+    private void validarCodigoUnico(String code) {
+        if (obtenerPorCode(code).isPresent()) {
+            throw new BusinessLogicException("Ya existe una unidad con el código: " + code);
         }
     }
 
-    /**
-     * Valida el formato del email (si está presente)
-     */
     private void validarEmail(String email) {
         if (email != null && !email.isEmpty() && !email.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             throw new BusinessLogicException("El formato del email no es válido");
         }
     }
 
-    /**
-     * Actualiza los datos básicos de una unidad
-     */
-    public Unidad actualizarDatos(Long unidadId, String nombre, String direccion, String correo) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+    private void validarParametrosCreacion(String codigo, String nombre) {
+        if (codigo == null || codigo.trim().isEmpty()) {
+            throw new BusinessLogicException("El código no puede ser nulo o vacío");
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new BusinessLogicException("El nombre no puede ser nulo o vacío");
+        }
+    }
 
-        if (nombre != null) {
-            unidad.setNombre(nombre);
+    private void validarIds(Long unidadId, Long empresaId) {
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
+        if (empresaId == null) {
+            throw new BusinessLogicException("El ID de la empresa no puede ser nulo");
+        }
+    }
+
+    @Transactional
+    public Unit actualizarDatos(Long unidadId, String nombre, String direccion, String correo) {
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
+
+        Unit unit = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
+
+        if (nombre != null && !nombre.trim().isEmpty()) {
+            unit.setName(nombre);
         }
         if (direccion != null) {
-            unidad.setDireccion(direccion);
+            unit.setAddress(direccion);
         }
         if (correo != null) {
             validarEmail(correo);
-            unidad.setCorreo(correo);
+            unit.setEmail(correo);
         }
 
-        database.update(unidad);
-        log.info("Datos actualizados para unidad {}", unidad.getCodigo());
-        return unidad;
+        save(unit);
+        log.info("Datos actualizados para unidad {}", unit.getCode());
+        return unit;
     }
 
-    /**
-     * Obtiene el balance resumido de la unidad (total débitos, créditos y
-     * saldo)
-     */
+    @Transactional
     public BalanceUnidad obtenerBalance(Long unidadId) {
-        Unidad unidad = database.find(Unidad.class, unidadId);
+        if (unidadId == null) {
+            throw new BusinessLogicException("El ID de la unidad no puede ser nulo");
+        }
 
-        BigDecimal totalDebitos = unidad.getTransacciones().stream()
-                .filter(Transaccion::esDebito)
-                .map(Transaccion::getMonto)
+        Unit unidad = findById(unidadId)
+                .orElseThrow(() -> new BusinessLogicException("Unidad no encontrada con ID: " + unidadId));
+
+        BigDecimal totalDebitos = unidad.getTransactions().stream()
+                .filter(Transaction::esDebito)
+                .map(Transaction::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalCreditos = unidad.getTransacciones().stream()
-                .filter(Transaccion::esCredito)
-                .map(Transaccion::getMonto)
+        BigDecimal totalCreditos = unidad.getTransactions().stream()
+                .filter(Transaction::esCredito)
+                .map(Transaction::getBalance)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new BalanceUnidad(totalDebitos, totalCreditos, totalDebitos.subtract(totalCreditos));
+        BigDecimal saldo = totalDebitos.subtract(totalCreditos);
+
+        return new BalanceUnidad(totalDebitos, totalCreditos, saldo);
     }
 
-    /**
-     * Record para representar el balance de una unidad
-     */
     public record BalanceUnidad(BigDecimal totalDebitos, BigDecimal totalCreditos, BigDecimal saldo) {
 
+        public BalanceUnidad   {
+            totalDebitos = totalDebitos != null ? totalDebitos : BigDecimal.ZERO;
+            totalCreditos = totalCreditos != null ? totalCreditos : BigDecimal.ZERO;
+            saldo = saldo != null ? saldo : BigDecimal.ZERO;
+        }
+    }
+
+    // Método auxiliar para obtener unidad o lanzar excepción
+    @Override
+    public Optional<Unit> findById(Long id) {
+        return repository.findById(id);
     }
 }

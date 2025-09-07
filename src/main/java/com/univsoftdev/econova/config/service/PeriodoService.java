@@ -1,18 +1,19 @@
 package com.univsoftdev.econova.config.service;
 
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.core.Service;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.repository.PeriodoRepository;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
-import io.ebean.Database;
+import com.univsoftdev.econova.core.service.BaseService;
+import com.univsoftdev.econova.security.Roles;
+import com.univsoftdev.econova.security.shiro.annotations.RequiresRoles;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio avanzado para gestión de períodos contables con operaciones
@@ -21,22 +22,34 @@ import java.util.Optional;
  */
 @Slf4j
 @Singleton
-public class PeriodoService extends Service<Periodo> {
+public class PeriodoService extends BaseService<Period, PeriodoRepository> {
 
     @Inject
-    public PeriodoService(Database database) {
-        super(database, Periodo.class);
+    public PeriodoService(PeriodoRepository repository) {
+        super(repository);
     }
 
     /**
      * Crea un nuevo período con validación de solapamiento de fechas
+     *
+     * @param nombre
+     * @param fechaInicio
+     * @param fechaFin
+     * @param ejercicio
+     * @return
      */
-    public Periodo crearPeriodo(String nombre, LocalDate fechaInicio, LocalDate fechaFin, Ejercicio ejercicio) {
+    @RequiresRoles(value = {Roles.SYSTEM_ADMIN})
+    public Period crearPeriodo(
+            String nombre,
+            LocalDate fechaInicio,
+            LocalDate fechaFin,
+            Exercise ejercicio
+    ) {
         validarFechasPeriodo(fechaInicio, fechaFin);
         validarSolapamientoPeriodos(fechaInicio, fechaFin, ejercicio);
 
-        Periodo nuevoPeriodo = new Periodo(nombre, fechaInicio, fechaFin, ejercicio);
-        database.save(nuevoPeriodo);
+        Period nuevoPeriodo = new Period(nombre, fechaInicio, fechaFin, ejercicio);
+        repository.save(nuevoPeriodo);
 
         log.info("Nuevo período creado: {}", nuevoPeriodo.getNombreConFechas());
         return nuevoPeriodo;
@@ -45,15 +58,19 @@ public class PeriodoService extends Service<Periodo> {
     /**
      * Actualiza las fechas de un período con validaciones
      */
-    public Periodo actualizarFechasPeriodo(Long periodoId, LocalDate nuevaFechaInicio, LocalDate nuevaFechaFin) {
-        Periodo periodo = database.find(Periodo.class, periodoId);
+    public Period actualizarFechasPeriodo(
+            Long periodoId,
+            LocalDate nuevaFechaInicio,
+            LocalDate nuevaFechaFin
+    ) {
+        Period periodo = repository.find(Period.class, periodoId);
 
         validarFechasPeriodo(nuevaFechaInicio, nuevaFechaFin);
-        validarSolapamientoPeriodos(nuevaFechaInicio, nuevaFechaFin, periodo.getEjercicio(), periodoId);
+        validarSolapamientoPeriodos(nuevaFechaInicio, nuevaFechaFin, periodo.getExercise(), periodoId);
 
-        periodo.setFechaInicio(nuevaFechaInicio);
-        periodo.setFechaFin(nuevaFechaFin);
-        database.update(periodo);
+        periodo.setStartDate(nuevaFechaInicio);
+        periodo.setEndDate(nuevaFechaFin);
+        repository.update(periodo);
 
         log.info("Fechas actualizadas para período ID {}: {} - {}", periodoId, nuevaFechaInicio, nuevaFechaFin);
         return periodo;
@@ -61,9 +78,10 @@ public class PeriodoService extends Service<Periodo> {
 
     /**
      * Obtiene el período actual (marcado como current)
+     * @return 
      */
-    public Optional<Periodo> obtenerPeriodoActual() {
-        return database.createQuery(Periodo.class)
+    public Optional<Period> obtenerPeriodoActual() {
+        return repository.createQuery(Period.class)
                 .where()
                 .eq("current", true)
                 .findOneOrEmpty();
@@ -71,10 +89,12 @@ public class PeriodoService extends Service<Periodo> {
 
     /**
      * Establece un período como el actual
+     * @param periodoId
+     * @return 
      */
-    public Periodo establecerPeriodoActual(Long periodoId) {
+    public Period establecerPeriodoActual(Long periodoId) {
         // Primero desmarcar cualquier período actual
-        database.createQuery(Periodo.class)
+        repository.createQuery(Period.class)
                 .where()
                 .eq("current", true)
                 .asUpdate()
@@ -82,21 +102,22 @@ public class PeriodoService extends Service<Periodo> {
                 .update();
 
         // Marcar el nuevo período como actual
-        Periodo nuevoActual = database.find(Periodo.class, periodoId);
+        Period nuevoActual = repository.find(Period.class, periodoId);
 
         nuevoActual.setCurrent(true);
-        database.update(nuevoActual);
+        repository.update(nuevoActual);
 
-        log.info("Período {} establecido como actual", nuevoActual.getNombre());
+        log.info("Período {} establecido como actual", nuevoActual.getName());
         return nuevoActual;
     }
 
     /**
      * Obtiene todos los períodos activos (que incluyen la fecha actual)
+     * @return 
      */
-    public List<Periodo> obtenerPeriodosActivos() {
+    public List<Period> obtenerPeriodosActivos() {
         LocalDate hoy = LocalDate.now();
-        return database.createQuery(Periodo.class)
+        return repository.createQuery(Period.class)
                 .where()
                 .le("fechaInicio", hoy)
                 .ge("fechaFin", hoy)
@@ -106,18 +127,18 @@ public class PeriodoService extends Service<Periodo> {
     /**
      * Agrega una transacción al período con validación de fecha
      */
-    public void agregarTransaccion(Long periodoId, Transaccion transaccion) {
-        Periodo periodo = database.find(Periodo.class, periodoId);
+    public void agregarTransaccion(Long periodoId, Transaction transaccion) {
+        Period periodo = repository.find(Period.class, periodoId);
 
         periodo.addTransaccion(transaccion);
-        database.save(periodo);
+        repository.save(periodo);
     }
 
     /**
      * Obtiene todas las transacciones de un período ordenadas por fecha
      */
-    public List<Transaccion> obtenerTransaccionesPeriodo(Long periodoId) {
-        return database.createQuery(Transaccion.class)
+    public List<Transaction> obtenerTransaccionesPeriodo(Long periodoId) {
+        return repository.createQuery(Transaction.class)
                 .where()
                 .eq("periodo.id", periodoId)
                 .orderBy("fecha asc")
@@ -128,12 +149,12 @@ public class PeriodoService extends Service<Periodo> {
      * Valida que las fechas no se solapen con otros períodos del mismo
      * ejercicio
      */
-    private void validarSolapamientoPeriodos(LocalDate inicio, LocalDate fin, Ejercicio ejercicio) {
+    private void validarSolapamientoPeriodos(LocalDate inicio, LocalDate fin, Exercise ejercicio) {
         validarSolapamientoPeriodos(inicio, fin, ejercicio, null);
     }
 
-    private void validarSolapamientoPeriodos(LocalDate inicio, LocalDate fin, Ejercicio ejercicio, Long periodoIdExcluir) {
-        List<Periodo> periodosSolapados = database.createQuery(Periodo.class)
+    private void validarSolapamientoPeriodos(LocalDate inicio, LocalDate fin, Exercise ejercicio, Long periodoIdExcluir) {
+        List<Period> periodosSolapados = repository.createQuery(Period.class)
                 .where()
                 .eq("ejercicio.id", ejercicio.getId())
                 .or()
@@ -170,8 +191,8 @@ public class PeriodoService extends Service<Periodo> {
     /**
      * Obtiene el período correspondiente a una fecha específica
      */
-    public Optional<Periodo> obtenerPeriodoPorFecha(LocalDate fecha) {
-        return database.createQuery(Periodo.class)
+    public Optional<Period> obtenerPeriodoPorFecha(LocalDate fecha) {
+        return repository.createQuery(Period.class)
                 .where()
                 .le("fechaInicio", fecha)
                 .ge("fechaFin", fecha)
@@ -181,14 +202,14 @@ public class PeriodoService extends Service<Periodo> {
     /**
      * Cierra un período (impide nuevas transacciones)
      */
-    public Periodo cerrarPeriodo(Long periodoId) {
-        Periodo periodo = database.find(Periodo.class, periodoId);
+    public Period cerrarPeriodo(Long periodoId) {
+        Period periodo = repository.find(Period.class, periodoId);
 
         // Aquí podrías agregar validaciones adicionales (ej. que todas las transacciones estén conciliadas)
         periodo.setCurrent(false);
-        database.update(periodo);
+        repository.update(periodo);
 
-        log.info("Período {} cerrado", periodo.getNombre());
+        log.info("Período {} cerrado", periodo.getName());
         return periodo;
     }
 }

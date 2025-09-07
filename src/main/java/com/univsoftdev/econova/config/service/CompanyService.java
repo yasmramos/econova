@@ -1,18 +1,17 @@
 package com.univsoftdev.econova.config.service;
 
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.config.model.Empresa;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.core.Service;
-import io.ebean.Database;
-import jakarta.inject.Singleton;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.config.repository.CompanyRepository;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
-import lombok.extern.slf4j.Slf4j;
-
+import com.univsoftdev.econova.core.service.BaseService;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio avanzado para gestión de empresas. Incluye operaciones CRUD,
@@ -20,18 +19,19 @@ import java.util.Optional;
  */
 @Slf4j
 @Singleton
-public class EmpresaService extends Service<Empresa> {
+public class CompanyService extends BaseService<Company, CompanyRepository> {
 
-    private final UnidadService unidadService;
+    private final UnitService unidadService;
 
     @Inject
-    public EmpresaService(Database database, UnidadService unidadService) {
-        super(database, Empresa.class);
+    public CompanyService(CompanyRepository repository, UnitService unidadService) {
+        super(repository);
         this.unidadService = unidadService;
     }
 
     /**
      * Crea una nueva empresa con validaciones básicas
+     *
      * @param nombre
      * @param razonSocial
      * @param nif
@@ -43,9 +43,9 @@ public class EmpresaService extends Service<Empresa> {
      * @param provincia
      * @param pais
      * @param cif
-     * @return 
+     * @return
      */
-    public Empresa crearEmpresa(
+    public Company crearEmpresa(
             @NotBlank String nombre,
             @NotBlank String razonSocial,
             @NotBlank String nif,
@@ -64,7 +64,7 @@ public class EmpresaService extends Service<Empresa> {
         }
         validarEmail(email);
 
-        Empresa nuevaEmpresa = new Empresa(nombre, razonSocial, nif);
+        Company nuevaEmpresa = new Company(nombre, razonSocial, nif);
         nuevaEmpresa.setAddress(direccion);
         nuevaEmpresa.setTelefono(telefono);
         nuevaEmpresa.setEmail(email);
@@ -74,13 +74,14 @@ public class EmpresaService extends Service<Empresa> {
         nuevaEmpresa.setPais(pais);
         nuevaEmpresa.setCif(cif);
 
-        database.save(nuevaEmpresa);
+        repository.save(nuevaEmpresa);
         log.info("Nueva empresa creada: {} - {}", nombre, nif);
         return nuevaEmpresa;
     }
 
     /**
      * Actualiza los datos básicos de una empresa
+     *
      * @param empresaId
      * @param nombre
      * @param email
@@ -91,9 +92,9 @@ public class EmpresaService extends Service<Empresa> {
      * @param pais
      * @param codigoPostal
      * @param ciudad
-     * @return 
+     * @return
      */
-    public Empresa actualizarEmpresa(
+    public Company actualizarEmpresa(
             Long empresaId,
             String nombre,
             String razonSocial,
@@ -105,7 +106,7 @@ public class EmpresaService extends Service<Empresa> {
             String provincia,
             String pais) {
 
-        Empresa empresa = obtenerEmpresaPorId(empresaId);
+        Company empresa = obtenerEmpresaPorId(empresaId);
 
         if (nombre != null) {
             empresa.setName(nombre);
@@ -136,18 +137,19 @@ public class EmpresaService extends Service<Empresa> {
             empresa.setPais(pais);
         }
 
-        database.update(empresa);
+        repository.update(empresa);
         log.info("Empresa actualizada: {}", empresaId);
         return empresa;
     }
 
     /**
      * Obtiene una empresa por su NIF
+     *
      * @param nif
-     * @return 
+     * @return
      */
-    public Optional<Empresa> obtenerEmpresaPorNif(String nif) {
-        return database.createQuery(Empresa.class)
+    public Optional<Company> obtenerEmpresaPorNif(String nif) {
+        return repository.createQuery(Company.class)
                 .where()
                 .eq("nif", nif)
                 .findOneOrEmpty();
@@ -155,18 +157,19 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene una empresa por su CIF
+     *
      * @param cif
-     * @return 
+     * @return
      */
-    public Optional<Empresa> obtenerEmpresaPorCif(String cif) {
-        return database.createQuery(Empresa.class)
+    public Optional<Company> obtenerEmpresaPorCif(String cif) {
+        return repository.createQuery(Company.class)
                 .where()
                 .eq("cif", cif)
                 .findOneOrEmpty();
     }
-    
-    public Optional<Empresa> findByCode(String code) {
-        return database.createQuery(Empresa.class)
+
+    public Optional<Company> findByCode(String code) {
+        return repository.createQuery(Company.class)
                 .where()
                 .eq("codigo", code)
                 .findOneOrEmpty();
@@ -174,16 +177,18 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene todas las empresas ordenadas por nombre
-     * @return 
+     *
+     * @return
      */
-    public List<Empresa> obtenerTodasLasEmpresas() {
-        return database.createQuery(Empresa.class)
+    public List<Company> obtenerTodasLasEmpresas() {
+        return repository.createQuery(Company.class)
                 .orderBy("nombre asc")
                 .findList();
     }
 
     /**
      * Crea una nueva unidad organizativa asociada a la empresa
+     *
      * @param empresaId
      * @param codigoUnidad
      * @param nombreUnidad
@@ -192,9 +197,9 @@ public class EmpresaService extends Service<Empresa> {
      * @param nae
      * @param dpa
      * @param reup
-     * @return 
+     * @return
      */
-    public Unidad crearUnidadParaEmpresa(
+    public Unit crearUnidadParaEmpresa(
             Long empresaId,
             String codigoUnidad,
             String nombreUnidad,
@@ -204,7 +209,7 @@ public class EmpresaService extends Service<Empresa> {
             String dpa,
             String reup) {
 
-        Empresa empresa = obtenerEmpresaPorId(empresaId);
+        Company empresa = obtenerEmpresaPorId(empresaId);
         return unidadService.crearUnidad(
                 codigoUnidad,
                 nombreUnidad,
@@ -218,11 +223,12 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene todas las unidades organizativas de una empresa
+     *
      * @param empresaId
-     * @return 
+     * @return
      */
-    public List<Unidad> obtenerUnidadesDeEmpresa(Long empresaId) {
-        return database.createQuery(Unidad.class)
+    public List<Unit> obtenerUnidadesDeEmpresa(Long empresaId) {
+        return repository.createQuery(Unit.class)
                 .where()
                 .eq("empresa.id", empresaId)
                 .orderBy("nombre asc")
@@ -258,20 +264,22 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Obtiene una empresa por ID con manejo de excepciones
+     *
      * @param empresaId
-     * @return 
+     * @return
      */
-    public Empresa obtenerEmpresaPorId(Long empresaId) {
-        return database.find(Empresa.class, empresaId);
+    public Company obtenerEmpresaPorId(Long empresaId) {
+        return repository.find(Company.class, empresaId);
     }
 
     /**
      * Busca empresas por nombre (búsqueda parcial case-insensitive)
+     *
      * @param nombre
-     * @return 
+     * @return
      */
-    public List<Empresa> buscarEmpresasPorNombre(String nombre) {
-        return database.createQuery(Empresa.class)
+    public List<Company> buscarEmpresasPorNombre(String nombre) {
+        return repository.createQuery(Company.class)
                 .where()
                 .ilike("nombre", "%" + nombre + "%")
                 .orderBy("nombre asc")
@@ -280,34 +288,36 @@ public class EmpresaService extends Service<Empresa> {
 
     /**
      * Elimina una empresa (solo si no tiene unidades asociadas)
+     *
      * @param empresaId
      */
     public void eliminarEmpresa(Long empresaId) {
-        Empresa empresa = obtenerEmpresaPorId(empresaId);
+        Company empresa = obtenerEmpresaPorId(empresaId);
 
-        if (!empresa.getUnidades().isEmpty()) {
+        if (!empresa.getUnits().isEmpty()) {
             throw new BusinessLogicException("No se puede eliminar una empresa con unidades organizativas asociadas");
         }
 
-        database.delete(empresa);
+        repository.delete(empresa);
         log.info("Empresa eliminada: {}", empresaId);
     }
 
     /**
      * Obtiene estadísticas básicas de la empresa
+     *
      * @param empresaId
-     * @return 
+     * @return
      */
     public EstadisticasEmpresa obtenerEstadisticas(Long empresaId) {
-        Empresa empresa = obtenerEmpresaPorId(empresaId);
-        int cantidadUnidades = empresa.getUnidades().size();
+        Company empresa = obtenerEmpresaPorId(empresaId);
+        int cantidadUnidades = empresa.getUnits().size();
 
         return new EstadisticasEmpresa(
                 empresa.getName(),
                 cantidadUnidades
         );
     }
-    
+
     /**
      * Record para representar estadísticas de la empresa
      */

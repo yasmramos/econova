@@ -1,19 +1,19 @@
 package com.univsoftdev.econova.config.service;
 
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
-import com.univsoftdev.econova.core.Service;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.config.repository.ExerciseRepository;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
-import io.ebean.Database;
+import com.univsoftdev.econova.core.service.BaseService;
 import io.ebean.annotation.Transactional;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Servicio avanzado para gestión de ejercicios contables. Incluye operaciones
@@ -21,36 +21,54 @@ import java.util.Optional;
  */
 @Slf4j
 @Singleton
-public class EjercicioService extends Service<Ejercicio> {
+public class EjercicioService extends BaseService<Exercise, ExerciseRepository> {
 
     private final PeriodoService periodoService;
 
     @Inject
-    public EjercicioService(Database database, PeriodoService periodoService) {
-        super(database, Ejercicio.class);
+    public EjercicioService(ExerciseRepository repository, PeriodoService periodoService) {
+        super(repository);
         this.periodoService = periodoService;
     }
 
+    /**
+     * Busca un ejercicio por nombre
+     */
     @Transactional
-    public Optional<Ejercicio> findByNombre(String nombre) {
-        return findBy("nombre", nombre);
+    public Optional<Exercise> findByNombre(String nombre) {
+        return repository.findByName(nombre);
     }
 
+    /**
+     * Busca un ejercicio por año
+     *
+     * @param year
+     * @return
+     */
     @Transactional
-    public Optional<Ejercicio> findByYear(int year) {
-        return findBy("year", year);
+    public Optional<Exercise> findByYear(int year) {
+        if (year < 1900 || year > 2100) {
+            return Optional.empty();
+        }
+        return repository.findByYear(year);
     }
 
     /**
      * Crea un nuevo ejercicio contable con validaciones
      */
-    public Ejercicio crearEjercicio(String nombre, int year, LocalDate fechaInicio, LocalDate fechaFin) {
+    @Transactional
+    public Exercise crearEjercicio(String nombre, int year, LocalDate fechaInicio, LocalDate fechaFin) {
+        // Validaciones
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new BusinessLogicException("El nombre del ejercicio no puede ser nulo o vacío");
+        }
+
         validarFechasEjercicio(fechaInicio, fechaFin);
         validarYearConsistente(year, fechaInicio, fechaFin);
         validarSolapamientoEjercicios(fechaInicio, fechaFin);
 
-        Ejercicio nuevoEjercicio = new Ejercicio(nombre, year, fechaInicio, fechaFin, List.of());
-        database.save(nuevoEjercicio);
+        Exercise nuevoEjercicio = new Exercise(nombre, year, fechaInicio, fechaFin, List.of());
+        save(nuevoEjercicio); // Usar método de la clase base
 
         log.info("Nuevo ejercicio creado: {} ({})", nombre, year);
         return nuevoEjercicio;
@@ -59,113 +77,157 @@ public class EjercicioService extends Service<Ejercicio> {
     /**
      * Inicia un ejercicio (marca como iniciado)
      */
-    public Ejercicio iniciarEjercicio(Long ejercicioId) {
-        Ejercicio ejercicio = database.find(Ejercicio.class, ejercicioId);
-
-        if (ejercicio.isIniciado()) {
-            throw new BusinessLogicException("El ejercicio ya está iniciado");
+    @Transactional
+    public Exercise iniciarEjercicio(Long ejercicioId) {
+        if (ejercicioId == null) {
+            throw new BusinessLogicException("El ID del ejercicio no puede ser nulo");
         }
 
-        ejercicio.setIniciado(true);
-        database.update(ejercicio);
+        Optional<Exercise> optEjercicio = findById(ejercicioId);
+        if (optEjercicio.isPresent()) {
+            var ejercicio = optEjercicio.get();
+            if (ejercicio.isInitiated()) {
+                throw new BusinessLogicException("El ejercicio ya está iniciado");
+            }
 
-        log.info("Ejercicio {} iniciado", ejercicio.getNombre());
-        return ejercicio;
+            ejercicio.setInitiated(true);
+            update(ejercicio); // Usar método de la clase base
+
+            log.info("Ejercicio {} iniciado", ejercicio.getName());
+            return ejercicio;
+        }
+
+        return null;
     }
 
     /**
      * Cierra un ejercicio (marca como no corriente y cierra todos sus períodos)
      */
-    public Ejercicio cerrarEjercicio(Long ejercicioId) {
-        Ejercicio ejercicio = database.find(Ejercicio.class, ejercicioId);
-
-        // Validar que no haya períodos abiertos
-        if (ejercicio.getPeriodos().stream().anyMatch(Periodo::isCurrent)) {
-            throw new BusinessLogicException("No se puede cerrar un ejercicio con períodos activos");
+    @Transactional
+    public Exercise cerrarEjercicio(Long ejercicioId) {
+        if (ejercicioId == null) {
+            throw new BusinessLogicException("El ID del ejercicio no puede ser nulo");
         }
 
-        ejercicio.setCurrent(false);
-        database.update(ejercicio);
+        Optional<Exercise> optEjercicio = findById(ejercicioId);
+        if (optEjercicio.isPresent()) {
+            var ejercicio = optEjercicio.get();
+            // Validar que no haya períodos abiertos
+            if (ejercicio.getPeriodos().stream().anyMatch(Period::isCurrent)) {
+                throw new BusinessLogicException("No se puede cerrar un ejercicio con períodos activos");
+            }
 
-        log.info("Ejercicio {} cerrado", ejercicio.getNombre());
-        return ejercicio;
+            ejercicio.setCurrent(false);
+            update(ejercicio);
+
+            log.info("Ejercicio {} cerrado", ejercicio.getName());
+            return ejercicio;
+        }
+        return null;
     }
 
     /**
      * Establece un ejercicio como el actual
+     * @param ejercicioId
+     * @return 
      */
-    public Ejercicio establecerEjercicioActual(Long ejercicioId) {
+    @Transactional
+    public Exercise establecerEjercicioActual(Long ejercicioId) {
+        if (ejercicioId == null) {
+            throw new BusinessLogicException("El ID del ejercicio no puede ser nulo");
+        }
+
         // Desmarcar cualquier ejercicio actual
-        database.createQuery(Ejercicio.class)
+        repository.createQuery(Exercise.class)
                 .where()
                 .eq("current", true)
+                .eq("deleted", false)
                 .asUpdate()
                 .set("current", false)
                 .update();
 
         // Marcar el nuevo ejercicio como actual
-        Ejercicio nuevoActual = database.find(Ejercicio.class, ejercicioId);
+        Optional<Exercise> optEjercicio = findById(ejercicioId);
+        if (optEjercicio.isPresent()) {
+            var nuevoActual = optEjercicio.get();
+            nuevoActual.setCurrent(true);
+            update(nuevoActual);
 
-        nuevoActual.setCurrent(true);
-        database.update(nuevoActual);
-
-        log.info("Ejercicio {} establecido como actual", nuevoActual.getNombre());
-        return nuevoActual;
+            log.info("Ejercicio {} establecido como actual", nuevoActual.getName());
+            return nuevoActual;
+        }
+        return null;
     }
 
     /**
      * Obtiene el ejercicio actual (marcado como current)
+     * @return 
      */
-    public Optional<Ejercicio> obtenerEjercicioActual() {
-        return database.createQuery(Ejercicio.class)
+    @Transactional
+    public Optional<Exercise> obtenerEjercicioActual() {
+        return repository.createQuery(Exercise.class)
                 .where()
                 .eq("current", true)
+                .eq("deleted", false)
                 .findOneOrEmpty();
     }
 
     /**
      * Obtiene el ejercicio correspondiente a una fecha específica
      */
-    public Optional<Ejercicio> obtenerEjercicioPorFecha(LocalDate fecha) {
-        return database.createQuery(Ejercicio.class)
+    @Transactional
+    public Optional<Exercise> obtenerEjercicioPorFecha(LocalDate fecha) {
+        if (fecha == null) {
+            return Optional.empty();
+        }
+
+        return repository.createQuery(Exercise.class)
                 .where()
                 .le("fechaInicio", fecha)
                 .ge("fechaFin", fecha)
-                .findOneOrEmpty();
-    }
-
-    /**
-     * Obtiene el ejercicio por año
-     */
-    public Optional<Ejercicio> obtenerEjercicioPorYear(int year) {
-        return database.createQuery(Ejercicio.class)
-                .where()
-                .eq("year", year)
+                .eq("deleted", false)
                 .findOneOrEmpty();
     }
 
     /**
      * Agrega un período al ejercicio con validaciones
      */
-    public Ejercicio agregarPeriodo(Long ejercicioId, Periodo periodo) {
-        Ejercicio ejercicio = database.find(Ejercicio.class, ejercicioId);
+    @Transactional
+    public Exercise agregarPeriodo(Long ejercicioId, Period periodo) {
+        if (ejercicioId == null) {
+            throw new BusinessLogicException("El ID del ejercicio no puede ser nulo");
+        }
+        if (periodo == null) {
+            throw new BusinessLogicException("El período no puede ser nulo");
+        }
 
-        validarPeriodoDentroEjercicio(periodo, ejercicio);
+        Optional<Exercise> optEjercicio = findById(ejercicioId);
+        if (optEjercicio.isPresent()) {
+            var ejercicio = optEjercicio.get();
+            validarPeriodoDentroEjercicio(periodo, ejercicio);
 
-        ejercicio.addPeriodo(periodo);
-        database.update(ejercicio);
+            ejercicio.addPeriodo(periodo);
+            update(ejercicio);
 
-        log.info("Período {} agregado al ejercicio {}", periodo.getNombre(), ejercicio.getNombre());
-        return ejercicio;
+            log.info("Período {} agregado al ejercicio {}", periodo.getName(), ejercicio.getName());
+            return ejercicio;
+        }
+        return null;
     }
 
     /**
      * Obtiene todas las transacciones del ejercicio ordenadas por fecha
      */
-    public List<Transaccion> obtenerTransaccionesEjercicio(Long ejercicioId) {
-        return database.createQuery(Transaccion.class)
+    @Transactional
+    public List<Transaction> obtenerTransaccionesEjercicio(Long ejercicioId) {
+        if (ejercicioId == null) {
+            return List.of();
+        }
+
+        return repository.createQuery(Transaction.class)
                 .where()
-                .eq("periodo.ejercicio.id", ejercicioId)
+                .eq("period.exercise.id", ejercicioId)
+                .eq("deleted", false)
                 .orderBy("fecha asc")
                 .findList();
     }
@@ -173,52 +235,75 @@ public class EjercicioService extends Service<Ejercicio> {
     /**
      * Genera períodos mensuales automáticamente para el ejercicio
      */
-    public Ejercicio generarPeriodosMensuales(Long ejercicioId) {
-        Ejercicio ejercicio = database.find(Ejercicio.class, ejercicioId);
-
-        if (!ejercicio.getPeriodos().isEmpty()) {
-            throw new BusinessLogicException("El ejercicio ya tiene períodos definidos");
+    @Transactional
+    public Exercise generarPeriodosMensuales(Long ejercicioId) {
+        if (ejercicioId == null) {
+            throw new BusinessLogicException("El ID del ejercicio no puede ser nulo");
         }
 
-        LocalDate inicio = ejercicio.getFechaInicio();
-        int year = inicio.getYear();
-
-        for (int mes = 1; mes <= 12; mes++) {
-            LocalDate inicioMes = LocalDate.of(year, mes, 1);
-            LocalDate finMes = inicioMes.withDayOfMonth(inicioMes.lengthOfMonth());
-
-            // Ajustar el primer y último mes según las fechas del ejercicio
-            if (mes == 1) {
-                inicioMes = ejercicio.getFechaInicio();
-            }
-            if (mes == 12) {
-                finMes = ejercicio.getFechaFin();
+        Optional<Exercise> optEjercicio = findById(ejercicioId);
+        if (optEjercicio.isPresent()) {
+            var ejercicio = optEjercicio.get();
+            if (!ejercicio.getPeriodos().isEmpty()) {
+                throw new BusinessLogicException("El ejercicio ya tiene períodos definidos");
             }
 
-            String nombrePeriodo = String.format("%s %d", obtenerNombreMes(mes), year);
-            Periodo periodo = new Periodo(nombrePeriodo, inicioMes, finMes, ejercicio);
+            LocalDate fechaActual = ejercicio.getStartDate();
+            LocalDate fechaFinEjercicio = ejercicio.getEndDate();
 
-            periodoService.crearPeriodo(nombrePeriodo, inicioMes, finMes, ejercicio);
+            while (!fechaActual.isAfter(fechaFinEjercicio)) {
+                YearMonth yearMonth = YearMonth.from(fechaActual);
+                LocalDate inicioMes = yearMonth.atDay(1);
+                LocalDate finMes = yearMonth.atEndOfMonth();
+
+                // Ajustar al rango del ejercicio
+                if (inicioMes.isBefore(ejercicio.getStartDate())) {
+                    inicioMes = ejercicio.getStartDate();
+                }
+                if (finMes.isAfter(ejercicio.getEndDate())) {
+                    finMes = ejercicio.getEndDate();
+                }
+
+                // Solo crear período si tiene días válidos
+                if (!inicioMes.isAfter(finMes)) {
+                    String nombrePeriodo = String.format("%s %d",
+                            obtenerNombreMes(inicioMes.getMonthValue()),
+                            inicioMes.getYear());
+
+                    // Crear el período directamente
+                    Period nuevoPeriodo = new Period(nombrePeriodo, inicioMes, finMes);
+                    ejercicio.addPeriodo(nuevoPeriodo);
+                }
+
+                // Avanzar al siguiente mes
+                fechaActual = finMes.plusDays(1);
+            }
+
+            // Guardar el ejercicio actualizado
+            update(ejercicio);
+            return ejercicio;
         }
-
-        log.info("12 períodos mensuales generados para el ejercicio {}", ejercicio.getNombre());
-        return ejercicio;
+        return null;
     }
 
     /**
      * Valida que las fechas del ejercicio sean coherentes
      */
     private void validarFechasEjercicio(LocalDate inicio, LocalDate fin) {
+        if (inicio == null || fin == null) {
+            throw new BusinessLogicException("Las fechas no pueden ser nulas");
+        }
+
         if (inicio.isAfter(fin)) {
             throw new BusinessLogicException("La fecha de inicio debe ser anterior a la fecha de fin");
         }
 
-        if (fin.isAfter(inicio.plusYears(1))) {
-            throw new BusinessLogicException("Un ejercicio no puede durar más de 1 año");
+        if (fin.isAfter(inicio.plusYears(2))) {
+            throw new BusinessLogicException("Un ejercicio no puede durar más de 2 años");
         }
 
-        if (inicio.isBefore(LocalDate.now().minusYears(5))) {
-            throw new BusinessLogicException("No se pueden crear ejercicios con más de 5 años de antigüedad");
+        if (inicio.isBefore(LocalDate.now().minusYears(10))) {
+            throw new BusinessLogicException("No se pueden crear ejercicios con más de 10 años de antigüedad");
         }
     }
 
@@ -226,7 +311,7 @@ public class EjercicioService extends Service<Ejercicio> {
      * Valida que el año coincida con las fechas del ejercicio
      */
     private void validarYearConsistente(int year, LocalDate inicio, LocalDate fin) {
-        if (inicio.getYear() != year || fin.getYear() != year) {
+        if (inicio.getYear() > year || fin.getYear() < year) {
             throw new BusinessLogicException("El año debe coincidir con las fechas del ejercicio");
         }
     }
@@ -234,28 +319,26 @@ public class EjercicioService extends Service<Ejercicio> {
     /**
      * Valida que no se solape con otros ejercicios
      */
-    private void validarSolapamientoEjercicios(LocalDate inicio, LocalDate fin) {
-        List<Ejercicio> ejerciciosSolapados = database.createQuery(Ejercicio.class)
+    private void validarSolapamientoEjercicios(LocalDate startDate, LocalDate endDate) {
+        List<Exercise> ejerciciosSolapados = repository.createQuery(Exercise.class)
                 .where()
-                .or()
-                .and()
-                .le("fechaInicio", fin)
-                .ge("fechaFin", inicio)
-                .endOr()
+                .eq("deleted", false)
+                .le("startDate", startDate)
+                .ge("endDate", endDate)
                 .findList();
 
         if (!ejerciciosSolapados.isEmpty()) {
             throw new BusinessLogicException("El ejercicio se solapa con: "
-                    + ejerciciosSolapados.get(0).getNombre());
+                    + ejerciciosSolapados.get(0).getName());
         }
     }
 
     /**
      * Valida que un período esté dentro del rango del ejercicio
      */
-    private void validarPeriodoDentroEjercicio(Periodo periodo, Ejercicio ejercicio) {
-        if (periodo.getFechaInicio().isBefore(ejercicio.getFechaInicio())
-                || periodo.getFechaFin().isAfter(ejercicio.getFechaFin())) {
+    private void validarPeriodoDentroEjercicio(Period periodo, Exercise ejercicio) {
+        if (periodo.getStartDate().isBefore(ejercicio.getStartDate())
+                || periodo.getEndDate().isAfter(ejercicio.getEndDate())) {
             throw new BusinessLogicException("El período debe estar dentro del rango del ejercicio");
         }
     }

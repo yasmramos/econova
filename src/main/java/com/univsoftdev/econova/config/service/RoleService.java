@@ -1,166 +1,235 @@
 package com.univsoftdev.econova.config.service;
 
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.config.model.Rol;
-import com.univsoftdev.econova.contabilidad.model.Permission;
+import com.univsoftdev.econova.config.model.Role;
 import com.univsoftdev.econova.config.model.User;
-import com.univsoftdev.econova.core.Service;
+import com.univsoftdev.econova.config.repository.RoleRepository;
+import com.univsoftdev.econova.contabilidad.model.Permission;
 import com.univsoftdev.econova.core.exception.BusinessLogicException;
-import io.ebean.Database;
+import com.univsoftdev.econova.core.service.BaseService;
+import com.univsoftdev.econova.security.Roles;
+import io.ebean.annotation.Transactional;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Servicio para gestión de roles y permisos del sistema.
+ * Service for system roles and permissions management.
  */
 @Slf4j
 @Singleton
-public class RolService extends Service<Rol> {
+public class RoleService extends BaseService<Role, RoleRepository> {
 
+    private final PermissionService permissionService;
     @Inject
-    public RolService(Database database) {
-        super(database, Rol.class);
+    public RoleService(RoleRepository repository, PermissionService permissionService) {
+        super(repository);
+        this.permissionService = permissionService;
     }
 
     /**
-     * Crea un nuevo rol con validaciones básicas
+     * Creates a new role with basic validations
      */
-    public Rol crearRol(String nombre, String descripcion, Set<Long> permisosIds) {
-        validarNombreUnico(nombre);
+    @Transactional
+    public Role createRole(String name, String description, Set<Long> permissionIds) {
+        validateUniqueName(name);
 
-        Rol nuevoRol = new Rol();
-        nuevoRol.setName(nombre);
-        nuevoRol.setDescription(descripcion);
+        Role newRole = new Role();
+        newRole.setName(name);
+        newRole.setDescription(description);
 
-        Set<Permission> permisos = new HashSet<>();
-        for (Long permisoId : permisosIds) {
-            Permission permiso = database.find(Permission.class, permisoId);
-            permisos.add(permiso);
-        }
-        nuevoRol.setPermisos(permisos);
-
-        database.save(nuevoRol);
-        log.info("Nuevo rol creado: {}", nombre);
-        return nuevoRol;
-    }
-
-    /**
-     * Asigna permisos a un rol existente
-     */
-    public Rol asignarPermisos(Long rolId, Set<Long> permisosIds) {
-        Rol rol = obtenerRolPorId(rolId);
-        Set<Permission> nuevosPermisos = new HashSet<>();
-
-        for (Long permisoId : permisosIds) {
-            Permission permiso = database.find(Permission.class, permisoId);
-            nuevosPermisos.add(permiso);
+        // Add permissions if provided
+        if (permissionIds != null) {
+            for (Long permissionId : permissionIds) {
+                Permission permission = repository.find(Permission.class, permissionId);
+                if (permission != null) {
+                    newRole.addPermission(permission);
+                }
+            }
         }
 
-        rol.setPermisos(nuevosPermisos);
-        database.update(rol);
-        log.info("Permisos actualizados para rol: {}", rol.getName());
-        return rol;
+        save(newRole);
+        log.info("New role created: {}", name);
+        return newRole;
     }
 
     /**
-     * Obtiene un rol por su nombre
+     * Assign permissions to an existing role
      */
-    public Optional<Rol> obtenerRolPorNombre(String nombre) {
-        return database.createQuery(Rol.class)
-                .where()
-                .eq("nombre", nombre)
-                .findOneOrEmpty();
+    @Transactional
+    public Role assignPermissions(Long roleId, Set<Long> permissionIds) {
+        Role role = getRoleById(roleId);
+
+        if (permissionIds != null) {
+            for (Long permissionId : permissionIds) {
+                Permission permission = repository.find(Permission.class, permissionId);
+                if (permission != null) {
+                    role.addPermission(permission);
+                }
+            }
+        }
+
+        save(role);
+        log.info("Permissions updated for role: {}", role.getName());
+        return role;
     }
 
     /**
-     * Obtiene todos los roles ordenados por nombre
+     * Get a role by its name
      */
-    public List<Rol> obtenerTodosLosRoles() {
-        return database.createQuery(Rol.class)
-                .orderBy("nombre asc")
-                .findList();
+    public Optional<Role> getRoleByName(String name) {
+        return repository.findByName(name);
     }
 
     /**
-     * Obtiene los usuarios que tienen asignado un rol específico
+     * Get all roles ordered by name
      */
-    public List<User> obtenerUsuariosPorRol(Long rolId) {
-        return database.createQuery(User.class)
-                .where()
-                .eq("roles.id", rolId)
-                .orderBy("nombre asc")
-                .findList();
+    public List<Role> getAllRoles() {
+        return repository.findAllOrderedByName();
     }
 
     /**
-     * Valida que el nombre del rol sea único
+     * Get users assigned to a specific role
      */
-    private void validarNombreUnico(String nombre) {
-        if (obtenerRolPorNombre(nombre).isPresent()) {
-            throw new BusinessLogicException("Ya existe un rol con el nombre: " + nombre);
+    public List<User> getUsersByRole(Long roleId) {
+        return repository.findUsersByRoleId(roleId);
+    }
+
+    /**
+     * Validate that the role name is unique
+     */
+    private void validateUniqueName(String name) {
+        if (getRoleByName(name).isPresent()) {
+            throw new BusinessLogicException("A role with the name already exists: " + name);
         }
     }
 
     /**
-     * Obtiene un rol por ID con manejo de excepciones
+     * Get a role by ID with exception handling
      */
-    public Rol obtenerRolPorId(Long rolId) {
-        return database.find(Rol.class, rolId);
+    public Role getRoleById(Long roleId) {
+        return repository.findById(roleId)
+                .orElseThrow(() -> new BusinessLogicException("Role not found with ID: " + roleId));
     }
 
     /**
-     * Elimina un rol (solo si no está asignado a usuarios)
+     * Delete a role (only if not assigned to users)
      */
-    public void eliminarRol(Long rolId) {
-        Rol rol = obtenerRolPorId(rolId);
+    @Transactional
+    public void deleteRole(Long roleId) {
+        Role role = getRoleById(roleId);
 
-        if (!obtenerUsuariosPorRol(rolId).isEmpty()) {
-            throw new BusinessLogicException("No se puede eliminar un rol asignado a usuarios");
+        if (!getUsersByRole(roleId).isEmpty()) {
+            throw new BusinessLogicException("Cannot delete a role assigned to users");
         }
 
-        database.delete(rol);
-        log.info("Rol eliminado: {}", rol.getName());
+        // Clear permissions before deletion to maintain referential integrity
+        role.clearPermissions();
+        save(role);
+
+        repository.delete(role);
+        log.info("Role deleted: {}", role.getName());
     }
 
     /**
-     * Verifica si un rol tiene un permiso específico
+     * Check if a role has a specific permission
      */
-    public boolean tienePermiso(Long rolId, String codigoPermiso) {
-        Rol rol = obtenerRolPorId(rolId);
-        return rol.getPermissions().stream()
-                .anyMatch(p -> p.getCode().equals(codigoPermiso));
+    public boolean hasPermission(Long roleId, String permissionCode) {
+        Role role = getRoleById(roleId);
+        return role.getPermissions().stream()
+                .anyMatch(p -> p.getCode().equalsIgnoreCase(permissionCode));
     }
 
     /**
-     * Actualiza la descripción de un rol
+     * Update role description
      */
-    public Rol actualizarDescripcion(Long rolId, String descripcion) {
-        Rol rol = obtenerRolPorId(rolId);
-        rol.setDescription(descripcion);
-        database.update(rol);
-        log.info("Descripción actualizada para rol: {}", rol.getName());
-        return rol;
+    @Transactional
+    public Role updateDescription(Long roleId, String description) {
+        Role role = getRoleById(roleId);
+        role.setDescription(description);
+        save(role);
+        log.info("Description updated for role: {}", role.getName());
+        return role;
     }
 
     /**
-     * Crea los roles básicos del sistema si no existen
+     * Create system basic roles if they don't exist
      */
-    public void inicializarRolesBasicos() {
-        crearRolSiNoExiste("ADMIN_SISTEMA", "Administrador del sistema", Set.of());
-        crearRolSiNoExiste("ADMIN_ECONOMICO", "Administrador económico", Set.of());
-        crearRolSiNoExiste("CONTABILIDAD", "Usuario de contabilidad", Set.of());
-        crearRolSiNoExiste("CONSULTA", "Usuario de consulta", Set.of());
+    @Transactional
+    public void initializeBasicRoles() {
+        createRoleIfNotExists(Roles.SYSTEM_ADMIN, "System Administrator", Set.of());
+        createRoleIfNotExists(Roles.ECONOMIC_ADMIN, "Economic Administrator", Set.of());
+        createRoleIfNotExists(Roles.AUDITOR, "Auditor", Set.of());
+        createRoleIfNotExists(Roles.CONSULTANT, "Consultant", Set.of());
+        createRoleIfNotExists(Roles.ACCOUNTING_OPERATOR, "Accounting Operator", Set.of());
     }
 
-    private void crearRolSiNoExiste(String nombre, String descripcion, Set<Long> permisosIds) {
-        if (obtenerRolPorNombre(nombre).isEmpty()) {
-            crearRol(nombre, descripcion, permisosIds);
-            log.info("Rol básico creado: {}", nombre);
+    /**
+     * Remove a permission from a role
+     */
+    @Transactional
+    public Role removePermission(Long roleId, Long permissionId) {
+        Role role = getRoleById(roleId);
+        Permission permission = repository.find(Permission.class, permissionId);
+
+        if (permission != null) {
+            role.removePermission(permission);
+            save(role);
+            log.info("Permission removed from role: {}", role.getName());
         }
+
+        return role;
+    }
+
+    /**
+     * Get roles by permission code
+     */
+    public List<Role> getRolesByPermission(String permissionCode) {
+        return repository.findByPermissionCode(permissionCode);
+    }
+
+    /**
+     * Check if a role is assigned to any user
+     */
+    public boolean isRoleAssignedToUsers(Long roleId) {
+        return !getUsersByRole(roleId).isEmpty();
+    }
+
+    private void createRoleIfNotExists(String name, String description, Set<Long> permissionIds) {
+        if (getRoleByName(name).isEmpty()) {
+            createRole(name, description, permissionIds);
+            log.info("Basic role created: {}", name);
+        }
+    }
+
+    /**
+     * Clone an existing role with a new name
+     */
+    @Transactional
+    public Role cloneRole(Long sourceRoleId, String newRoleName, String newDescription) {
+        validateUniqueName(newRoleName);
+        Role sourceRole = getRoleById(sourceRoleId);
+
+        Role clonedRole = new Role();
+        clonedRole.setName(newRoleName);
+        clonedRole.setDescription(newDescription != null ? newDescription : sourceRole.getDescription());
+
+        // Copy permissions
+        sourceRole.getPermissions().forEach(clonedRole::addPermission);
+
+        save(clonedRole);
+        log.info("Role cloned from {} to {}", sourceRole.getName(), newRoleName);
+        return clonedRole;
+    }
+
+    public void assignPermissionByCode(Long roleId, String permissionCode) {
+        Role role = getRoleById(roleId);
+        Permission permission = permissionService.getPermissionByCode(permissionCode)
+                .orElseThrow(() -> new BusinessLogicException("Permission not found: " + permissionCode));
+
+        role.addPermission(permission);
+        save(role);
     }
 }
