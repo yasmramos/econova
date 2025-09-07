@@ -1,5 +1,6 @@
-package com.univsoftdev.econova.security.shiro;
+package com.univsoftdev.econova.security.shiro.interceptor;
 
+import com.univsoftdev.econova.security.shiro.annotations.RequiresUser;
 import io.avaje.inject.aop.AspectProvider;
 import io.avaje.inject.aop.Invocation;
 import io.avaje.inject.aop.MethodInterceptor;
@@ -8,7 +9,6 @@ import java.lang.reflect.Method;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthenticatedException;
-import org.apache.shiro.authz.annotation.RequiresUser;
 import org.apache.shiro.subject.Subject;
 
 @Slf4j

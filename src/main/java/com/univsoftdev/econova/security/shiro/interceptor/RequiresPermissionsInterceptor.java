@@ -1,5 +1,6 @@
-package com.univsoftdev.econova.security.shiro;
+package com.univsoftdev.econova.security.shiro.interceptor;
 
+import com.univsoftdev.econova.security.shiro.annotations.RequiresPermissions;
 import io.avaje.inject.aop.AspectProvider;
 import io.avaje.inject.aop.Invocation;
 import io.avaje.inject.aop.MethodInterceptor;
@@ -7,7 +8,6 @@ import jakarta.inject.Singleton;
 import java.lang.reflect.Method;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 
 @Singleton
