@@ -1,129 +1,154 @@
 package com.univsoftdev.econova;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import com.univsoftdev.econova.core.config.AppConfig;
-import com.univsoftdev.econova.modules.EconovaModule;
-import com.univsoftdev.econova.security.shiro.ShiroConfig;
-import io.avaje.inject.BeanScope;
-import io.ebean.annotation.Platform;
-import io.ebean.dbmigration.DbMigration;
-import jakarta.inject.Inject;
+import com.google.crypto.tink.KeysetHandle;
+import com.google.crypto.tink.config.TinkConfig;
+import com.univsoftdev.econova.component.wizard.Wizard;
+import com.univsoftdev.econova.config.service.CompanyService;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.FileUtils;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.core.JavaFxInitializer;
+import com.univsoftdev.econova.core.LookAndFeelUtils;
+import com.univsoftdev.econova.core.module.ModuleInitializationException;
+import com.univsoftdev.econova.ebean.config.EbeanMigrator;
+import com.univsoftdev.econova.security.SecurityContext;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.security.Security;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 @Slf4j
 public class Econova {
 
-    @Inject
-    private ShiroConfig shiroConfig;
-
-    static{
+    static {
         Security.addProvider(new BouncyCastleProvider());
     }
-    
-    public static void main(String[] args) {
-        
-        Test.main(args);
-        // Configuración de clave de cifrado (usar variable de entorno en producción)
-        String encryptionKey = System.getenv().getOrDefault("ECONOVA_ENCRYPTION_KEY", "your-32-character-encryption-key");
-        System.setProperty("config.encryption.password", encryptionKey);
 
-        // Ajuste multiplataforma: look and feel nativo si no es Windows
-        String os = System.getProperty("os.name").toLowerCase();
-        if (!os.contains("win")) {
-            System.setProperty("flatlaf.useWindowDecorations", "true"); // Decoraciones nativas en Linux/Mac
+    public static void main(String[] args) {
+
+        System.setProperty("config.encryption.password", "HWEUIE4684685GE445878678567866574$&%*");
+
+        LookAndFeelUtils.setupLookAndFeel();
+
+        Injector.init();
+
+        EbeanMigrator migrator = Injector.get(EbeanMigrator.class);
+        migrator.runInitMigration();
+
+        AppContext appContext = Injector.get(AppContext.class);
+        appContext.addModule(new ContabilidadModule());
+        try {
+            appContext.initializeAllModules();
+        } catch (ModuleInitializationException ex) {
+            log.error(ex.getMessage());
         }
-        init();
 
         // Arranque seguro de la aplicación en el hilo de eventos de Swing
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
-                setupLookAndFeel(os);
                 setupSecurity();
                 initializeJavaFxToolkit();
                 showSplashScreen();
-                //runDbMigration();
-                startMainApplication(args);
+                init(args);
             } catch (Exception e) {
 
                 log.error(
-                        "Error iniciando la aplicación: {}",
+                        "Error starting the application: {}",
                         e.getMessage(),
                         e
                 );
 
                 JOptionPane.showMessageDialog(
                         null,
-                        "Error iniciando la aplicación: " + e.getMessage(),
+                        "Error starting the application:" + e.getMessage(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         });
     }
 
-    private static void init() {
-        try {
-            BeanScope beanScope = BeanScope.builder()
-                    .modules(new EconovaModule())
-                    .build();
-        } catch (Exception e) {
-            log.error("No se pudo crear el BeanScope", e);
-        }
-    }
+    private static void init(String[] args) {
+        // Initialize all application directories
+        FileUtils.initializeAppDirectories();
 
-    /**
-     * Ejecuta la migración de base de datos usando Ebean.
-     */
-    private static void runDbMigration() {
+        // Display storage usage
+        log.info(FileUtils.getStorageUsageReport());
 
-        try {
-            final var dbMigration = DbMigration.create();
-            dbMigration.addPlatform(Platform.POSTGRES);
-            dbMigration.setStrictMode(false);
-            dbMigration.generateMigration();
+        // Create a backup
+        FileUtils.createBackup();
 
-            System.out.println("Migración de base de datos completada.");
+        // Clean temporary files
+        FileUtils.cleanTempDirectory();
 
-        } catch (IOException ex) {
+        boolean valid = LicenseUtils.loadAndValidateTrialLicense();
 
-            log.error("No se pudieron generar las migraciones", ex);
+        SwingUtilities.invokeLater(() -> {
 
-            JOptionPane.showMessageDialog(
-                    null,
-                    "No se pudieron generar las migraciones: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
+            FormLicense.main(args);
 
-    private static void setupLookAndFeel(String os) {
-        try {
-            if (os.contains("mac")) {
-                System.setProperty("apple.laf.useScreenMenuBar", "true");
-                System.setProperty("com.apple.mrj.application.apple.menu.about.name", AppConfig.getAppName());
+            try {
+                CompanyService empresaService = Injector.get(CompanyService.class);
+                if (empresaService != null && empresaService.findAll().isEmpty()) {
+                    log.info("Iniciando wizard de configuración inicial");
+                    Wizard wizard = new Wizard(null);
+                    wizard.setLocationRelativeTo(null);
+                    wizard.setVisible(true);
+
+                } else {
+                    log.info("Aplicación iniciada con datos existentes");
+                    startMainApplication(null);
+                }
+            } catch (Exception e) {
+                log.error("Error al verificar datos iniciales", e);
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Error al verificar configuración inicial: " + e.getMessage(),
+                        "Error de inicialización",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
-            FlatLightLaf.setup();
-        } catch (Exception e) {
-            log.error("Error al configurar la apariencia de la interfaz gráfica: {}", e.getMessage(), e);
-            JOptionPane.showMessageDialog(null, "Error al configurar la apariencia de la interfaz gráfica: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        });
     }
 
     private static void setupSecurity() {
         Security.setProperty("crypto.policy", "unlimited");
-        System.setProperty("app.encryption.password", System.getenv().getOrDefault("ECONOVA_ENCRYPTION_KEY", "efghjsdfkj"));
+        try {
+            
+            TinkConfig.register();
+            
+            KeyStorage.initializeTink();
+            
+            if (!Files.exists(Path.of(FileUtils.PRIVATE_KEYSET))) {
+                log.info("Guardando claves en archivos...");
+                KeysetHandle privateKeysetHandle = KeyStorage.generateHybridKeys();
+                KeyStorage.saveKeysetToFile(privateKeysetHandle, FileUtils.PRIVATE_KEYSET);
+                KeysetHandle publicKeysetHandle = privateKeysetHandle.getPublicKeysetHandle();
+                KeyStorage.saveKeysetToFile(publicKeysetHandle, FileUtils.PUBLIC_KEYSET);
+                log.info("Claves guardadas exitosamente en directorio: " + FileUtils.APP_DATA + "keys/");
+            }
+            KeysetHandle privateKeyset = KeyStorage.loadKeysetFromFile(FileUtils.PRIVATE_KEYSET);
+            KeysetHandle publicKeyset = KeyStorage.loadKeysetFromFile(FileUtils.PUBLIC_KEYSET);
+            log.info("Se han cargado el par de claves.");
+            SecurityContext.setPrivateKeysetHandle(privateKeyset);
+            SecurityContext.setPublicKeysetHandle(publicKeyset);
+        } catch (GeneralSecurityException ex) {
+            log.error("Error configuring Tink. ", ex);
+        } catch (IOException ex) {
+            log.error(ex.getMessage());
+        }
     }
 
     private static void initializeJavaFxToolkit() {
         try {
             JavaFxInitializer.initializeToolkit();
         } catch (Exception e) {
-            log.error("Error al inicializar el toolkit de JavaFX: {}", e.getMessage(), e);
-            JOptionPane.showMessageDialog(null, "Error al inicializar el toolkit de JavaFX: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            log.error("Error initializing JavaFX toolkit: {}", e.getMessage(), e);
+            JOptionPane.showMessageDialog(null, "Error initializing JavaFX toolkit: {}" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -131,17 +156,18 @@ public class Econova {
         try {
             new Splash(null, true).setVisible(true);
         } catch (Exception e) {
-            log.error("Error al mostrar el splash screen: {}", e.getMessage(), e);
-            JOptionPane.showMessageDialog(null, "Error al mostrar el splash screen: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            log.error("Error displaying splash screen: {}", e.getMessage(), e);
+            JOptionPane.showMessageDialog(null, "Error displaying splash screen: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static void startMainApplication(String[] args) {
         try {
-            MainFormApp.main(args);
+            MainFormApp mainFormApp = Injector.get(MainFormApp.class);
+            mainFormApp.start();
         } catch (Exception e) {
-            log.error("Error al iniciar la aplicación principal: {}", e.getMessage(), e);
-            JOptionPane.showMessageDialog(null, "Error al iniciar la aplicación principal: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            log.error("Error starting main application: {}", e.getMessage(), e);
+            JOptionPane.showMessageDialog(null, "Error starting main application: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
