@@ -1,18 +1,23 @@
 package com.univsoftdev.econova.component.wizard;
 
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-
 import com.formdev.flatlaf.FlatClientProperties;
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
-import com.univsoftdev.econova.core.swing.SwingUtils;
-import com.univsoftdev.econova.Validations;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.core.Validations;
 import com.univsoftdev.econova.core.utils.DialogUtils;
+import jakarta.inject.Singleton;
+import java.awt.HeadlessException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
+@Singleton
 public class EmpresaWizardPage extends WizardPage {
 
     private static final long serialVersionUID = 1L;
+    List<Company> companys = new ArrayList<>();
 
     public EmpresaWizardPage() {
         super("Datos de la Empresa", "Intro");
@@ -25,34 +30,120 @@ public class EmpresaWizardPage extends WizardPage {
         txtDireccion.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Dirección");
         txtEmail.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "econova@gmail.com");
 
+        tableEmpresas.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editSelectedEmpresa();
+                }
+            }
+        });
+
+        // Configurar validaciones en tiempo real
+        setupFieldValidation();
+    }
+
+    private void setupFieldValidation() {
+        // Validar código único (opcional)
+        txtCode.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                validateCodeUniqueness();
+            }
+        });
     }
 
     @Override
     public boolean onNext(WizardSettings settings) {
-
-        settings.put("empresa.code", SwingUtils.getValue(txtCode));
-        settings.put("empresa.name", SwingUtils.getValue(txtName));
-        settings.put("empresa.organismo", SwingUtils.getValue(txtOrganismo));
-        settings.put("empresa.telefono", SwingUtils.getValue(txtTelefono));
-        settings.put("empresa.direccion", SwingUtils.getValue(txtDireccion));
+        if (tableEmpresas.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Debe añadir al menos una empresa.", "ERROR", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        // Guardar datos en settings
+        settings.put("empresas", companys);
 
         try {
-            final var email = txtEmail.getText();
+            final var email = txtEmail.getText().trim();
             if (!email.isEmpty()) {
                 if (Validations.isValidEmail(email)) {
                     settings.put("empresa.email", email);
                 } else {
+                    JOptionPane.showMessageDialog(this,
+                            "El formato del correo electrónico no es válido",
+                            "Error de validación",
+                            JOptionPane.ERROR_MESSAGE);
+                    txtEmail.requestFocus();
                     return false;
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        if (tableEmpresas.getRowCount() < 0) {
+        } catch (HeadlessException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al validar el correo electrónico: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
+
         return true;
+    }
+
+    private boolean validateForm() {
+        // Validar campos requeridos
+        if (txtCode.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "El código de la empresa es obligatorio",
+                    "Campo requerido",
+                    JOptionPane.WARNING_MESSAGE);
+            txtCode.requestFocus();
+            return false;
+        }
+
+        if (txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "El nombre de la empresa es obligatorio",
+                    "Campo requerido",
+                    JOptionPane.WARNING_MESSAGE);
+            txtName.requestFocus();
+            return false;
+        }
+
+        // Validar longitud mínima
+        if (txtCode.getText().trim().length() < 2) {
+            JOptionPane.showMessageDialog(this,
+                    "El código debe tener al menos 2 caracteres",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE);
+            txtCode.requestFocus();
+            return false;
+        }
+
+        if (txtName.getText().trim().length() < 3) {
+            JOptionPane.showMessageDialog(this,
+                    "El nombre debe tener al menos 3 caracteres",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE);
+            txtName.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void validateCodeUniqueness() {
+        String currentCode = txtCode.getText().trim();
+        if (!currentCode.isEmpty()) {
+            DefaultTableModel model = (DefaultTableModel) tableEmpresas.getModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                String existingCode = (String) model.getValueAt(i, 0);
+                if (currentCode.equals(existingCode)) {
+                    // Mostrar advertencia visual
+                    txtCode.putClientProperty(FlatClientProperties.OUTLINE, "error");
+                    return;
+                }
+            }
+            // Limpiar advertencia si es único
+            txtCode.putClientProperty(FlatClientProperties.OUTLINE, null);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -81,6 +172,11 @@ public class EmpresaWizardPage extends WizardPage {
         jLabel8 = new javax.swing.JLabel();
 
         menuItemEliminar.setText("jMenuItem1");
+        menuItemEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemEliminarActionPerformed(evt);
+            }
+        });
         jPopupMenu1.add(menuItemEliminar);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -200,7 +296,7 @@ public class EmpresaWizardPage extends WizardPage {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(42, 42, 42))))
+                                .addGap(39, 39, 39))))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addGap(0, 0, Short.MAX_VALUE))))
@@ -210,51 +306,121 @@ public class EmpresaWizardPage extends WizardPage {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(29, 29, 29)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(32, 32, 32)
                         .addComponent(btnAdd))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 416, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 391, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        // Validar formulario antes de añadir
+        if (!validateForm()) {
+            return;
+        }
+
         var model = (DefaultTableModel) tableEmpresas.getModel();
-        model.addRow(new Object[]{txtCode.getText().trim(), txtName.getText().trim()});
+
+        // Verificar si el código ya existe
+        String newCode = txtCode.getText().trim();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            String existingCode = (String) model.getValueAt(i, 0);
+            if (newCode.equals(existingCode)) {
+                JOptionPane.showMessageDialog(this,
+                        "Ya existe una empresa con el código: " + newCode,
+                        "Código duplicado",
+                        JOptionPane.WARNING_MESSAGE);
+                txtCode.requestFocus();
+                return;
+            }
+        }
+
+        // Añadir empresa a la tabla
+        model.addRow(new Object[]{
+            txtCode.getText().trim(),
+            txtName.getText().trim()
+        });
+
+        Company company = new Company();
+        company.setCode(newCode);
+        company.setName(txtName.getText().trim());
+        company.setTelefono(txtTelefono.getText().trim());
+        company.setAddress(txtDireccion.getText().trim());
+        company.setEmail(txtEmail.getText().trim());
+        companys.add(company);
         
+        // Limpiar campos para la siguiente entrada
+        clearFormFields();
+
+        // Preguntar sobre unidades
         int showConfirmDialog = JOptionPane.showConfirmDialog(
-                null,
-                "¿La empresa tiene unidades?", 
-                "Confirmación",
-                JOptionPane.YES_NO_OPTION, 
+                this,
+                "¿La empresa tiene unidades organizativas?",
+                "Configuración adicional",
+                JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE
         );
-        
+
         if (showConfirmDialog == JOptionPane.YES_OPTION) {
             DialogUtils.showModalDialog(this, new DialogNuevaUnidad(), "Nueva unidad");
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
-    private void validateDatosEmpresa(){
-        var code = txtCode.getText().trim();
-        var name = txtName.getText().trim();
-        
-        if (code == null || code.isEmpty()) {
-            
-        }
-        
-        if (name == null || name.isEmpty()) {
-            
+    private void menuItemEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemEliminarActionPerformed
+        removeSelectedEmpresa();
+    }//GEN-LAST:event_menuItemEliminarActionPerformed
+
+    private void removeSelectedEmpresa() {
+        int selectedRow = tableEmpresas.getSelectedRow();
+        if (selectedRow >= 0) {
+            int option = JOptionPane.showConfirmDialog(this,
+                    "¿Está seguro que desea eliminar la empresa seleccionada?",
+                    "Confirmar eliminación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (option == JOptionPane.YES_OPTION) {
+                DefaultTableModel model = (DefaultTableModel) tableEmpresas.getModel();
+                model.removeRow(selectedRow);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "Por favor seleccione una empresa para eliminar",
+                    "Ninguna selección",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
-    
+
+    private void editSelectedEmpresa() {
+        int selectedRow = tableEmpresas.getSelectedRow();
+        if (selectedRow >= 0) {
+            DefaultTableModel model = (DefaultTableModel) tableEmpresas.getModel();
+            txtCode.setText((String) model.getValueAt(selectedRow, 0));
+            txtName.setText((String) model.getValueAt(selectedRow, 1));
+
+            // Eliminar la fila existente
+            model.removeRow(selectedRow);
+        }
+    }
+
+    private void clearFormFields() {
+        txtCode.setText("");
+        txtName.setText("");
+        txtOrganismo.setText("");
+        txtTelefono.setText("");
+        txtDireccion.setText("");
+        txtEmail.setText("");
+        txtCode.putClientProperty(FlatClientProperties.OUTLINE, null);
+        txtCode.requestFocus();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JLabel jLabel1;
