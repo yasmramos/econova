@@ -1,28 +1,27 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.config.service.MonedaService;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
-import java.awt.event.*;
-import java.util.Currency;
-import javax.swing.*;
-import javax.swing.border.*;
+import com.univsoftdev.econova.config.service.CurrencyService;
+import com.univsoftdev.econova.contabilidad.model.Currency;
 import com.univsoftdev.econova.core.component.*;
+import java.awt.event.*;
 import java.util.Optional;
 import java.util.Set;
+import javax.swing.*;
+import javax.swing.border.*;
 import raven.modal.component.Modal;
 
 public class FormAdicionarMoneda extends Modal {
 
     private static final long serialVersionUID = 1816596630027194555L;
-    MonedaService monedaService;
+    private final CurrencyService monedaService;
 
-    public FormAdicionarMoneda(MonedaService monedaService) {
+    public FormAdicionarMoneda(CurrencyService monedaService) {
         initComponents();
         this.monedaService = monedaService;
         comboBoxNombre.removeAllItems();
 
-        Set<Currency> availableCurrencies = Currency.getAvailableCurrencies();
-        for (Currency currency : availableCurrencies) {
+        Set<java.util.Currency> availableCurrencies = java.util.Currency.getAvailableCurrencies();
+        for (java.util.Currency currency : availableCurrencies) {
             String displayName = currency.getDisplayName();
             comboBoxNombre.addItem(displayName);
         }
@@ -30,7 +29,7 @@ public class FormAdicionarMoneda extends Modal {
 
     private void comboBoxNombreItemStateChanged(ItemEvent e) {
         var nombre = String.valueOf(comboBoxNombre.getSelectedItem());
-        Optional<Moneda> findBy = monedaService.findBy("displayName", nombre);
+        Optional<Currency> findBy = monedaService.findByDisplayName(nombre);
         if (findBy.isPresent()) {
             formattedTextFieldSigla.setText(findBy.get().getSymbol());
         }

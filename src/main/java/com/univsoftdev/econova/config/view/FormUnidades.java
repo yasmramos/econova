@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.config.service.UnidadService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.config.service.UnitService;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -16,16 +16,16 @@ public class FormUnidades extends Form {
 
     public FormUnidades() {
         initComponents();
-        UnidadService unidadService = Injector.get(UnidadService.class);
-        java.util.List<Unidad> findAll = unidadService.findAll();
+        UnitService unidadService = Injector.get(UnitService.class);
+        java.util.List<Unit> findAll = unidadService.findAll();
 
         var model = (DefaultTableModel) table1.getModel();
-        for (Unidad unidad : findAll) {
+        for (Unit unidad : findAll) {
             model.addRow(new Object[]{
-                unidad.getCodigo(),
-                unidad.getNombre(),
-                unidad.getDireccion(),
-                unidad.getCorreo(),
+                unidad.getCode(),
+                unidad.getName(),
+                unidad.getAddress(),
+                unidad.getEmail(),
                 unidad.getNae(),
                 unidad.getDpa(),
                 unidad.getReup()

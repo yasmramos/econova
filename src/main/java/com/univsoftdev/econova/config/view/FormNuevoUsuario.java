@@ -1,34 +1,31 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
-import com.univsoftdev.econova.security.Argon2PasswordHasher;
-import com.univsoftdev.econova.config.service.UsuarioService;
+import com.univsoftdev.econova.security.argon2.Argon2PasswordHasher;
+import com.univsoftdev.econova.config.service.UserService;
 import com.univsoftdev.econova.config.model.User;
-import jakarta.inject.Inject;
+import com.univsoftdev.econova.core.Injector;
 import java.awt.event.*;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.GroupLayout;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
+import raven.modal.ModalDialog;
 import raven.modal.component.Modal;
 
 public class FormNuevoUsuario extends Modal {
-
+    
     private static final long serialVersionUID = 1191104289857202935L;
-
-    @Inject
-    private UsuarioService usuarioService;
+    
+    private UserService userService;
     private final JTable table;
-
-    @Inject
-    private MyTenantSchemaProvider tenantSchemaProvider;
-
+    
     public FormNuevoUsuario(JTable table) {
         initComponents();
+        this.userService = Injector.get(UserService.class);
         this.table = table;
     }
-
+    
     private void aceptarActionPerformed(ActionEvent e) {
         final String nombre = textFieldNombre.getText().trim();
         final String identificador = textFieldIdentificador.getText().trim();
@@ -47,7 +44,7 @@ public class FormNuevoUsuario extends Modal {
         // Now hash the password properly
         final Argon2PasswordHasher passwordHasher = new Argon2PasswordHasher();
         try {
-
+            
             final String hashedPassword = passwordHasher.hash(password);
 
             // Create and save user
@@ -56,8 +53,8 @@ public class FormNuevoUsuario extends Modal {
             usuario.setUserName(identificador);
             usuario.setPassword(hashedPassword); // Store the hashed password, not the plain one
             usuario.setActive(true);
-            usuarioService.save(usuario);
-
+            userService.save(usuario);
+            
             var model = (DefaultTableModel) table.getModel();
             model.addRow(new Object[]{
                 usuario.getFullName(),
@@ -67,16 +64,16 @@ public class FormNuevoUsuario extends Modal {
                 usuario.isAdminEconomico() ? "X" : "",
                 usuario.isActive()
             });
-
+            
             JOptionPane.showMessageDialog(null, "Usuario registrado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
+            
         } finally {
             // Always clear sensitive data from memory
             Arrays.fill(password, '\0');
             Arrays.fill(passwordConfirmar, '\0');
         }
     }
-
+    
     private void textFieldNombreFocusLost(FocusEvent e) {
         final String nombre = textFieldNombre.getText().trim();
         if (nombre == null || nombre.isEmpty() || nombre.isBlank()) {
@@ -92,7 +89,11 @@ public class FormNuevoUsuario extends Modal {
             buttonAceptar.setEnabled(true);
         }
     }
-
+    
+    private void cancelar(ActionEvent e) {
+        ModalDialog.closeModal(getId());
+    }
+    
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.label1 = new JLabel();
@@ -135,6 +136,7 @@ public class FormNuevoUsuario extends Modal {
 
 	//---- buttonCancelar ----
 	this.buttonCancelar.setText("Cancelar"); //NOI18N
+	this.buttonCancelar.addActionListener(e -> cancelar(e));
 
 	//---- buttonAceptar ----
 	this.buttonAceptar.setText("Aceptar"); //NOI18N

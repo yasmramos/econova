@@ -1,9 +1,9 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
 import com.univsoftdev.econova.config.service.EjercicioService;
 import java.util.Optional;
 import javax.swing.JOptionPane;
@@ -60,7 +60,7 @@ public class FormEjerciciosUtil {
 
         try {
             int year = Integer.parseInt(yearStr);
-            final Optional<Ejercicio> ejercicioOpt = ejercicioService.findByYear(year);
+            final Optional<Exercise> ejercicioOpt = ejercicioService.findByYear(year);
 
             if (ejercicioOpt.isPresent()) {
                 var periodos = ejercicioOpt.get().getPeriodos();
@@ -69,11 +69,11 @@ public class FormEjerciciosUtil {
                     showMessage("Este ejercicio no tiene períodos registrados");
                 } else {
                     final var model = (DefaultTableModel) tablePeriodos.getModel();
-                    for (final Periodo periodo : periodos) {
+                    for (final Period periodo : periodos) {
                         model.addRow(new Object[]{
-                            periodo.getNombre(),
-                            periodo.getFechaInicio(),
-                            periodo.getFechaFin()
+                            periodo.getName(),
+                            periodo.getStartDate(),
+                            periodo.getEndDate()
                         });
                     }
                 }
@@ -119,9 +119,9 @@ public class FormEjerciciosUtil {
 
         for (final var ejercicio : ejercicios) {
             modelEjercicios.addRow(new Object[]{
-                ejercicio.getNombre(),
-                ejercicio.getFechaInicio(),
-                ejercicio.getFechaFin()
+                ejercicio.getName(),
+                ejercicio.getStartDate(),
+                ejercicio.getEndDate()
             });
         }
 
@@ -144,9 +144,9 @@ public class FormEjerciciosUtil {
 
                         for (final var periodo : periodos) {
                             modelPeriodos.addRow(new Object[]{
-                                periodo.getNombre(),
-                                periodo.getFechaInicio(),
-                                periodo.getFechaFin()
+                                periodo.getName(),
+                                periodo.getStartDate(),
+                                periodo.getEndDate()
                             });
                         }
                     }

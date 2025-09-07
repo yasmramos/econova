@@ -1,10 +1,10 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Empresa;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.config.service.EmpresaService;
-import com.univsoftdev.econova.config.service.UnidadService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.config.service.CompanyService;
+import com.univsoftdev.econova.config.service.UnitService;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.utils.DialogUtils;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
@@ -18,16 +18,16 @@ import javax.swing.table.*;
 
 public class FormEmpresas extends Form {
     
-    private final EmpresaService empService;
+    private final CompanyService empService;
     
     public FormEmpresas() {
 	initComponents();
-        empService = Injector.get(EmpresaService.class);
+        empService = Injector.get(CompanyService.class);
 
-        java.util.List<Empresa> empresas = empService.findAll();
+        java.util.List<Company> empresas = empService.findAll();
 
         var modelEmps = (DefaultTableModel) tableEmpresas.getModel();
-        for (Empresa emp : empresas) {
+        for (Company emp : empresas) {
             modelEmps.addRow(new Object[]{
                 emp.getCode(),
                 emp.getName(),
@@ -42,16 +42,16 @@ public class FormEmpresas extends Form {
         TableColumnAdjuster adjusterEmps = new TableColumnAdjuster(tableEmpresas);
         adjusterEmps.adjustColumns();
         
-         UnidadService unidadService = Injector.get(UnidadService.class);
-        java.util.List<Unidad> findAll = unidadService.findAll();
+         UnitService unidadService = Injector.get(UnitService.class);
+        java.util.List<Unit> findAll = unidadService.findAll();
 
         var model = (DefaultTableModel) tableUnidades.getModel();
-        for (Unidad unidad : findAll) {
+        for (Unit unidad : findAll) {
             model.addRow(new Object[]{
-                unidad.getCodigo(),
-                unidad.getNombre(),
-                unidad.getDireccion(),
-                unidad.getCorreo(),
+                unidad.getCode(),
+                unidad.getName(),
+                unidad.getAddress(),
+                unidad.getEmail(),
                 unidad.getNae(),
                 unidad.getDpa(),
                 unidad.getReup()
@@ -62,7 +62,7 @@ public class FormEmpresas extends Form {
         adjusterUnids.adjustColumns();
     }
    
-    private Optional<Empresa> getSelectedEmpresa() {
+    private Optional<Company> getSelectedEmpresa() {
         int selectedRow = tableEmpresas.getSelectedRow();
         int column = 0;
         Object valueAt = tableEmpresas.getValueAt(selectedRow, column);

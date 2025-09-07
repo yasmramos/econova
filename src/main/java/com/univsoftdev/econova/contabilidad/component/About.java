@@ -2,8 +2,6 @@ package com.univsoftdev.econova.contabilidad.component;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.util.LoggingFacade;
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
 import com.univsoftdev.econova.core.config.AppConfig;
 import net.miginfocom.swing.MigLayout;
 
@@ -79,9 +77,8 @@ public class About extends JPanel {
         panel.setBorder(new TitledBorder("Información del Sistema"));
         JTextPane textPane = createText("");
         textPane.setContentType("text/html");
-        
-        AppConfig appContext = Injector.get(AppConfig.class);
-        String version = appContext.getAppVersion();
+
+        String version = AppConfig.getAppVersion();
         String java = System.getProperty("java.vendor") + " - v" + System.getProperty("java.version");
         String system = System.getProperty("os.name") + " " + System.getProperty("os.arch") + " - v" + System.getProperty("os.version");
         String text = String.format(getSystemInformationText(),

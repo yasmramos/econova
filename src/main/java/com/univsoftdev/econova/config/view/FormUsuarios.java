@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
 import java.beans.*;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.service.UsuarioService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.service.UserService;
 import com.univsoftdev.econova.config.model.User;
 import com.univsoftdev.econova.core.config.AppConfig;
 import java.awt.event.*;
@@ -16,6 +16,8 @@ import com.univsoftdev.econova.security.Permissions;
 import com.univsoftdev.econova.security.Roles;
 import java.awt.*;
 import java.util.Optional;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -23,17 +25,24 @@ import org.apache.shiro.subject.Subject;
 
 @Slf4j
 public class FormUsuarios extends Form {
-    
+
     private static final long serialVersionUID = 4339277786555247095L;
     private DefaultTableModel model;
-    private UsuarioService usuarioService;
-    
+    private UserService userService;
+
     public FormUsuarios() {
         initComponents();
+
+        tableUsuarios.getModel().addTableModelListener((TableModelEvent e) -> {
+            SwingUtilities.invokeLater(() -> {
+                labelUserCount.setText(String.format("%d USUARIOS", tableUsuarios.getRowCount()));
+            });
+        });
+
         try {
-            usuarioService = Injector.get(UsuarioService.class);
+            userService = Injector.get(UserService.class);
             Subject subject = SecurityUtils.getSubject();
-            if (!subject.hasRole(Roles.SYSTEM_ADMIN.name())) {
+            if (!subject.hasRole(Roles.SYSTEM_ADMIN)) {
                 menuItemAdicionar.setEnabled(false);
                 menuItemEliminar.setEnabled(false);
                 menuItemModificar.setEnabled(false);
@@ -42,9 +51,9 @@ public class FormUsuarios extends Form {
             if (!(tableUsuarios.getModel() instanceof DefaultTableModel)) {
                 throw new IllegalStateException("El modelo de la tabla no es DefaultTableModel");
             }
-            
+
             DefaultTableModel modelTable = (DefaultTableModel) tableUsuarios.getModel();
-            java.util.List<User> usuarios = usuarioService.findAll();
+            java.util.List<User> usuarios = userService.findAll();
 
             // Verificar lista de usuarios
             if (usuarios != null) {
@@ -58,9 +67,9 @@ public class FormUsuarios extends Form {
                         // Solo agregar si está activo
                         if (isActivo) {
                             modelTable.addRow(new Object[]{
-                                usuario.getFullName() != null ? usuario.getFullName() : "",
-                                usuario.getUserName() != null ? usuario.getUserName() : "",
-                                Injector.get(AppConfig.class).getAppName(),
+                                usuario.getFullName(),
+                                usuario.getUserName(),
+                                AppConfig.getAppName(),
                                 adminSistema,
                                 adminEconomico,
                                 "Si"
@@ -69,7 +78,7 @@ public class FormUsuarios extends Form {
                     }
                 }
             }
-            
+
             TableColumnAdjuster adjuster = new TableColumnAdjuster(tableUsuarios);
             adjuster.adjustColumns();
         } catch (IllegalStateException e) {
@@ -77,65 +86,65 @@ public class FormUsuarios extends Form {
             JOptionPane.showMessageDialog(null, "Error al cargar usuarios: " + e.getMessage());
         }
     }
-    
+
     @RequiresPermissions(value = {Permissions.CREATE_USER})
     private void adicionarActionPerformed(ActionEvent e) {
         DialogUtils.showModalDialog(this, new FormNuevoUsuario(tableUsuarios), "Nuevo Usuario");
     }
-    
+
     private void eliminar(ActionEvent e) {
         model = (DefaultTableModel) tableUsuarios.getModel();
         final int row = tableUsuarios.getSelectedRow();
         final int col = 1;
-        Optional<User> usuario = usuarioService.findBy("identificador", model.getValueAt(row, col));
+        Optional<User> usuario = userService.findByUsername(model.getValueAt(row, col).toString());
         if (usuario.isPresent()) {
             model.removeRow(row);
-            usuarioService.delete(usuario.get());
+            userService.delete(usuario.get());
             JOptionPane.showMessageDialog(null, "Se ha eliminado el usuario correctamente.");
         } else {
             JOptionPane.showMessageDialog(null, "No se ha podido eliminar el usuario.");
         }
     }
-    
+
     private void modificar(ActionEvent e) {
         // TODO add your code here
     }
-    
+
     private void activar(ActionEvent e) {
         // TODO add your code here
     }
-    
+
     private void verTodos(ActionEvent e) {
-        java.util.List<User> inactivos = usuarioService.findByInactivos();
+        java.util.List<User> inactivos = userService.findByInactivos();
         model = (DefaultTableModel) tableUsuarios.getModel();
         for (User usuario : inactivos) {
             model.addRow(new Object[]{
-                usuario.getFullName() != null ? usuario.getFullName() : "",
-                usuario.getUserName() != null ? usuario.getUserName() : "",
-                Injector.get(AppConfig.class).getAppName(),
+                usuario.getFullName(),
+                usuario.getUserName(),
+                AppConfig.getAppName(),
                 usuario.isAdminSistema() ? "X" : "",
                 usuario.isAdminEconomico() ? "X" : "",
                 "Si"
             });
         }
     }
-    
+
     private void permisosConfiguracion(ActionEvent e) {
         DialogUtils.showModalDialog(this, new DialogPermisosConfiguracion(), "Permisos de Configuración");
     }
-    
+
     private void permisosSimplificados(ActionEvent e) {
         // TODO add your code here
     }
-    
+
     private void crearUsuarioAdministrador(ActionEvent e) {
         // TODO add your code here
     }
-    
+
     private void tableUsuariosPropertyChange(PropertyChangeEvent e) {
         labelUserCount.setText(String.format("{0} USUARIOS", tableUsuarios.getRowCount()));
     }
-    
+
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.panel1 = new JPanel();

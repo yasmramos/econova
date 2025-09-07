@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Idioma;
-import com.univsoftdev.econova.config.service.IdiomaService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Language;
+import com.univsoftdev.econova.config.service.LanguageService;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Locale;
@@ -14,11 +14,11 @@ import raven.modal.component.Modal;
 public class FormAdicionarIdioma extends Modal {
 
     private static final long serialVersionUID = 6032278052868283579L;
-    private final IdiomaService idiomaService;
+    private final LanguageService idiomaService;
 
     public FormAdicionarIdioma() {
         initComponents();
-        this.idiomaService = Injector.get(IdiomaService.class);
+        this.idiomaService = Injector.get(LanguageService.class);
         final Locale[] availableLocales = Locale.getAvailableLocales();
         for (final Locale availableLocale : availableLocales) {
             comboBoxIdiomas.addItem(availableLocale.getCountry());
@@ -26,7 +26,7 @@ public class FormAdicionarIdioma extends Modal {
     }
 
     private void buttonAceptar(ActionEvent e) {
-        final Idioma idioma = new Idioma();
+        final Language idioma = new Language();
         idioma.setPais(String.valueOf(comboBoxIdiomas.getSelectedItem()));
         idiomaService.save(idioma);
     }

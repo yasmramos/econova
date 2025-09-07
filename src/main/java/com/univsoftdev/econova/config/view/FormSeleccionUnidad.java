@@ -1,10 +1,10 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Empresa;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Company;
 import java.awt.event.*;
-import com.univsoftdev.econova.config.service.UnidadService;
+import com.univsoftdev.econova.config.service.UnitService;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
 import java.awt.*;
 import javax.swing.*;
@@ -15,20 +15,20 @@ import raven.modal.component.Modal;
 
 public class FormSeleccionUnidad extends Modal {
 
-    private final UnidadService unidadService;
+    private final UnitService unidadService;
     private final AppContext appContext;
 
-    public FormSeleccionUnidad(Empresa empresa) {
+    public FormSeleccionUnidad(Company empresa) {
         initComponents();
         this.setSize(462, 496);
-        unidadService = Injector.get(UnidadService.class);
+        unidadService = Injector.get(UnitService.class);
         appContext = Injector.get(AppContext.class);
 
         final var model = (DefaultTableModel) table1.getModel();
-        final var unidades = empresa.getUnidades();
+        final var unidades = empresa.getUnits();
 
         unidades.forEach(u -> {
-            model.addRow(new Object[]{u.getCodigo(), u.getNombre()});
+            model.addRow(new Object[]{u.getCode(), u.getName()});
         });
 
         new TableColumnAdjuster(table1).adjustColumns();
@@ -47,6 +47,10 @@ public class FormSeleccionUnidad extends Modal {
         }
     }
 
+    private void btnCancelar(ActionEvent e) {
+	ModalDialog.closeModal(this.getId());
+    }
+
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.panel1 = new JPanel();
@@ -54,8 +58,8 @@ public class FormSeleccionUnidad extends Modal {
 	this.scrollPane1 = new JScrollPane();
 	this.table1 = new JTable();
 	this.panel2 = new JPanel();
-	this.button1 = new JButton();
-	this.buttonAceptar = new JButton();
+	this.btnCancelar = new JButton();
+	this.btnAceptar = new JButton();
 
 	//======== this ========
 	setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -97,14 +101,15 @@ public class FormSeleccionUnidad extends Modal {
 	{
 	    this.panel2.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-	    //---- button1 ----
-	    this.button1.setText("Cancelar"); //NOI18N
-	    this.button1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    //---- btnCancelar ----
+	    this.btnCancelar.setText("Cancelar"); //NOI18N
+	    this.btnCancelar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.btnCancelar.addActionListener(e -> btnCancelar(e));
 
-	    //---- buttonAceptar ----
-	    this.buttonAceptar.setText("Aceptar"); //NOI18N
-	    this.buttonAceptar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    this.buttonAceptar.addActionListener(e -> aceptar(e));
+	    //---- btnAceptar ----
+	    this.btnAceptar.setText("Aceptar"); //NOI18N
+	    this.btnAceptar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.btnAceptar.addActionListener(e -> aceptar(e));
 
 	    GroupLayout panel2Layout = new GroupLayout(this.panel2);
 	    panel2.setLayout(panel2Layout);
@@ -112,16 +117,16 @@ public class FormSeleccionUnidad extends Modal {
 		panel2Layout.createParallelGroup()
 		    .addGroup(GroupLayout.Alignment.TRAILING, panel2Layout.createSequentialGroup()
 			.addGap(0, 176, Short.MAX_VALUE)
-			.addComponent(this.buttonAceptar)
+			.addComponent(this.btnAceptar)
 			.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-			.addComponent(this.button1))
+			.addComponent(this.btnCancelar))
 	    );
 	    panel2Layout.setVerticalGroup(
 		panel2Layout.createParallelGroup()
 		    .addGroup(panel2Layout.createSequentialGroup()
 			.addGroup(panel2Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			    .addComponent(this.button1)
-			    .addComponent(this.buttonAceptar))
+			    .addComponent(this.btnCancelar)
+			    .addComponent(this.btnAceptar))
 			.addGap(0, 0, Short.MAX_VALUE))
 	    );
 	}
@@ -135,7 +140,7 @@ public class FormSeleccionUnidad extends Modal {
     private JScrollPane scrollPane1;
     private JTable table1;
     private JPanel panel2;
-    private JButton button1;
-    private JButton buttonAceptar;
+    private JButton btnCancelar;
+    private JButton btnAceptar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }

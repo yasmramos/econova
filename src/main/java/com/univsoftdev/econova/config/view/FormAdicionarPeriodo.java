@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -13,14 +13,14 @@ import raven.modal.component.Modal;
 public class FormAdicionarPeriodo extends Modal {
 
     private static final long serialVersionUID = -1243416098925173479L;
-    private Ejercicio ejercicio;
+    private Exercise ejercicio;
     private JTable table;
     
     public FormAdicionarPeriodo() {
         initComponents();
     }
 
-    public FormAdicionarPeriodo(Ejercicio ejercicio, JTable table) {
+    public FormAdicionarPeriodo(Exercise ejercicio, JTable table) {
         initComponents();
         this.table = table;
         this.ejercicio = ejercicio;
@@ -28,16 +28,16 @@ public class FormAdicionarPeriodo extends Modal {
 
     private void aceptarActionPerformed(ActionEvent e) {
         try {
-            Periodo periodo = new Periodo();
-            periodo.setNombre(textFieldNombre.getText());
-            periodo.setFechaInicio(datePickerSwing1.getSelectedDate());
-            periodo.setFechaFin(datePickerSwing2.getSelectedDate());
+            Period periodo = new Period();
+            periodo.setName(textFieldNombre.getText());
+            periodo.setStartDate(datePickerSwing1.getSelectedDate());
+            periodo.setEndDate(datePickerSwing2.getSelectedDate());
             ejercicio.addPeriodo(periodo);
             var model = (DefaultTableModel)table.getModel();
             model.addRow(new Object[]{
-                periodo.getNombre(),
-                periodo.getFechaInicio().toString(), 
-                periodo.getFechaFin().toString()
+                periodo.getName(),
+                periodo.getStartDate().toString(), 
+                periodo.getEndDate().toString()
             });
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());

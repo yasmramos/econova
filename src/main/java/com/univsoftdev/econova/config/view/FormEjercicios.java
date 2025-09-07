@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.model.Ejercicio;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Exercise;
 import com.univsoftdev.econova.config.service.EjercicioService;
 import java.beans.*;
 import java.awt.event.*;
@@ -34,7 +34,7 @@ public class FormEjercicios extends Form {
 
     private void eliminarActionPerformed(ActionEvent e) {
         try {
-            Optional<Ejercicio> findByNombre = getSelectedEjercicio();
+            Optional<Exercise> findByNombre = getSelectedEjercicio();
             if (findByNombre.isPresent()) {
                 ejercicioService.delete(findByNombre.get());
             }
@@ -43,7 +43,7 @@ public class FormEjercicios extends Form {
         }
     }
 
-    private Optional<Ejercicio> getSelectedEjercicio() {
+    private Optional<Exercise> getSelectedEjercicio() {
         int selectedRow = tableEjercicios.getSelectedRow();
         int column = 0;
         Object valueAt = tableEjercicios.getValueAt(selectedRow, column);
@@ -51,7 +51,7 @@ public class FormEjercicios extends Form {
     }
 
     private void modificarActionPerformed(ActionEvent e) {
-        Optional<Ejercicio> selectedEjercicio = getSelectedEjercicio();
+        Optional<Exercise> selectedEjercicio = getSelectedEjercicio();
         if (selectedEjercicio.isPresent()) {
 
         }

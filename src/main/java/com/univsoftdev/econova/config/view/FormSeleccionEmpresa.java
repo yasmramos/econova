@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.AppContext;
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.service.EmpresaService;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.service.CompanyService;
 import com.univsoftdev.econova.core.utils.DialogUtils;
 import java.awt.event.*;
 import com.univsoftdev.econova.core.utils.table.TableColumnAdjuster;
@@ -15,13 +15,13 @@ import raven.modal.component.Modal;
 
 public class FormSeleccionEmpresa extends Modal {
 
-    private final EmpresaService empresaService;
+    private final CompanyService empresaService;
     private final AppContext appContext;
 
     public FormSeleccionEmpresa() {
         initComponents();
         this.setSize(462, 496);
-        empresaService = Injector.get(EmpresaService.class);
+        empresaService = Injector.get(CompanyService.class);
         appContext = Injector.get(AppContext.class);
 
         final var model = (DefaultTableModel) table1.getModel();
@@ -42,13 +42,17 @@ public class FormSeleccionEmpresa extends Modal {
         final var empresa = empresaService.findByCode(codigo);
 
         if (empresa.isPresent()) {
-            var emp = empresa.get();  
+            var emp = empresa.get();
             appContext.getSession().setEmpresa(emp);
             ModalDialog.closeModal(this.getId());
-            if (!emp.getUnidades().isEmpty()) {
+            if (!emp.getUnits().isEmpty()) {
                 DialogUtils.showModalDialog(this, new FormSeleccionUnidad(emp), "Seleccione la Unidad");
             }
         }
+    }
+
+    private void cancelar(ActionEvent e) {
+        ModalDialog.closeModal(this.getId());
     }
 
     private void initComponents() {
@@ -58,7 +62,7 @@ public class FormSeleccionEmpresa extends Modal {
 	this.scrollPane1 = new JScrollPane();
 	this.table1 = new JTable();
 	this.panel2 = new JPanel();
-	this.button1 = new JButton();
+	this.buttonCancelar = new JButton();
 	this.buttonAceptar = new JButton();
 
 	//======== this ========
@@ -100,9 +104,10 @@ public class FormSeleccionEmpresa extends Modal {
 	{
 	    this.panel2.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-	    //---- button1 ----
-	    this.button1.setText("Cancelar"); //NOI18N
-	    this.button1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    //---- buttonCancelar ----
+	    this.buttonCancelar.setText("Cancelar"); //NOI18N
+	    this.buttonCancelar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    this.buttonCancelar.addActionListener(e -> cancelar(e));
 
 	    //---- buttonAceptar ----
 	    this.buttonAceptar.setText("Aceptar"); //NOI18N
@@ -117,13 +122,13 @@ public class FormSeleccionEmpresa extends Modal {
 			.addGap(0, 176, Short.MAX_VALUE)
 			.addComponent(this.buttonAceptar)
 			.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-			.addComponent(this.button1))
+			.addComponent(this.buttonCancelar))
 	    );
 	    panel2Layout.setVerticalGroup(
 		panel2Layout.createParallelGroup()
 		    .addGroup(panel2Layout.createSequentialGroup()
 			.addGroup(panel2Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-			    .addComponent(this.button1)
+			    .addComponent(this.buttonCancelar)
 			    .addComponent(this.buttonAceptar))
 			.addGap(0, 0, Short.MAX_VALUE))
 	    );
@@ -138,7 +143,7 @@ public class FormSeleccionEmpresa extends Modal {
     private JScrollPane scrollPane1;
     private JTable table1;
     private JPanel panel2;
-    private JButton button1;
+    private JButton buttonCancelar;
     private JButton buttonAceptar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }

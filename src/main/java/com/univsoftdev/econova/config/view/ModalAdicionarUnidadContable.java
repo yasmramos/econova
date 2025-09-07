@@ -1,12 +1,11 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
-import com.univsoftdev.econova.config.model.Empresa;
-import com.univsoftdev.econova.config.model.Unidad;
-import com.univsoftdev.econova.config.service.EmpresaService;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.model.Company;
+import com.univsoftdev.econova.config.model.Unit;
+import com.univsoftdev.econova.config.service.CompanyService;
+import com.univsoftdev.econova.config.service.UnitService;
 import com.univsoftdev.econova.core.simple.SimpleMessageModal;
-import jakarta.inject.Inject;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -20,19 +19,18 @@ public class ModalAdicionarUnidadContable extends Modal {
 
     private static final long serialVersionUID = 2095217302656241995L;
     private JTable table;
-    private Empresa empresa;
-    
-    @Inject
-    MyTenantSchemaProvider tenantSchemaProvider;
+    private Company empresa;
+    private UnitService unidadService;
 
     public ModalAdicionarUnidadContable() {
         initComponents();
     }
 
-    public ModalAdicionarUnidadContable(JTable table1, Empresa empresa) {
+    public ModalAdicionarUnidadContable(JTable table1, Company empresa) {
         initComponents();
         this.table = table1;
         this.empresa = empresa;
+        this.unidadService = Injector.get(UnitService.class);
     }
 
     private void cancelarActionPerformed(ActionEvent e) {
@@ -41,48 +39,52 @@ public class ModalAdicionarUnidadContable extends Modal {
 
     private void aceptarActionPerformed(ActionEvent e) {
         try {
-            Unidad unidad = new Unidad();
-            unidad.setCodigo(textFieldCodigo.getText());
-            unidad.setNombre(textFieldNombre.getText());
-            unidad.setDireccion(textFieldDireccion.getText());
-            unidad.setCorreo(textFieldCorreo.getText());
-            unidad.setNae(String.valueOf(comboBoxNae.getSelectedItem()).trim());
-            unidad.setDpa(String.valueOf(comboBoxDpa.getSelectedItem()).trim());
-            unidad.setReup(String.valueOf(comboBoxReuup.getSelectedItem()).trim());
-            empresa.addUnidad(unidad);
-            Injector.get(EmpresaService.class).update(empresa);
+            Unit unidad = unidadService.crearUnidad(
+                    textFieldCodigo.getText(),
+                    textFieldNombre.getText(),
+                    textFieldDireccion.getText(),
+                    textFieldCorreo.getText(),
+                    comboBoxNae.getSelectedItem().toString(),
+                    comboBoxDpa.getSelectedItem().toString(), 
+                    comboBoxReuup.getSelectedItem().toString(),
+                    empresa
+            );
+
+            Injector.get(CompanyService.class).update(empresa);
+            
             ModalDialog.closeModal(this.getId());
-            
-            var model = (DefaultTableModel)table.getModel();
-            
+
+            var model = (DefaultTableModel) table.getModel();
+
             model.addRow(new Object[]{
-                unidad.getCodigo(),
-                unidad.getNombre(),
-                unidad.getDireccion(),
-                unidad.getCorreo(),
+                unidad.getCode(),
+                unidad.getName(),
+                unidad.getAddress(),
+                unidad.getEmail(),
                 unidad.getNae(),
                 unidad.getDpa(),
                 unidad.getReup()
             });
+            
             ModalDialog.showModal(
-                    this, 
+                    this,
                     new SimpleMessageModal(
-                            SimpleMessageModal.Type.ERROR, 
-                            "Se ha añadido la Unidad correctamente.", 
-                            "Información", 
-                            SimpleModalBorder.OK_OPTION, 
-                            null), 
+                            SimpleMessageModal.Type.ERROR,
+                            "Se ha añadido la Unidad correctamente.",
+                            "Información",
+                            SimpleModalBorder.OK_OPTION,
+                            null),
                     Option.getDefault()
             );
         } catch (Exception ex) {
             ModalDialog.showModal(
-                    this, 
+                    this,
                     new SimpleMessageModal(
-                            SimpleMessageModal.Type.ERROR, 
-                            ex.getMessage(), 
-                            "ERROR", 
-                            SimpleModalBorder.YES_NO_OPTION, 
-                            null), 
+                            SimpleMessageModal.Type.ERROR,
+                            ex.getMessage(),
+                            "ERROR",
+                            SimpleModalBorder.YES_NO_OPTION,
+                            null),
                     Option.getDefault()
             );
         }
@@ -223,78 +225,6 @@ public class ModalAdicionarUnidadContable extends Modal {
 		    .addContainerGap())
 	);
 	// JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
-    }
-
-    public JButton getButtonCancelar() {
-        return buttonCancelar;
-    }
-
-    public void setButtonCancelar(JButton buttonCancelar) {
-        this.buttonCancelar = buttonCancelar;
-    }
-
-    public JButton getButtonAceptar() {
-        return buttonAceptar;
-    }
-
-    public void setButtonAceptar(JButton buttonAceptar) {
-        this.buttonAceptar = buttonAceptar;
-    }
-
-    public JComboBox<String> getComboBoxNae() {
-        return comboBoxNae;
-    }
-
-    public void setComboBoxNae(JComboBox<String> comboBoxNae) {
-        this.comboBoxNae = comboBoxNae;
-    }
-
-    public JComboBox<String> getComboBoxDpa() {
-        return comboBoxDpa;
-    }
-
-    public void setComboBoxDpa(JComboBox<String> comboBoxDpa) {
-        this.comboBoxDpa = comboBoxDpa;
-    }
-
-    public JComboBox<String> getComboBoxReuup() {
-        return comboBoxReuup;
-    }
-
-    public void setComboBoxReuup(JComboBox<String> comboBoxReuup) {
-        this.comboBoxReuup = comboBoxReuup;
-    }
-
-    public JTextField getTextFieldCodigo() {
-        return textFieldCodigo;
-    }
-
-    public void setTextFieldCodigo(JTextField textFieldCodigo) {
-        this.textFieldCodigo = textFieldCodigo;
-    }
-
-    public JTextField getTextFieldNombre() {
-        return textFieldNombre;
-    }
-
-    public void setTextFieldNombre(JTextField textFieldNombre) {
-        this.textFieldNombre = textFieldNombre;
-    }
-
-    public JTextField getTextFieldDireccion() {
-        return textFieldDireccion;
-    }
-
-    public void setTextFieldDireccion(JTextField textFieldDireccion) {
-        this.textFieldDireccion = textFieldDireccion;
-    }
-
-    public JTextField getTextFieldCorreo() {
-        return textFieldCorreo;
-    }
-
-    public void setTextFieldCorreo(JTextField textFieldCorreo) {
-        this.textFieldCorreo = textFieldCorreo;
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off

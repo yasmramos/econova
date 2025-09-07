@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.ebean.config.MyTenantSchemaProvider;
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.config.model.Periodo;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.service.EjercicioService;
+import com.univsoftdev.econova.core.Injector;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -12,37 +12,33 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 import com.univsoftdev.econova.core.component.*;
 import com.univsoftdev.econova.core.utils.DialogUtils;
-import jakarta.inject.Inject;
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.Calendar;
 import raven.modal.ModalDialog;
 import raven.modal.component.Modal;
 
 public class FormNuevoEjercicioEstandar extends Modal {
-    
+
     private static final long serialVersionUID = -2855466166311660120L;
-    private Ejercicio ejercicio;
+    private Exercise ejercicio;
     private JTable tablePeriodos;
     private JTable tableEjercicios;
-    
-    @Inject
-    private MyTenantSchemaProvider tenantSchemaProvider;
-    
+    private EjercicioService ejercicioService;
+
     public FormNuevoEjercicioEstandar() {
         initComponents();
         init();
     }
-    
+
     public FormNuevoEjercicioEstandar(JTable tableEjercicios,
             JTable tablePeriodos) {
         initComponents();
         init();
         this.tableEjercicios = tableEjercicios;
         this.tablePeriodos = tablePeriodos;
+        this.ejercicioService = Injector.get(EjercicioService.class);
     }
-    
+
     private void init() {
         panel1.setVisible(false);
         Calendar calendar = Calendar.getInstance();
@@ -55,26 +51,26 @@ public class FormNuevoEjercicioEstandar extends Modal {
         String currentYear = String.valueOf(
                 Calendar.getInstance().get(Calendar.YEAR)
         );
-        textFieldAnno.setText(currentYear);
+        textFieldYear.setText(currentYear);
         textFieldNombre.setText(currentYear);
     }
-    
+
     private void checkBoxBasadoAnnoNaturalStateChanged(ChangeEvent e) {
-        
+
     }
-    
+
     private void basadoAnnoNaturalActionPerformed(ActionEvent e) {
         if (checkBoxBasadoAnnoNatural.isSelected()) {
             panel1.setVisible(false);
             labelAnno.setVisible(true);
-            textFieldAnno.setVisible(true);
+            textFieldYear.setVisible(true);
         } else {
             panel1.setVisible(true);
             labelAnno.setVisible(false);
-            textFieldAnno.setVisible(false);
+            textFieldYear.setVisible(false);
         }
     }
-    
+
     private void adicionarActionPeformed(ActionEvent e) {
         DialogUtils.showModalDialog(
                 this,
@@ -82,24 +78,24 @@ public class FormNuevoEjercicioEstandar extends Modal {
                 "Modificar Período"
         );
     }
-    
+
     private void eliminarActionPeformed(ActionEvent e) {
-        
+
     }
-    
+
     private void modificarActionPeformed(ActionEvent e) {
-        
+
     }
-    
+
     private void datePickerSwing2PropertyChange(PropertyChangeEvent e) {
         label5.setText(datePickerSwing2.getSelectedDateAsString());
     }
-    
+
     private void cancelarActionPerformed(ActionEvent e) {
         ModalDialog.closeModal(this.getId());
         FormEjerciciosUtil.updateView(tableEjercicios, tablePeriodos);
     }
-    
+
     private void aceptarActionPerformed(ActionEvent e) {
         if (checkBoxBasadoAnnoNatural.isSelected()) {
 
@@ -128,11 +124,11 @@ public class FormNuevoEjercicioEstandar extends Modal {
             }
 
             // Validar textFieldAnno
-            String annoText = textFieldAnno.getText();
-            
-            if (annoText == null
-                    || annoText.isEmpty()
-                    || !annoText.matches("\\d{4}")) {
+            String yearText = textFieldYear.getText();
+
+            if (yearText == null
+                    || yearText.isEmpty()
+                    || !yearText.matches("\\d{4}")) {
                 JOptionPane.showMessageDialog(
                         this,
                         "El año debe ser un número válido de 4 dígitos.",
@@ -142,58 +138,30 @@ public class FormNuevoEjercicioEstandar extends Modal {
                 return;
             }
 
-            // Crear periodos
-            java.util.List<Periodo> periodos = new ArrayList<>();
-            
-            String[] meses = {
-                "Enero",
-                "Febrero",
-                "Marzo",
-                "Abril",
-                "Mayo",
-                "Junio",
-                "Julio",
-                "Agosto",
-                "Septiembre",
-                "Octubre",
-                "Noviembre",
-                "Diciembre"
-            };
-            
-            int[] intmeses = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-            
-            for (int intmese : intmeses) {
-                YearMonth yearMonth = YearMonth.of(Integer.parseInt(annoText), intmese);
-                LocalDate startDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonth(), 1);
-                LocalDate endDate = yearMonth.atEndOfMonth();
-                periodos.add(new Periodo(meses[intmese - 1], startDate, endDate));
-            }
-            
-            var inicio = LocalDate.of(Integer.parseInt(annoText), 1, 1);
-            var fin = LocalDate.of(Integer.parseInt(annoText), 12, 31);
-            
-            this.ejercicio = new Ejercicio(
-                    textFieldNombre.getText(),
-                    Integer.parseInt(textFieldAnno.getText()),
-                    inicio,
-                    fin,
-                    periodos
-            );
+            var inicio = LocalDate.of(Integer.parseInt(yearText), 1, 1);
+            var fin = LocalDate.of(Integer.parseInt(yearText), 12, 31);
 
             // Guardar ejercicio
             try {
-                ejercicio.save();
+                
+                Exercise ejerc = ejercicioService.crearEjercicio(textFieldNombre.getText(),
+                        Integer.parseInt(yearText),
+                        inicio,
+                        fin);
+                
+                ejercicioService.generarPeriodosMensuales(ejerc.getId());
+
                 JOptionPane.showMessageDialog(this, "Ejercicio guardado correctamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } catch (HeadlessException ex) {
                 JOptionPane.showMessageDialog(this, "Error al guardar el ejercicio: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            
+
         }
-        
+
         FormEjerciciosUtil.updateView(tableEjercicios, tablePeriodos);
     }
-    
+
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
 	this.label1 = new JLabel();
@@ -217,7 +185,7 @@ public class FormNuevoEjercicioEstandar extends Modal {
 	this.buttonCancelarActionPerformed = new JButton();
 	this.buttonAceptarActionPerformed = new JButton();
 	this.labelAnno = new JLabel();
-	this.textFieldAnno = new JTextField();
+	this.textFieldYear = new JTextField();
 
 	//======== this ========
 	setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -372,7 +340,7 @@ public class FormNuevoEjercicioEstandar extends Modal {
 				.addComponent(this.labelAnno))
 			    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
 			    .addGroup(layout.createParallelGroup()
-				.addComponent(this.textFieldAnno, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+				.addComponent(this.textFieldYear, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 				.addComponent(this.textFieldNombre, GroupLayout.PREFERRED_SIZE, 291, GroupLayout.PREFERRED_SIZE)))
 			.addComponent(this.checkBoxBasadoAnnoNatural))
 		    .addContainerGap(11, Short.MAX_VALUE))
@@ -387,7 +355,7 @@ public class FormNuevoEjercicioEstandar extends Modal {
 		    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
 		    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
 			.addComponent(this.labelAnno)
-			.addComponent(this.textFieldAnno, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+			.addComponent(this.textFieldYear, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 		    .addGap(12, 12, 12)
 		    .addComponent(this.checkBoxBasadoAnnoNatural)
 		    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
@@ -422,6 +390,6 @@ public class FormNuevoEjercicioEstandar extends Modal {
     private JButton buttonCancelarActionPerformed;
     private JButton buttonAceptarActionPerformed;
     private JLabel labelAnno;
-    private JTextField textFieldAnno;
+    private JTextField textFieldYear;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }

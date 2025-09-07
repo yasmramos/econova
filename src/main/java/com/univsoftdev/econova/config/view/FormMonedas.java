@@ -1,8 +1,8 @@
 package com.univsoftdev.econova.config.view;
 
-import com.univsoftdev.econova.Injector;
-import com.univsoftdev.econova.config.service.MonedaService;
-import com.univsoftdev.econova.contabilidad.model.Moneda;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.config.service.CurrencyService;
+import com.univsoftdev.econova.contabilidad.model.Currency;
 import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -15,16 +15,16 @@ import javax.swing.*;
 public class FormMonedas extends Form {
 
     private static final long serialVersionUID = -3496353075731804293L;
-    MonedaService monedaService;
+    CurrencyService monedaService;
 
     public FormMonedas() {
         initComponents();
         DefaultTableModel model = (DefaultTableModel) tableMonedas.getModel();
         model.setRowCount(0);
 
-        monedaService = Injector.get(MonedaService.class);
-        java.util.List<Moneda> availableCurrencies = monedaService.findAll();
-        for (Moneda moneda : availableCurrencies) {
+        monedaService = Injector.get(CurrencyService.class);
+        java.util.List<Currency> availableCurrencies = monedaService.findAll();
+        for (Currency moneda : availableCurrencies) {
             String displayName = moneda.getDisplayName();
             String symbol = moneda.getSymbol();
             model.addRow(new Object[]{symbol, displayName});
