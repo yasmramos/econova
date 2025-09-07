@@ -1,8 +1,12 @@
 package com.univsoftdev.econova;
 
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.univsoftdev.econova.config.model.User;
+import com.univsoftdev.econova.core.UserContext;
+import com.univsoftdev.econova.core.config.AppConfig;
 import com.univsoftdev.econova.core.system.Form;
 import com.univsoftdev.econova.core.system.FormManager;
 import jakarta.validation.constraints.NotNull;
@@ -25,7 +29,6 @@ import raven.modal.drawer.simple.header.SimpleHeader;
 public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     private final int SHADOW_SIZE = 12;
-    private final AppContext appContext = Injector.get(AppContext.class);
     private static EconovaDrawerBuilder instance;
     private User user;
     
@@ -56,7 +59,7 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
         // set user to menu validation
         MyMenuValidation.setUser(user);
-        appContext.getSession().setUser(user);
+        UserContext.get().setUser(user);
         // setup drawer header
         SimpleHeader header = (SimpleHeader) getHeader();
         SimpleHeaderData data = header.getSimpleHeaderData();
@@ -99,10 +102,9 @@ public class EconovaDrawerBuilder extends SimpleDrawerBuilder {
 
     @Override
     public SimpleFooterData getSimpleFooterData() {
-        var context = Injector.get(AppContext.class);
         return new SimpleFooterData()
                 .setTitle("Econova")
-                .setDescription("Version " + context.getVersion().toString());
+                .setDescription("Version " + AppConfig.getAppVersion());
     }
 
     @NotNull
