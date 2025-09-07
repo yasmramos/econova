@@ -34,3 +34,4 @@ openssl/*
 wizard.dat
 application.properties
 bsondb.db
+/nbproject/
