@@ -1,21 +1,11 @@
 package com.univsoftdev.econova.component.wizard;
 
-import com.github.cjwizard.WizardPage;
-import com.github.cjwizard.WizardSettings;
+public class PeriodoWizardStep extends javax.swing.JPanel {
 
-public class UnidadWizardPage extends WizardPage{
-
-    public UnidadWizardPage() {
-        super("Nueva Unidad", "Nueva Unidad");
+    public PeriodoWizardStep() {
         initComponents();
     }
 
-    @Override
-    public boolean onNext(WizardSettings settings) {
-        return true;
-    }
-
-    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -24,11 +14,11 @@ public class UnidadWizardPage extends WizardPage{
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 673, Short.MAX_VALUE)
+            .addGap(0, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 444, Short.MAX_VALUE)
+            .addGap(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -2,15 +2,21 @@ package com.univsoftdev.econova.component.wizard;
 
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
+import com.univsoftdev.econova.config.service.ConfigService;
+import com.univsoftdev.econova.core.Injector;
 import java.util.List;
+import javax.swing.JOptionPane;
 
-public class JPanelStep4 extends WizardPage {
+public class UsuariosWizardPage extends WizardPage {
 
-    public JPanelStep4() {
-        super("Step 4", "Almost done");
+    private final ConfigService configService;
+
+    public UsuariosWizardPage() {
+        super("Gestión de Usuarios", "Almost done");
         initComponents();
-        setNextEnabled(false);
-        setFinishEnabled(true);
+        setNextEnabled(true);
+        setFinishEnabled(false);
+        configService = Injector.get(ConfigService.class);
     }
 
     @Override
@@ -22,6 +28,16 @@ public class JPanelStep4 extends WizardPage {
 
     @Override
     public boolean onNext(WizardSettings settings) {
+        try {
+            configService.createUserPrincipal(
+                    "admin",
+                    "admin",
+                    "admin@jwehgj.ref",
+                    "admin123".toCharArray()
+            );
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
         return true;
     }
 
@@ -40,7 +56,7 @@ public class JPanelStep4 extends WizardPage {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -48,7 +64,7 @@ public class JPanelStep4 extends WizardPage {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(246, Short.MAX_VALUE))
+                .addContainerGap(379, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
