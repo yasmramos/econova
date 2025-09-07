@@ -99,12 +99,16 @@ public class PDFViewer extends javax.swing.JFrame {
     }
 
     private void mostrarPagina(int pagina) {
-        if (document == null || renderer == null) return;
-        if (pagina < 0 || pagina >= totalPaginas) return;
+        if (document == null || renderer == null) {
+            return;
+        }
+        if (pagina < 0 || pagina >= totalPaginas) {
+            return;
+        }
         try {
             progressBar.setVisible(true);
             progressBar.setIndeterminate(true);
-            BufferedImage image = renderer.renderImageWithDPI(pagina, (int)(150 * zoom));
+            BufferedImage image = renderer.renderImageWithDPI(pagina, (int) (150 * zoom));
             ImageIcon icon = new ImageIcon(image);
             // Ajuste automático al panel
             int panelW = panel1.getWidth();
@@ -126,8 +130,12 @@ public class PDFViewer extends javax.swing.JFrame {
     }
 
     private void cambiarZoom(double nuevoZoom) {
-        if (nuevoZoom < 0.2) nuevoZoom = 0.2;
-        if (nuevoZoom > 3.0) nuevoZoom = 3.0;
+        if (nuevoZoom < 0.2) {
+            nuevoZoom = 0.2;
+        }
+        if (nuevoZoom > 3.0) {
+            nuevoZoom = 3.0;
+        }
         zoom = nuevoZoom;
         mostrarPagina(paginaActual);
     }
@@ -138,7 +146,8 @@ public class PDFViewer extends javax.swing.JFrame {
             if (num >= 0 && num < totalPaginas) {
                 mostrarPagina(num);
             }
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
     }
 
     private void actualizarControlesNavegacion() {
@@ -157,16 +166,28 @@ public class PDFViewer extends javax.swing.JFrame {
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control EQUALS"), "zoomIn");
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control MINUS"), "zoomOut");
         getRootPane().getActionMap().put("anterior", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) { mostrarPagina(paginaActual - 1); }
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                mostrarPagina(paginaActual - 1);
+            }
         });
         getRootPane().getActionMap().put("siguiente", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) { mostrarPagina(paginaActual + 1); }
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                mostrarPagina(paginaActual + 1);
+            }
         });
         getRootPane().getActionMap().put("zoomIn", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) { cambiarZoom(zoom + ZOOM_STEP); }
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                cambiarZoom(zoom + ZOOM_STEP);
+            }
         });
         getRootPane().getActionMap().put("zoomOut", new AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) { cambiarZoom(zoom - ZOOM_STEP); }
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                cambiarZoom(zoom - ZOOM_STEP);
+            }
         });
     }
 
@@ -174,8 +195,11 @@ public class PDFViewer extends javax.swing.JFrame {
     public void dispose() {
         super.dispose();
         try {
-            if (document != null) document.close();
-        } catch (IOException ignored) {}
+            if (document != null) {
+                document.close();
+            }
+        } catch (IOException ignored) {
+        }
     }
 
     @SuppressWarnings("unchecked")

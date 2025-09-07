@@ -9,7 +9,11 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ReportePDF {
 
     public static void generarPDF(String templatePath, Map<String, Object> datos, String outputPath) {
@@ -35,10 +39,10 @@ public class ReportePDF {
                 renderer.createPDF(os);
             }
 
-            System.out.println("PDF generado en: " + outputPath);
+            log.info("PDF generado en: " + outputPath);
 
         } catch (IOException | TemplateException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -58,16 +62,19 @@ public class ReportePDF {
     }
 
     // Clase auxiliar para productos
+    @Getter
+    @Setter
     private static class Producto {
 
-        String nombre;
-        int cantidad;
-        double precio;
+        private String nombre;
+        private int cantidad;
+        private double precio;
 
         Producto(String nombre, int cantidad, double precio) {
             this.nombre = nombre;
             this.cantidad = cantidad;
             this.precio = precio;
         }
+        
     }
 }
