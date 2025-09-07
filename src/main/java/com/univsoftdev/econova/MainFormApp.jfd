@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.1" encoding: "UTF-8"
+JFDML JFormDesigner: "8.2.2.0.382" Java: "24.0.2" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -221,6 +221,22 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
 					name: "menu8"
 					"text": "Ayuda"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItemRegistrar"
+						"text": "Registrar"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "registrar", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItemLicencia"
+						"text": "Licencia"
+					} )
+					add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+						name: "separator7"
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "menuItem3"
+						"text": "Buscar actualizaciones"
+					} )
 				} )
 			}
 		}, new FormLayoutConstraints( null ) {

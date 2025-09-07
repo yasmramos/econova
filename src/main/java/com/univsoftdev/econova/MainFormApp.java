@@ -1,15 +1,10 @@
 package com.univsoftdev.econova;
 
-import java.awt.event.*;
-import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-import com.formdev.flatlaf.util.FontUtils;
-import jakarta.inject.Inject;
-import com.univsoftdev.econova.component.wizard.Wizard;
-import com.univsoftdev.econova.config.service.EmpresaService;
 import com.univsoftdev.econova.config.view.FormDatabaseConnection;
-import com.univsoftdev.econova.config.view.FormSeleccionUnidad;
 import com.univsoftdev.econova.contabilidad.component.About;
+import com.univsoftdev.econova.core.AppContext;
+import com.univsoftdev.econova.core.Injector;
+import com.univsoftdev.econova.core.LookAndFeelUtils;
 import com.univsoftdev.econova.core.config.AppConfig;
 import com.univsoftdev.econova.core.system.FormManager;
 import com.univsoftdev.econova.core.utils.AppPreferences;
@@ -17,59 +12,67 @@ import com.univsoftdev.econova.core.utils.DialogUtils;
 import com.univsoftdev.econova.core.view.components.FormCambiarFechaProcesamiento;
 import io.avaje.config.Config;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.FileNotFoundException;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serial;
 import javax.swing.*;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import raven.modal.Drawer;
 
 @Slf4j
+@io.avaje.inject.Component
 public class MainFormApp extends JFrame {
 
     @Serial
     private static final long serialVersionUID = 1L;
     private AppContext appContext;
 
-    @Inject
     public MainFormApp() {
         initComponents();
-        this.init();
-    }
-
-    private void init() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setExtendedState(MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
-        this.appContext = Injector.get(AppContext.class);
-        this.setTitle(appContext.getAppName() + " " + appContext.getVersion().toString());
         getJMenuBar().setVisible(false);
         Drawer.installDrawer(this, EconovaDrawerBuilder.getInstance());
         FormManager.install(this);
-        var frame = this;
 
-        this.addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                SwingUtilities.invokeLater(() -> {
-                    EmpresaService empresaService = Injector.get(EmpresaService.class);
-                    if (empresaService.findAll().isEmpty()) {
-                        Wizard wizard = new Wizard(frame, true);
-                        wizard.setLocationRelativeTo(null);
-                        wizard.setVisible(true);
-                    }
-                });
-
+                handleWindowOpened();
             }
-
         });
+
+    }
+
+    private void init() {
+
+        LookAndFeelUtils.setupLookAndFeel(this);
+
+        this.appContext = Injector.get(AppContext.class);
+        if (appContext != null) {
+            this.setTitle(AppConfig.getAppName() + " " + AppConfig.getAppVersion());
+        } else {
+            this.setTitle("Econova - Sistema Contable");
+            log.warn("No se pudo obtener AppContext");
+        }
+        log.info("Aplicación inicializada correctamente");
+    }
+
+    public void start() {
+        this.init();
+        main(null);
+    }
+
+    private void handleWindowOpened() {
+
     }
 
     private void salir(ActionEvent e) {
-        
         System.exit(0);
     }
 
@@ -79,13 +82,68 @@ public class MainFormApp extends JFrame {
 
     private void thisWindowClosing(WindowEvent e) {
         try {
-            Injector.get(AppContext.class).reset();
-            Injector.close();
-            Config.asProperties().store(new FileOutputStream("application.properties"), null);
-        } catch (FileNotFoundException ex) {
-            System.getLogger(MainFormApp.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        } catch (IOException ex) {
-            System.getLogger(MainFormApp.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            // Confirmar cierre
+            int option = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Está seguro que desea salir de la aplicación?",
+                    "Confirmar salida",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            if (option == JOptionPane.YES_OPTION) {
+                // Proceso de cierre
+                log.info("Cerrando aplicación...");
+
+                // Limpiar contexto de seguridad
+                try {
+                    if (SecurityUtils.getSubject() != null) {
+                        SecurityUtils.getSubject().logout();
+                    }
+                } catch (Exception ex) {
+                    log.warn("Error al cerrar sesión de seguridad", ex);
+                }
+
+                // Resetear contexto de aplicación
+                try {
+                    if (appContext != null) {
+                        appContext.reset();
+                    }
+                } catch (Exception ex) {
+                    log.warn("Error al resetear contexto de aplicación", ex);
+                }
+
+                // Guardar configuración
+                try {
+                    Config.asProperties().store(new FileOutputStream("application.properties"), null);
+                } catch (IOException ex) {
+                    log.error("Error al guardar configuración", ex);
+                }
+
+                // Cerrar injector
+                try {
+                    Injector.close();
+                } catch (Exception ex) {
+                    log.warn("Error al cerrar injector", ex);
+                }
+
+                log.info("Aplicación cerrada correctamente");
+            } else {
+                // Cancelar cierre
+                setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+                return;
+            }
+
+        } catch (HeadlessException ex) {
+            log.error("Error durante el cierre de la aplicación", ex);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error durante el cierre de la aplicación. Forzando cierre.",
+                    "Error de cierre",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        } finally {
+            System.exit(0);
         }
     }
 
@@ -93,8 +151,14 @@ public class MainFormApp extends JFrame {
         DialogUtils.showModalDialog(this, new FormCambiarFechaProcesamiento(), "Cambiar Fecha de Procesamiento");
     }
 
+    private void registrar(ActionEvent e) {
+        JDialog registerDialog = DialogUtils.createDialog(new RegisterForm(), "Register " + AppConfig.getAppName() + " License Key", true);
+        registerDialog.setVisible(true);
+    }
+
     private void initComponents() {
 	// JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
+	// Generated using JFormDesigner Evaluation license - Yasmany
 	this.menuBar1 = new JMenuBar();
 	this.menu1 = new JMenu();
 	this.menuItemCambiarUnidadContable = new JMenuItem();
@@ -140,6 +204,9 @@ public class MainFormApp extends JFrame {
 	this.menuItem13 = new JMenuItem();
 	this.menu7 = new JMenu();
 	this.menu8 = new JMenu();
+	this.menuItemRegistrar = new JMenuItem();
+	this.menuItemLicencia = new JMenuItem();
+	this.menuItem3 = new JMenuItem();
 
 	//======== this ========
 	setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -370,6 +437,20 @@ public class MainFormApp extends JFrame {
 	    //======== menu8 ========
 	    {
 		this.menu8.setText("Ayuda"); //NOI18N
+
+		//---- menuItemRegistrar ----
+		this.menuItemRegistrar.setText("Registrar"); //NOI18N
+		this.menuItemRegistrar.addActionListener(e -> registrar(e));
+		this.menu8.add(this.menuItemRegistrar);
+
+		//---- menuItemLicencia ----
+		this.menuItemLicencia.setText("Licencia"); //NOI18N
+		this.menu8.add(this.menuItemLicencia);
+		this.menu8.addSeparator();
+
+		//---- menuItem3 ----
+		this.menuItem3.setText("Buscar actualizaciones"); //NOI18N
+		this.menu8.add(this.menuItem3);
 	    }
 	    this.menuBar1.add(this.menu8);
 	}
@@ -379,65 +460,111 @@ public class MainFormApp extends JFrame {
     }
 
     public static void main(String[] args) {
-
         AppPreferences.init();
 
-        FlatRobotoFont.install();
-        FlatLaf.registerCustomDefaultsSource("com.univsoftdev.econova.themes");
-        UIManager.put("defaultFont", FontUtils.getCompositeFont(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
-
-        AppPreferences.setupLaf();
-
         EventQueue.invokeLater(() -> {
-
-            if (SystemTray.isSupported()) {
-                SystemTray tray = SystemTray.getSystemTray();
-                Image image = Toolkit.getDefaultToolkit().getImage(MainFormApp.class.getClassLoader().getResource("com/univsoftdev/econova/Econova_Logo.png"));
-                PopupMenu menu = new PopupMenu();
-                MenuItem itemSalir = new MenuItem("Salir");
-                itemSalir.addActionListener((ActionEvent e) -> {
-                    System.exit(0);
-                });
-                MenuItem itemAcercaDe = new MenuItem("Acerca de Econova");
-                itemAcercaDe.addActionListener((ActionEvent e) -> {
-                    DialogUtils.createDialog(new About(), "Acerca de...", false);
-                });
-                MenuItem itemConfiguracion = new MenuItem("Configuración");
-                MenuItem itemContabilidad = new MenuItem("Contabilidad");
-                menu.add(itemConfiguracion);
-                menu.add(itemContabilidad);
-
-                Menu menuHerramientas = new Menu("Herramientas");
-                MenuItem itemConnServidor = new MenuItem("Conexción al Servidor");
-                itemConnServidor.addActionListener((ActionEvent e) -> {
-                    new FormDatabaseConnection().setVisible(true);
-                });
-
-                MenuItem itemCambContras = new MenuItem("Cambiar Contraseña");
-                MenuItem itemRestBaseDatos = new MenuItem("Restaurar Base de Datos");
-                menuHerramientas.add(itemConnServidor);
-                menuHerramientas.add(itemCambContras);
-                menuHerramientas.add(itemRestBaseDatos);
-
-                menu.addSeparator();
-                menu.add(menuHerramientas);
-                menu.add(itemAcercaDe);
-                menu.add(itemSalir);
-
-                TrayIcon trayIcon = new TrayIcon(image, Injector.get(AppConfig.class).getAppName(), menu);
-                trayIcon.setImageAutoSize(true);
-
-                try {
-                    tray.add(trayIcon);
-                } catch (AWTException e) {
-                    log.error(e.getMessage());
-                }
-            }
-
-            new MainFormApp().setVisible(true);
+            setupSystemTray();
+            MainFormApp app = new MainFormApp();
+            app.setVisible(true);
         });
     }
+
+    private static void setupSystemTray() {
+        if (SystemTray.isSupported()) {
+            try {
+                SystemTray tray = SystemTray.getSystemTray();
+
+                // Cargar imagen con manejo de errores
+                Image image = null;
+                try {
+                    image = Toolkit.getDefaultToolkit().getImage(
+                            MainFormApp.class.getClassLoader().getResource("com/univsoftdev/econova/Econova_Logo.png")
+                    );
+                } catch (Exception e) {
+                    log.warn("No se pudo cargar el ícono del sistema tray, usando ícono por defecto");
+                    // Crear una imagen simple por defecto
+                    BufferedImage defaultImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D g2d = defaultImage.createGraphics();
+                    g2d.setColor(Color.BLUE);
+                    g2d.fillRect(0, 0, 16, 16);
+                    g2d.dispose();
+                    image = defaultImage;
+                }
+
+                PopupMenu menu = createTrayMenu();
+                TrayIcon trayIcon = new TrayIcon(image, AppConfig.getAppName(), menu);
+                trayIcon.setImageAutoSize(true);
+
+                // Agregar doble click para mostrar/ocultar aplicación
+                trayIcon.addActionListener(e -> {
+                    // Lógica para mostrar/ocultar la aplicación principal
+                    log.info("Doble click en ícono del sistema tray");
+                });
+
+                tray.add(trayIcon);
+                log.info("System Tray configurado correctamente");
+
+            } catch (AWTException e) {
+                log.error("No se pudo inicializar el System Tray", e);
+            }
+        } else {
+            log.warn("System Tray no soportado en este sistema");
+        }
+    }
+
+    private static PopupMenu createTrayMenu() {
+        PopupMenu menu = new PopupMenu();
+
+        MenuItem itemSalir = new MenuItem("Salir");
+        itemSalir.addActionListener(e -> {
+            int option = JOptionPane.showConfirmDialog(
+                    null,
+                    "¿Está seguro que desea salir de la aplicación?",
+                    "Confirmar salida",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+            if (option == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
+
+        MenuItem itemAcercaDe = new MenuItem("Acerca de Econova");
+        itemAcercaDe.addActionListener(e -> {
+            DialogUtils.createDialog(new About(), "Acerca de...", false);
+        });
+
+        MenuItem itemConfiguracion = new MenuItem("Configuración");
+        MenuItem itemContabilidad = new MenuItem("Contabilidad");
+
+        menu.add(itemConfiguracion);
+        menu.add(itemContabilidad);
+
+        Menu menuHerramientas = new Menu("Herramientas");
+        MenuItem itemConnServidor = new MenuItem("Conexión al Servidor");
+        itemConnServidor.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                new FormDatabaseConnection().setVisible(true);
+            });
+        });
+
+        MenuItem itemCambContras = new MenuItem("Cambiar Contraseña");
+        MenuItem itemRestBaseDatos = new MenuItem("Restaurar Base de Datos");
+        menuHerramientas.add(itemConnServidor);
+        menuHerramientas.add(itemCambContras);
+        menuHerramientas.add(itemRestBaseDatos);
+
+        menu.addSeparator();
+        menu.add(menuHerramientas);
+        menu.add(itemAcercaDe);
+        menu.add(itemSalir);
+
+        return menu;
+    }
+
+
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
+    // Generated using JFormDesigner Evaluation license - Yasmany
     private JMenuBar menuBar1;
     private JMenu menu1;
     private JMenuItem menuItemCambiarUnidadContable;
@@ -483,5 +610,8 @@ public class MainFormApp extends JFrame {
     private JMenuItem menuItem13;
     private JMenu menu7;
     private JMenu menu8;
+    private JMenuItem menuItemRegistrar;
+    private JMenuItem menuItemLicencia;
+    private JMenuItem menuItem3;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }
