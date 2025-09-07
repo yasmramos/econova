@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.config.dto;
 
-import com.univsoftdev.econova.config.model.Ejercicio;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,9 +11,9 @@ public class PeriodoDto {
     private String nombre;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
-    private Ejercicio ejercicio;
+    private Exercise ejercicio;
     private boolean current;
-    private List<Transaccion> transacciones = new ArrayList<>();
+    private List<Transaction> transacciones = new ArrayList<>();
 
     public String getNombre() {
         return nombre;
@@ -27,7 +27,7 @@ public class PeriodoDto {
         return fechaFin;
     }
 
-    public Ejercicio getEjercicio() {
+    public Exercise getEjercicio() {
         return ejercicio;
     }
 
@@ -35,7 +35,7 @@ public class PeriodoDto {
         return current;
     }
 
-    public List<Transaccion> getTransacciones() {
+    public List<Transaction> getTransacciones() {
         return transacciones;
     }
     

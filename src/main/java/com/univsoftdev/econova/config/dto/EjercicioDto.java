@@ -1,7 +1,8 @@
 package com.univsoftdev.econova.config.dto;
 
-import com.univsoftdev.econova.config.model.Periodo;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.config.model.Exercise;
+import com.univsoftdev.econova.config.model.Period;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +14,13 @@ public class EjercicioDto {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private boolean iniciado;
-    private List<Periodo> periodos = new ArrayList<>();
-    private List<Transaccion> transacciones = new ArrayList<>();
+    private List<Period> periodos = new ArrayList<>();
+    private List<Transaction> transacciones = new ArrayList<>();
 
+    public Exercise toEntity(){
+        return new Exercise(nombre, year, fechaInicio, fechaFin, periodos, transacciones);
+    }
+    
     public String getNombre() {
         return nombre;
     }
@@ -56,19 +61,19 @@ public class EjercicioDto {
         this.iniciado = iniciado;
     }
 
-    public List<Transaccion> getTransacciones() {
+    public List<Transaction> getTransacciones() {
         return transacciones;
     }
 
-    public void setTransacciones(List<Transaccion> transacciones) {
+    public void setTransacciones(List<Transaction> transacciones) {
         this.transacciones = transacciones;
     }
 
-    public List<Periodo> getPeriodos() {
+    public List<Period> getPeriodos() {
         return periodos;
     }
 
-    public void setPeriodos(List<Periodo> periodos) {
+    public void setPeriodos(List<Period> periodos) {
         this.periodos = periodos;
     }
     

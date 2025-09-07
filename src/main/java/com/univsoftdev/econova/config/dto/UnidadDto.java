@@ -1,7 +1,7 @@
 package com.univsoftdev.econova.config.dto;
 
-import com.univsoftdev.econova.contabilidad.model.Asiento;
-import com.univsoftdev.econova.contabilidad.model.Transaccion;
+import com.univsoftdev.econova.contabilidad.model.AccountingEntry;
+import com.univsoftdev.econova.contabilidad.model.Transaction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +14,8 @@ public class UnidadDto {
     private String nae;
     private String dpa;
     private String reup;
-    private List<Transaccion> transacciones = new ArrayList<>();
-    private List<Asiento> asientos = new ArrayList<>();
+    private List<Transaction> transacciones = new ArrayList<>();
+    private List<AccountingEntry> asientos = new ArrayList<>();
 
     public String getCodigo() {
         return codigo;
@@ -45,11 +45,11 @@ public class UnidadDto {
         return reup;
     }
 
-    public List<Transaccion> getTransacciones() {
+    public List<Transaction> getTransacciones() {
         return transacciones;
     }
 
-    public List<Asiento> getAsientos() {
+    public List<AccountingEntry> getAsientos() {
         return asientos;
     }
     
