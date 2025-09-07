@@ -1,10 +1,13 @@
 package com.univsoftdev.econova.component.wizard;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import com.github.cjwizard.WizardPage;
 import com.github.cjwizard.WizardSettings;
-import com.univsoftdev.econova.db.postgres.PostgreSQLDatabaseLister;
+import com.univsoftdev.econova.config.service.ConfigService;
+import com.univsoftdev.econova.core.Injector;
 import com.univsoftdev.econova.core.swing.SwingUtils;
-import com.univsoftdev.econova.security.PostgreSQLConnection;
+import com.univsoftdev.econova.db.postgres.PostgreSQLConnection;
+import com.univsoftdev.econova.db.postgres.PostgreSQLDatabaseLister;
 import java.awt.Color;
 import java.awt.HeadlessException;
 import java.sql.SQLException;
@@ -17,7 +20,7 @@ import raven.modal.Toast;
 import raven.modal.toast.ToastPromise;
 
 @Slf4j
-public class DatabaseWizardStep extends WizardPage {
+public class DatabaseWizardPage extends WizardPage {
 
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_DB_NAME = "econova";
@@ -28,11 +31,14 @@ public class DatabaseWizardStep extends WizardPage {
 
     private PostgreSQLConnection pgConnection;
 
-    public DatabaseWizardStep() {
+    private final ConfigService configService;
+
+    public DatabaseWizardPage() {
         super("Configuración Base de Datos", "");
         initComponents();
+        configService = Injector.get(ConfigService.class);
         setDefaultValues();
-    }    
+    }
 
     private void setDefaultValues() {
         txtDatabaseName.setText(DEFAULT_DB_NAME);
@@ -57,8 +63,10 @@ public class DatabaseWizardStep extends WizardPage {
         // Manejo seguro de la contraseña
         char[] password = txtPassword.getPassword();
         settings.put("econova.database.admin.password", new String(password));
-        Arrays.fill(password, '\0');
+
         WizardDataOutput.saveObject(settings);
+
+        Arrays.fill(password, '\0');
         return true;
     }
 
@@ -92,7 +100,7 @@ public class DatabaseWizardStep extends WizardPage {
             showError("El nombre de la base de datos es obligatorio");
             return false;
         }
-       
+
         return true;
     }
 
@@ -131,6 +139,11 @@ public class DatabaseWizardStep extends WizardPage {
         jLabel2.setText("Nombre base de datos");
 
         txtDatabaseName.setToolTipText("Si no se especifica se usara la base de datos por defecto");
+        txtDatabaseName.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                txtDatabaseNamePropertyChange(evt);
+            }
+        });
 
         jLabel3.setText("Nombre usuario administrador");
 
@@ -169,7 +182,10 @@ public class DatabaseWizardStep extends WizardPage {
                 .addContainerGap(21, Short.MAX_VALUE))
         );
 
+        btnProbarConexion.setBackground(new java.awt.Color(51, 51, 255));
+        btnProbarConexion.setForeground(new java.awt.Color(255, 255, 255));
         btnProbarConexion.setText("Probar Conexión");
+        btnProbarConexion.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnProbarConexion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnProbarConexionActionPerformed(evt);
@@ -185,7 +201,10 @@ public class DatabaseWizardStep extends WizardPage {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(30, 30, 30)
+                        .addContainerGap()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 517, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -198,18 +217,15 @@ public class DatabaseWizardStep extends WizardPage {
                                 .addComponent(btnProbarConexion)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 517, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel2)
                 .addGap(4, 4, 4)
                 .addComponent(txtDatabaseName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -227,7 +243,7 @@ public class DatabaseWizardStep extends WizardPage {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnProbarConexion)
                     .addComponent(lblMessage))
-                .addGap(14, 14, 14))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -266,8 +282,7 @@ public class DatabaseWizardStep extends WizardPage {
 
                     if (!dbExists) {
                         pc.update("La base de datos no existe, preguntando al usuario...");
-                        int option = JOptionPane.showConfirmDialog(
-                                DatabaseWizardStep.this,
+                        int option = JOptionPane.showConfirmDialog(DatabaseWizardPage.this,
                                 "La base de datos '" + dbName + "' no existe. ¿Desea crearla?",
                                 "Confirmación",
                                 JOptionPane.YES_NO_OPTION,
@@ -305,6 +320,18 @@ public class DatabaseWizardStep extends WizardPage {
         });
     }//GEN-LAST:event_btnProbarConexionActionPerformed
 
+    private void txtDatabaseNamePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_txtDatabaseNamePropertyChange
+        String propertyName = evt.getPropertyName();
+        if (propertyName.equals("text")) {
+            String value = evt.getNewValue().toString().trim();
+            if (value.isEmpty()) {
+                txtDatabaseName.putClientProperty(FlatClientProperties.OUTLINE, "error");
+            } else {
+                txtDatabaseName.putClientProperty(FlatClientProperties.OUTLINE, null);
+            }
+        }
+    }//GEN-LAST:event_txtDatabaseNamePropertyChange
+
     public Optional<String> getDatabases() {
         final var lister = new PostgreSQLDatabaseLister(
                 SwingUtils.getValue(txtServidor),
@@ -319,7 +346,6 @@ public class DatabaseWizardStep extends WizardPage {
                 .filter(
                         d -> d.equals(databseName)
                 ).findFirst();
-        lister.close();
         return filter;
     }
 
